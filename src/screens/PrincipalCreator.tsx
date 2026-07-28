@@ -28,12 +28,14 @@ export function PrincipalCreator({
   onBack,
   onConfirm,
   confirmLabel,
+  isSubmitting = false,
 }: {
   teamName: string;
   teamColor?: string;
   onBack: () => void;
   onConfirm: (principal: TeamPrincipal) => void;
   confirmLabel: string;
+  isSubmitting?: boolean;
 }) {
   const [draft, setDraft] = useState<PrincipalDraft>(defaultPrincipalDraft);
   const [startingLevel, setStartingLevel] = useState<StartingLevelId>('rookie');
@@ -89,8 +91,8 @@ export function PrincipalCreator({
             Choose your identity, then invest as many or as few points as you want. Unspent points carry into your career.
           </p>
         </div>
-        <Button variant="primary" disabled={!canConfirm} onClick={() => onConfirm(adjustedPrincipal)}>
-          {canConfirm ? confirmLabel : 'Name your principal'}
+        <Button variant="primary" disabled={!canConfirm || isSubmitting} onClick={() => onConfirm(adjustedPrincipal)}>
+          {isSubmitting ? 'Creating Career…' : canConfirm ? confirmLabel : 'Name your principal'}
         </Button>
       </div>
 
@@ -160,9 +162,9 @@ export function PrincipalCreator({
             {draft.name.trim() || 'Your principal'} will lead {teamName} with <strong className="text-neutral-100">{pointsRemaining} Principal Points</strong> available after creation. Spending zero points is allowed.
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={onBack}>← Back</Button>
-            <Button variant="primary" disabled={!canConfirm} onClick={() => onConfirm(adjustedPrincipal)}>
-              {canConfirm ? confirmLabel : 'Name your principal'}
+            <Button variant="ghost" disabled={isSubmitting} onClick={onBack}>← Back</Button>
+            <Button variant="primary" disabled={!canConfirm || isSubmitting} onClick={() => onConfirm(adjustedPrincipal)}>
+              {isSubmitting ? 'Creating Career…' : canConfirm ? confirmLabel : 'Name your principal'}
             </Button>
           </div>
         </div>

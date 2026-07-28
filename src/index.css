@@ -345,6 +345,90 @@ body {
   overscroll-behavior: contain;
 }
 
+.ui-career-loading-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(3 7 18 / 82%);
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+}
+
+.ui-career-loading-card {
+  width: min(30rem, 100%);
+  border: 1px solid rgb(245 158 11 / 45%);
+  border-radius: 0.75rem;
+  background: linear-gradient(145deg, rgb(23 23 23 / 98%), rgb(10 10 10 / 98%));
+  box-shadow: 0 24px 80px rgb(0 0 0 / 55%);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.ui-career-loading-card h2 {
+  margin-top: 0.75rem;
+  color: #f5f5f5;
+  font-size: 1.1rem;
+  font-weight: 850;
+}
+
+.ui-career-loading-card p {
+  margin-top: 0.35rem;
+  color: #a3a3a3;
+  font-size: 0.8rem;
+}
+
+.ui-career-loading-card small {
+  display: block;
+  margin-top: 0.65rem;
+  color: #737373;
+  font-size: 0.65rem;
+}
+
+.ui-career-loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto;
+  border: 3px solid rgb(245 158 11 / 22%);
+  border-top-color: #f59e0b;
+  border-radius: 999px;
+  animation: ui-career-loading-spin 0.85s linear infinite;
+}
+
+.ui-career-loading-bar {
+  height: 0.35rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #262626;
+}
+
+.ui-career-loading-bar span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b45309, #fbbf24);
+  animation: ui-career-loading-progress 1.15s ease-in-out infinite;
+}
+
+@keyframes ui-career-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ui-career-loading-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(245%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-career-loading-spinner,
+  .ui-career-loading-bar span {
+    animation-duration: 2.5s;
+  }
+}
+
 .ui-workspace-screen {
   max-width: 100%;
 }
