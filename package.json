@@ -27,8 +27,8 @@
     "pit:convert": "node scripts/convertPitWorkbook.mjs"
   },
   "dependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-router": "^8.3.0"
   },
   "devDependencies": {
