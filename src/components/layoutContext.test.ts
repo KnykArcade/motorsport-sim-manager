@@ -9,10 +9,8 @@ describe('contextual shell navigation', () => {
     expect(pageIdentityForRoute('/live-race/race-3')).toEqual({ section: 'Race Strategy', title: 'Live Race' });
   });
 
-  it('keeps consolidated routes reachable through contextual tabs', () => {
+  it('keeps secondary routes reachable without duplicating primary navigation', () => {
     expect(contextualNavigationForRoute('/inbox', new Set()).map((item) => item.to)).toEqual([
-      '/hq',
-      '/inbox',
       '/news',
       '/stories',
       '/paddock',
@@ -26,6 +24,6 @@ describe('contextual shell navigation', () => {
       .map((item) => item.to);
     expect(routes).not.toContain('/scouting');
     expect(routes).not.toContain('/curves');
-    expect(routes).toContain('/market');
+    expect(routes).toEqual([]);
   });
 });

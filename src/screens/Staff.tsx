@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import {
@@ -16,7 +16,11 @@ import {
   FmPaneHeader,
   FmWorkspaceGrid,
 } from '../components/workspace/FmPane';
-import type { StaffResponsibilityId, StaffRole } from '../types/staffTypes';
+import {
+  STAFF_ROLES,
+  type StaffResponsibilityId,
+  type StaffRole,
+} from '../types/staffTypes';
 import type { GameState } from '../game/careerState';
 import type { GameAction } from '../game/gameReducer';
 import {
@@ -28,11 +32,22 @@ import {
   staffResponsibilities,
   type StaffResponsibility,
 } from './staffResponsibilitiesViewModel';
+import { EntityBrowseControls } from '../components/EntityBrowseControls';
 
 export function Staff() {
   const { state, dispatch } = useGame();
-  const [view, setView] = useState<'responsibilities' | 'departments'>('responsibilities');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view') === 'departments' ? 'departments' : 'responsibilities';
   if (!state) return null;
+
+  const updateQuery = (patch: Record<string, string | undefined>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, value);
+    }
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <WorkspaceScreen className="ui-recruitment-screen ui-staff-departments-screen">
@@ -54,13 +69,33 @@ export function Staff() {
           { id: 'departments', label: 'Department Ability' },
         ]}
         active={view}
-        onChange={setView}
+        onChange={(next) => updateQuery({
+          view: next,
+          responsibility: undefined,
+          role: undefined,
+        })}
         ariaLabel="Staff management views"
       />
       <WorkspaceBody className="overflow-hidden">
         {view === 'responsibilities'
-          ? <StaffResponsibilities state={state} dispatch={dispatch} />
-          : <StaffDepartments state={state} dispatch={dispatch} />}
+          ? (
+            <StaffResponsibilities
+              state={state}
+              dispatch={dispatch}
+              selectedId={searchParams.get('responsibility') as StaffResponsibilityId | null}
+              onSelect={(responsibility) => updateQuery({ responsibility })}
+            />
+          )
+          : (
+            <StaffDepartments
+              state={state}
+              dispatch={dispatch}
+              selectedRole={STAFF_ROLES.includes(searchParams.get('role') as StaffRole)
+                ? searchParams.get('role') as StaffRole
+                : undefined}
+              onSelect={(role) => updateQuery({ role })}
+            />
+          )}
       </WorkspaceBody>
     </WorkspaceScreen>
   );
@@ -69,13 +104,21 @@ export function Staff() {
 function StaffResponsibilities({
   state,
   dispatch,
+  selectedId,
+  onSelect,
 }: {
   state: GameState;
   dispatch: (action: GameAction) => void;
+  selectedId: StaffResponsibilityId | null;
+  onSelect: (responsibility: StaffResponsibilityId) => void;
 }) {
   const responsibilities = staffResponsibilities(state);
-  const [selectedId, setSelectedId] = useState<StaffResponsibilityId>('technical');
   const selected = responsibilities.find((item) => item.id === selectedId) ?? responsibilities[0];
+  const selectedIndex = responsibilities.findIndex((item) => item.id === selected.id);
+  const browse = (offset: number) => {
+    const nextIndex = (selectedIndex + offset + responsibilities.length) % responsibilities.length;
+    onSelect(responsibilities[nextIndex].id);
+  };
 
   const setPolicy = (responsibility: StaffResponsibility, policy: StaffResponsibility['policy']) => {
     dispatch({ type: 'SET_STAFF_RESPONSIBILITY_POLICY', responsibility: responsibility.id, policy });
@@ -91,7 +134,7 @@ function StaffResponsibilities({
               <FmListButton
                 key={responsibility.id}
                 active={selected.id === responsibility.id}
-                onClick={() => setSelectedId(responsibility.id)}
+                onClick={() => onSelect(responsibility.id)}
               >
                 <span>{responsibility.policyLabel}</span>
                 <strong>{responsibility.area}</strong>
@@ -103,7 +146,19 @@ function StaffResponsibilities({
         </FmPane>
 
         <FmPane className="ui-staff-responsibility-policy">
-          <FmPaneHeader title={selected.area} meta={selected.policyLabel} />
+          <FmPaneHeader
+            title={selected.area}
+            meta={selected.policyLabel}
+            actions={(
+              <EntityBrowseControls
+                position={selectedIndex}
+                total={responsibilities.length}
+                noun="responsibilities"
+                onPrevious={() => browse(-1)}
+                onNext={() => browse(1)}
+              />
+            )}
+          />
           <FmPaneBody className="overflow-auto">
             <section className="ui-staff-responsibility-owner">
               <span>Assigned lead</span>
@@ -171,14 +226,25 @@ function StaffResponsibilities({
 function StaffDepartments({
   state,
   dispatch,
+  selectedRole,
+  onSelect,
 }: {
   state: GameState;
   dispatch: (action: GameAction) => void;
+  selectedRole?: StaffRole;
+  onSelect: (role: StaffRole) => void;
 }) {
-  const [selectedRole, setSelectedRole] = useState<StaffRole>();
   const principalPoints = state.principal?.skillPoints ?? 0;
   const departments = staffDepartmentRows(state.staff, principalPoints);
   const selected = selectedStaffDepartment(departments, selectedRole);
+  const selectedIndex = selected
+    ? departments.findIndex((department) => department.role === selected.role)
+    : -1;
+  const browse = (offset: number) => {
+    if (!departments.length || selectedIndex < 0) return;
+    const nextIndex = (selectedIndex + offset + departments.length) % departments.length;
+    onSelect(departments[nextIndex].role);
+  };
 
   return (
     <>
@@ -190,7 +256,7 @@ function StaffDepartments({
                 <FmListButton
                   key={department.role}
                   active={selected?.role === department.role}
-                  onClick={() => setSelectedRole(department.role)}
+                  onClick={() => onSelect(department.role)}
                 >
                   <span>Level {department.level}</span>
                   <strong>{department.role}</strong>
@@ -202,7 +268,19 @@ function StaffDepartments({
           </FmPane>
 
           <FmPane className="ui-staff-department-profile">
-            <FmPaneHeader title={selected?.role ?? 'Department'} meta={selected ? `Level ${selected.level}` : undefined} />
+            <FmPaneHeader
+              title={selected?.role ?? 'Department'}
+              meta={selected ? `Level ${selected.level}` : undefined}
+              actions={selected && (
+                <EntityBrowseControls
+                  position={Math.max(0, selectedIndex)}
+                  total={departments.length}
+                  noun="staff departments"
+                  onPrevious={() => browse(-1)}
+                  onNext={() => browse(1)}
+                />
+              )}
+            />
             <FmPaneBody className="overflow-auto">
               {selected && (
                 <div className="ui-staff-profile-body">

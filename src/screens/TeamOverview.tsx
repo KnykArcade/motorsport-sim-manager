@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
@@ -38,6 +38,7 @@ import {
   teamOverviewPageCount,
   type TeamDetailTab,
 } from './teamOverviewViewModel';
+import { EntityBrowseControls } from '../components/EntityBrowseControls';
 
 type SortKey =
   | 'championshipPosition'
@@ -90,9 +91,26 @@ export function TeamOverview() {
   const filter: Filter = requestedFilter === 'player' || requestedFilter === 'rivals'
     ? requestedFilter
     : 'all';
-  const [sortKey, setSortKey] = useState<SortKey>('championshipPosition');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
+  const requestedSort = searchParams.get('sort') as SortKey | null;
+  const sortKey: SortKey = requestedSort && [
+    'championshipPosition', 'overallRating', 'carRating', 'driverRating',
+    'developmentRating', 'facilitiesRating', 'staffRating', 'engineRating',
+    'academyRating', 'raceOpsRating', 'pitCrewRating', 'reliabilityRating',
+    'reputationRating', 'financeRating', 'budget', 'sponsorIncome', 'financialHealth',
+  ].includes(requestedSort)
+    ? requestedSort
+    : 'championshipPosition';
+  const selectedId = searchParams.get('team');
+  const requestedPage = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
+  const requestedDetailTab = searchParams.get('detail');
+  const detailTab: TeamDetailTab = requestedDetailTab === 'personnel'
+    || requestedDetailTab === 'performance'
+    || requestedDetailTab === 'operations'
+    || requestedDetailTab === 'finance'
+    || requestedDetailTab === 'identity'
+    || requestedDetailTab === 'history'
+    ? requestedDetailTab
+    : 'overview';
 
   const rows = useMemo(() => (state ? buildTeamOverview(state) : []), [state]);
 
@@ -109,7 +127,13 @@ export function TeamOverview() {
     return ascending ? d : -d;
   });
   const pageCount = teamOverviewPageCount(sorted.length);
-  const safePage = Math.min(page, pageCount - 1);
+  const requestedTeamIndex = selectedId
+    ? sorted.findIndex((row) => row.teamId === selectedId)
+    : -1;
+  const exactTeamPage = requestedTeamIndex >= 0
+    ? Math.floor(requestedTeamIndex / TEAM_OVERVIEW_PAGE_SIZE)
+    : requestedPage;
+  const safePage = Math.min(exactTeamPage, pageCount - 1);
   const visibleRows = teamOverviewPage(sorted, safePage);
   const selectedRow = selectedTeamOverviewRow(sorted, selectedId);
   const detail = selectedRow ? buildTeamOverviewDetail(state, selectedRow.teamId) : undefined;
@@ -121,6 +145,32 @@ export function TeamOverview() {
     (row) => row.financialHealth === 'AtRisk' || row.financialHealth === 'Critical',
   ).length;
   const leader = rows.find((row) => row.championshipPosition === 1) ?? rows[0];
+  const selectedIndex = selectedRow
+    ? sorted.findIndex((row) => row.teamId === selectedRow.teamId)
+    : -1;
+
+  const updateQuery = (patch: Record<string, string | number | undefined>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, String(value));
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const selectTeam = (teamId: string) => {
+    const index = sorted.findIndex((row) => row.teamId === teamId);
+    updateQuery({
+      team: teamId,
+      page: index >= 0 ? Math.floor(index / TEAM_OVERVIEW_PAGE_SIZE) : safePage,
+    });
+  };
+
+  const browseTeam = (offset: number) => {
+    if (!sorted.length || selectedIndex < 0) return;
+    const nextIndex = (selectedIndex + offset + sorted.length) % sorted.length;
+    selectTeam(sorted[nextIndex].teamId);
+  };
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-overview ui-team-people-screen">
@@ -138,9 +188,11 @@ export function TeamOverview() {
         ]}
         active={filter}
         onChange={(next) => {
-          setSearchParams(next === 'all' ? {} : { filter: next }, { replace: true });
-          setPage(0);
-          setSelectedId(null);
+          updateQuery({
+            filter: next === 'all' ? undefined : next,
+            page: undefined,
+            team: undefined,
+          });
         }}
         ariaLabel="Organization list filters"
       />
@@ -158,9 +210,11 @@ export function TeamOverview() {
                 <select
                   value={sortKey}
                   onChange={(event) => {
-                    setSortKey(event.target.value as SortKey);
-                    setPage(0);
-                    setSelectedId(null);
+                    updateQuery({
+                      sort: event.target.value,
+                      page: undefined,
+                      team: undefined,
+                    });
                   }}
                 >
                   <option value="championshipPosition">Championship</option>
@@ -185,7 +239,7 @@ export function TeamOverview() {
                   <FmListButton
                     key={row.teamId}
                     active={selectedRow?.teamId === row.teamId}
-                    onClick={() => setSelectedId(row.teamId)}
+                    onClick={() => selectTeam(row.teamId)}
                   >
                     <span className="ui-news-list-source">
                       P{position} · {HEALTH_LABELS[row.financialHealth]}
@@ -200,9 +254,9 @@ export function TeamOverview() {
               })}
             </FmPaneBody>
             <div className="ui-team-list-pagination">
-              <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0}>Previous</button>
+              <button type="button" onClick={() => updateQuery({ page: Math.max(0, safePage - 1), team: undefined })} disabled={safePage === 0}>Previous</button>
               <span>{safePage + 1} / {pageCount}</span>
-              <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1}>Next</button>
+              <button type="button" onClick={() => updateQuery({ page: Math.min(pageCount - 1, safePage + 1), team: undefined })} disabled={safePage >= pageCount - 1}>Next</button>
             </div>
           </FmPane>
 
@@ -212,8 +266,21 @@ export function TeamOverview() {
                 <FmPaneHeader
                   title={selectedRow.name}
                   meta={`${selectedRow.championshipPosition ? `P${selectedRow.championshipPosition}` : 'Unranked'} · ${selectedRow.points} points`}
+                  actions={(
+                    <EntityBrowseControls
+                      position={Math.max(0, selectedIndex)}
+                      total={sorted.length}
+                      noun="teams"
+                      onPrevious={() => browseTeam(-1)}
+                      onNext={() => browseTeam(1)}
+                    />
+                  )}
                 />
-                <TeamDetail detail={detail} />
+                <TeamDetail
+                  detail={detail}
+                  tab={detailTab}
+                  onTab={(next) => updateQuery({ detail: next })}
+                />
               </>
             ) : (
               <FmPaneBody className="ui-inbox-empty">No organization is available.</FmPaneBody>
@@ -256,15 +323,18 @@ export function TeamOverview() {
 
 function TeamDetail({
   detail,
+  tab,
+  onTab,
 }: {
   detail: NonNullable<ReturnType<typeof buildTeamOverviewDetail>>;
+  tab: TeamDetailTab;
+  onTab: (tab: TeamDetailTab) => void;
 }) {
   const { state } = useGame();
-  const [tab, setTab] = useState<TeamDetailTab>('overview');
   const { row } = detail;
   return (
     <>
-        <WorkspaceTabs items={TEAM_DETAIL_TABS} active={tab} onChange={setTab} ariaLabel="Team dossier sections" />
+        <WorkspaceTabs items={TEAM_DETAIL_TABS} active={tab} onChange={onTab} ariaLabel="Team dossier sections" />
         <div className="ui-team-profile-body min-h-0 flex-1 overflow-y-auto p-3">
           {tab === 'overview' && (
             <Panel

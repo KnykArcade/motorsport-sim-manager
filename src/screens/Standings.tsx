@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';
@@ -22,15 +22,18 @@ import { standingsDossier } from './championshipRecordsViewModel';
 
 export function Standings() {
   const { state } = useGame();
-  const [tab, setTab] = useState<StandingsTab>('drivers');
-  const [page, setPage] = useState(0);
-  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: StandingsTab = searchParams.get('tab') === 'constructors' ? 'constructors' : 'drivers';
+  const page = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
+  const selectedEntryId = searchParams.get('entry');
   if (!state) return null;
 
-  const activeSeries = selectedSeries ?? state.series;
+  const requestedSeries = searchParams.get('series') as Series | null;
   const worldEnabled = canViewWorldStandings(state.gameMode);
   const championshipOptions = worldChampionshipOptions(state.series, state.motorsportUniverse);
+  const activeSeries = championshipOptions.some((entry) => entry.series === requestedSeries)
+    ? requestedSeries!
+    : state.series;
   const selectedChampionship = championshipOptions.find((entry) => entry.series === activeSeries);
   const viewingPlayerSeries = activeSeries === state.series;
   const roundsComplete = Math.min(state.currentRaceIndex, state.calendar.length);
@@ -53,16 +56,21 @@ export function Standings() {
     ? tab === 'drivers' ? teamOfDriver(selectedId) : teamName(selectedId)
     : '—';
 
+  function updateQuery(patch: Record<string, string | number | undefined>) {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, String(value));
+    }
+    setSearchParams(next, { replace: true });
+  }
+
   function selectTab(nextTab: StandingsTab) {
-    setTab(nextTab);
-    setPage(0);
-    setSelectedEntryId(null);
+    updateQuery({ tab: nextTab, page: undefined, entry: undefined });
   }
 
   function selectSeries(nextSeries: Series) {
-    setSelectedSeries(nextSeries);
-    setPage(0);
-    setSelectedEntryId(null);
+    updateQuery({ series: nextSeries, page: undefined, entry: undefined });
   }
 
   return (
@@ -145,7 +153,7 @@ export function Standings() {
                       key={entry.entityId}
                       type="button"
                       className={`ui-fm-list-button ${selectedId === entry.entityId ? 'is-active' : ''} ${playerDriverIds.includes(entry.entityId) || entry.entityId === state.selectedTeamId ? 'is-player' : ''}`}
-                      onClick={() => setSelectedEntryId(entry.entityId)}
+                      onClick={() => updateQuery({ entry: entry.entityId })}
                     >
                       <span>P{index + 1} · {entry.points} points</span>
                       <strong>{tab === 'drivers' ? driverName(entry.entityId) : teamName(entry.entityId)}</strong>
@@ -167,10 +175,10 @@ export function Standings() {
                     colorOf={tab === 'constructors' ? teamColor : undefined}
                     highlightId={selectedId ?? undefined}
                     positionOffset={safePage * STANDINGS_PAGE_SIZE}
-                    onSelect={setSelectedEntryId}
+                    onSelect={(entryId) => updateQuery({ entry: entryId })}
                   />
                 </div>
-                <CompactPagination noun={tab} total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={STANDINGS_PAGE_SIZE} onPage={setPage} />
+                <CompactPagination noun={tab} total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={STANDINGS_PAGE_SIZE} onPage={(nextPage) => updateQuery({ page: nextPage })} />
               </section>
 
               <section className="ui-fm-pane ui-championship-context-pane">

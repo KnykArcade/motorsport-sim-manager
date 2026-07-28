@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import {
@@ -29,19 +28,31 @@ import {
 } from '../game/careerState';
 import {
   DRIVERS_TABS,
+  DRIVER_DIRECTORY_PAGE_SIZE,
   driverDirectoryPage,
   driverDirectoryPageCount,
   selectedDriver,
   type DriversTab,
 } from './driversViewModel';
+import { EntityBrowseControls } from '../components/EntityBrowseControls';
 
 export function Drivers() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<DriversTab>('lineup');
-  const [directoryPage, setDirectoryPage] = useState(0);
-  const [driverSort, setDriverSort] = useState<DriverSort>({ key: 'overall', direction: 'desc' });
-  const [selectedDriverId, setSelectedDriverId] = useState<string>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const tab: DriversTab = requestedTab === 'reserves' || requestedTab === 'directory'
+    ? requestedTab
+    : 'lineup';
+  const requestedSort = searchParams.get('sort') as DriverSortKey | null;
+  const driverSort: DriverSort = {
+    key: requestedSort && ['name', 'number', 'overall', 'morale', 'confidence'].includes(requestedSort)
+      ? requestedSort
+      : 'overall',
+    direction: searchParams.get('order') === 'asc' ? 'asc' : 'desc',
+  };
+  const requestedDirectoryPage = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
+  const selectedDriverId = searchParams.get('driver') ?? undefined;
   if (!state) return null;
 
   const teamName = (id: string) => state.teams.find((t) => t.id === id)?.name ?? id;
@@ -49,8 +60,14 @@ export function Drivers() {
 
   const ordered = state.drivers;
   const directoryPageCount = driverDirectoryPageCount(ordered.length);
-  const safeDirectoryPage = Math.min(directoryPage, directoryPageCount - 1);
   const orderedDirectoryDrivers = [...ordered].sort((left, right) => compareDrivers(left, right, driverSort));
+  const requestedDriverIndex = selectedDriverId
+    ? orderedDirectoryDrivers.findIndex((driver) => driver.id === selectedDriverId)
+    : -1;
+  const exactDriverPage = tab === 'directory' && requestedDriverIndex >= 0
+    ? Math.floor(requestedDriverIndex / DRIVER_DIRECTORY_PAGE_SIZE)
+    : requestedDirectoryPage;
+  const safeDirectoryPage = Math.min(exactDriverPage, directoryPageCount - 1);
   const visibleDirectoryDrivers = driverDirectoryPage(orderedDirectoryDrivers, safeDirectoryPage);
 
   const playerTeam = teamById(state, state.selectedTeamId);
@@ -92,10 +109,33 @@ export function Drivers() {
       : selected?.contractType === 'reserve' || selected?.contractType === 'test'
         ? 'Reserve / test'
         : 'Grid driver';
+  const selectedIndex = selected
+    ? driversInView.findIndex((driver) => driver.id === selected.id)
+    : -1;
+
+  const updateQuery = (patch: Record<string, string | number | undefined>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, String(value));
+    }
+    setSearchParams(next, { replace: true });
+  };
+
   const setDriversTab = (next: DriversTab) => {
-    setTab(next);
-    setSelectedDriverId(undefined);
-    if (next === 'directory') setDirectoryPage(0);
+    updateQuery({
+      tab: next,
+      driver: undefined,
+      page: undefined,
+    });
+  };
+  const selectDriverId = (driverId: string | undefined) => {
+    updateQuery({ driver: driverId });
+  };
+  const browseDriver = (offset: number) => {
+    if (!driversInView.length || selectedIndex < 0) return;
+    const nextIndex = (selectedIndex + offset + driversInView.length) % driversInView.length;
+    selectDriverId(driversInView[nextIndex].id);
   };
 
   return (
@@ -116,7 +156,15 @@ export function Drivers() {
                 Sort
                 <select
                   value={driverSort.key}
-                  onChange={(event) => setDriverSort({ key: event.target.value as DriverSortKey, direction: event.target.value === 'name' || event.target.value === 'number' ? 'asc' : 'desc' })}
+                  onChange={(event) => {
+                    const key = event.target.value as DriverSortKey;
+                    updateQuery({
+                      sort: key,
+                      order: key === 'name' || key === 'number' ? 'asc' : 'desc',
+                      page: undefined,
+                      driver: undefined,
+                    });
+                  }}
                 >
                   <option value="overall">Overall</option>
                   <option value="name">Name</option>
@@ -125,13 +173,13 @@ export function Drivers() {
                   <option value="confidence">Confidence</option>
                 </select>
               </label>
-              <button type="button" onClick={() => setDriverSort((current) => ({ ...current, direction: current.direction === 'asc' ? 'desc' : 'asc' }))}>
+              <button type="button" onClick={() => updateQuery({ order: driverSort.direction === 'asc' ? 'desc' : 'asc' })}>
                 {driverSort.direction === 'asc' ? 'Ascending' : 'Descending'}
               </button>
             </div>
             <FmPaneBody className="overflow-auto">
               {driversInView.map((driver) => (
-                <FmListButton key={driver.id} active={selected?.id === driver.id} onClick={() => setSelectedDriverId(driver.id)}>
+                <FmListButton key={driver.id} active={selected?.id === driver.id} onClick={() => selectDriverId(driver.id)}>
                   <span className="ui-news-list-source">#{driver.number} · {teamName(driver.teamId)}</span>
                   <strong><i style={{ backgroundColor: teamColor(driver.teamId) }} />{driver.name}</strong>
                   <span>OVR {readoutForDriverRating(state, driver, 'overall').label} · Morale {driver.morale.toFixed(0)}</span>
@@ -142,9 +190,9 @@ export function Drivers() {
             </FmPaneBody>
             {tab === 'directory' && (
               <div className="ui-team-list-pagination">
-                <button type="button" onClick={() => { setDirectoryPage(Math.max(0, safeDirectoryPage - 1)); setSelectedDriverId(undefined); }} disabled={safeDirectoryPage === 0}>Previous</button>
+                <button type="button" onClick={() => updateQuery({ page: Math.max(0, safeDirectoryPage - 1), driver: undefined })} disabled={safeDirectoryPage === 0}>Previous</button>
                 <span>{safeDirectoryPage + 1} / {directoryPageCount}</span>
-                <button type="button" onClick={() => { setDirectoryPage(Math.min(directoryPageCount - 1, safeDirectoryPage + 1)); setSelectedDriverId(undefined); }} disabled={safeDirectoryPage >= directoryPageCount - 1}>Next</button>
+                <button type="button" onClick={() => updateQuery({ page: Math.min(directoryPageCount - 1, safeDirectoryPage + 1), driver: undefined })} disabled={safeDirectoryPage >= directoryPageCount - 1}>Next</button>
               </div>
             )}
           </FmPane>
@@ -152,7 +200,19 @@ export function Drivers() {
           <FmPane className="ui-driver-profile-pane">
             {selected ? (
               <>
-                <FmPaneHeader title={`#${selected.number} ${selected.name}`} meta={`${selectedRole} · ${teamName(selected.teamId)}`} />
+                <FmPaneHeader
+                  title={`#${selected.number} ${selected.name}`}
+                  meta={`${selectedRole} · ${teamName(selected.teamId)}`}
+                  actions={(
+                    <EntityBrowseControls
+                      position={Math.max(0, selectedIndex)}
+                      total={driversInView.length}
+                      noun="drivers"
+                      onPrevious={() => browseDriver(-1)}
+                      onNext={() => browseDriver(1)}
+                    />
+                  )}
+                />
                 <FmPaneBody className="ui-driver-profile-body overflow-auto">
                   <section className="ui-profile-identity-strip">
                     <div className="ui-profile-number" style={{ borderColor: teamColor(selected.teamId) }}>{selected.number}</div>

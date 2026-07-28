@@ -20,21 +20,16 @@ export const NAVIGATION_GROUPS: ReadonlyArray<{ id: NavigationGroupId; label: st
 export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = [
   { to: '/hq', label: 'Home', icon: 'HQ', group: 'race' },
   { to: '/inbox', label: 'Inbox', icon: 'IB', group: 'race' },
-  { to: '/weekend', label: 'Race Strategy', icon: 'RS', group: 'race' },
-  { to: '/performance', label: 'Data Hub', icon: 'DH', group: 'race' },
-  { to: '/calendar', label: 'Calendar', icon: 'CA', group: 'race' },
+  { to: '/weekend', label: 'Race', icon: 'RS', group: 'race' },
 
   { to: '/teams', label: 'Team', icon: 'TM', group: 'team' },
   { to: '/drivers', label: 'Drivers', icon: 'DR', group: 'team' },
-  { to: '/staff', label: 'Departments', icon: 'DP', group: 'team' },
-  { to: '/scouting', label: 'Scouting', icon: 'SC', group: 'team' },
-  { to: '/market', label: 'Driver Market', icon: 'MK', group: 'team' },
-  { to: '/finance', label: 'Finance', icon: '$', group: 'team' },
+  { to: '/staff', label: 'Staff', icon: 'DP', group: 'team' },
+  { to: '/market', label: 'Recruitment', icon: 'MK', group: 'team' },
   { to: '/technical', label: 'Technical', icon: 'RD', group: 'team' },
+  { to: '/finance', label: 'Finance', icon: '$', group: 'team' },
 
-  { to: '/standings', label: 'Championships', icon: 'CH', group: 'world' },
-  { to: '/teams?filter=player', label: 'Team Info', icon: 'TI', group: 'world' },
-  { to: '/sponsors?tab=owner', label: 'Owner Vision', icon: 'OV', group: 'world' },
+  { to: '/standings', label: 'Competitions', icon: 'CH', group: 'world' },
 ];
 
 export function routePath(to: string): string {
@@ -74,9 +69,5 @@ export function isNavigationItemActive(
     return [...itemQuery].every(([key, value]) => locationQuery.get(key) === value);
   }
 
-  // The general Team destination should not also appear active when the
-  // dedicated Team Info or Owner Vision query is selected.
-  if (path === '/teams' && locationQuery.get('filter') === 'player') return false;
-  if (path === '/sponsors' && locationQuery.get('tab') === 'owner') return false;
   return true;
 }
