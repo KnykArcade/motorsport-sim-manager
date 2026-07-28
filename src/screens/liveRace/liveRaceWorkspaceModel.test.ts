@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import type { AnalyticsRecommendation, LiveCarState, LiveRaceState } from '../../types/liveTypes';
+import { LiveRaceStrategyDrawer } from './LiveRaceWorkspace';
 import {
   DEFAULT_LIVE_RACE_WORKSPACE_PREFERENCES,
   buildEngineerCheckpointSummary,
@@ -145,6 +148,26 @@ describe('live race workspace preferences', () => {
 });
 
 describe('live race workflow decisions', () => {
+  it('explains why a retired car cannot use the strategy drawer pit action', () => {
+    const retiredCar = car({ running: false, status: 'DNF', retiredOnLap: 18 });
+    const html = renderToStaticMarkup(
+      createElement(LiveRaceStrategyDrawer, {
+        open: true,
+        live: live({ cars: [retiredCar] }),
+        playerCars: [retiredCar],
+        strategyByDriver: {},
+        nameOf: () => 'Test Driver',
+        onChange: () => undefined,
+        onPit: () => undefined,
+        onClose: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Pit controls are unavailable because this car is no longer running.');
+    expect(html).toContain('aria-label="Box this lap for Test Driver. Pit controls are unavailable');
+  });
+
   it('projects existing deterministic pace, wear, fuel, pit, and risk effects', () => {
     const projection = buildLiveRaceStrategyProjection(
       car(),

@@ -135,6 +135,7 @@ function monitor(): AnalyticsMonitor {
 describe('F11990sLiveRaceScreen', () => {
   it('renders the 1990s live race shell with actual race and driver data', () => {
     const live = liveState();
+    live.cars[2].pit.inPitThisLap = true;
     const html = renderToStaticMarkup(
       <F11990sLiveRaceScreen
         state={{ series: 'F1', seasonYear: 1995 } as GameState}
@@ -221,6 +222,7 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('Persistent Strategy Drawer');
     expect(html).toContain('No modeled fuel-use change');
     expect(html).toContain('Quarter distance');
+    expect(html).toContain('Pit controls are unavailable while the car is already in the pit lane.');
   });
 
   it('renders the full timing field instead of truncating the tower', () => {

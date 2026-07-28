@@ -439,6 +439,11 @@ export function LiveRaceStrategyDrawer({
             exitMode: car.pit.exitMode ?? car.paceMode,
           };
           const projection = buildLiveRaceStrategyProjection(car, live, strategy);
+          const pitUnavailableReason = !car.running
+            ? 'Pit controls are unavailable because this car is no longer running.'
+            : live.phase === 'finished'
+              ? 'Pit controls are unavailable because the race has finished.'
+              : undefined;
           return (
             <section key={car.driverId} className="rounded border border-zinc-800 bg-zinc-950/70 p-3">
               <div className="flex items-center justify-between gap-2">
@@ -450,7 +455,9 @@ export function LiveRaceStrategyDrawer({
                 </div>
                 <button
                   type="button"
-                  disabled={!car.running || live.phase === 'finished'}
+                  disabled={!!pitUnavailableReason}
+                  title={pitUnavailableReason}
+                  aria-label={`${car.pit.pitRequested ? 'Cancel box' : 'Box this lap'} for ${nameOf(car.driverId)}${pitUnavailableReason ? `. ${pitUnavailableReason}` : ''}`}
                   onClick={() => onPit(car.driverId, strategy)}
                   className="rounded bg-amber-400 px-2 py-1 text-[10px] font-black uppercase text-black disabled:opacity-35"
                 >
