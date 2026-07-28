@@ -35,6 +35,12 @@ import {
   type DriversTab,
 } from './driversViewModel';
 import { EntityBrowseControls } from '../components/EntityBrowseControls';
+import { WhyChangedButton } from '../components/WhyChanged';
+import {
+  driverConfidenceExplanation,
+  driverMoraleExplanation,
+  driverTrustExplanation,
+} from './explanationViewModel';
 
 export function Drivers() {
   const { state, dispatch } = useGame();
@@ -238,6 +244,13 @@ export function Drivers() {
                       <DriverAttribute label="Confidence" value={selected.confidence.toFixed(0)} score={selected.confidence} />
                       <DriverAttribute label="Composure" value={selected.ratings.composure.toFixed(0)} score={selected.ratings.composure} />
                     </div>
+                    {selectedIsPlayer && (
+                      <div className="ui-explanation-actions">
+                        <WhyChangedButton explanation={driverConfidenceExplanation(state, selected)} label="Explain confidence" />
+                        <WhyChangedButton explanation={driverMoraleExplanation(state, selected)} label="Explain morale" />
+                        <WhyChangedButton explanation={driverTrustExplanation(state, selected)} label="Explain trust" />
+                      </div>
+                    )}
                   </section>
                   {selectedIsPlayer && (
                     <section className="ui-driver-contract-block">

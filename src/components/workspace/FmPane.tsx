@@ -1,16 +1,18 @@
-import type { ReactNode, Ref, UIEventHandler } from 'react';
+import type { CSSProperties, ReactNode, Ref, UIEventHandler } from 'react';
 
 export function FmPane({
   children,
   className = '',
   ariaLabel,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   ariaLabel?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <section className={`ui-fm-pane min-h-0 min-w-0 ${className}`} aria-label={ariaLabel}>
+    <section className={`ui-fm-pane min-h-0 min-w-0 ${className}`} aria-label={ariaLabel} style={style}>
       {children}
     </section>
   );
