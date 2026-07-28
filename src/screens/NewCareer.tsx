@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { availableSeasons, seriesGroups, loadSeasonBundle, getCachedBundle, initializeMasterRegistry, preloadMarketBundle, type SeasonBundle, type SeriesGroup } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';

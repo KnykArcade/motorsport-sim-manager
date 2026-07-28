@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam } from '../game/careerState';
 import { buildLiveRaceMeta, buildLiveRaceOptions, buildRaceContext } from '../game/raceSetup';

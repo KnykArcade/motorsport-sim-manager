@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import type { GameState } from '../game/careerState';
 import { Button } from './Button';
 import { Panel } from './Panel';

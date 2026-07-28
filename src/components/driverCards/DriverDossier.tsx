@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '../Button';
 import { formatMoney, ratingColor } from '../ui';
 import { driverSalary, toMoney } from '../../sim/financeEngine';

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
 import { Button } from '../components/Button';

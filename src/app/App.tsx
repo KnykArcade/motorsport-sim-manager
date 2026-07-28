@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation, useParams, useNavigate } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';

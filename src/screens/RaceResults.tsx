@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { StandingsTable } from '../components/StandingsTable';
 import { CompactPagination } from '../components/CompactPagination';

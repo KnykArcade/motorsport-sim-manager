@@ -5,7 +5,7 @@ import {
   priorityColor,
   filterNewsByTeam,
 } from '../sim/careerNewsEngine';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 // Compact news panel for embedding in career phase screens.
 // Shows a limited number of headlines with optional category filter.

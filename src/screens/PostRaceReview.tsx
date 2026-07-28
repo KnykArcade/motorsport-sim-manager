@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { buildPostRaceSummary, getCareerPhase, getOrCreatePhaseState } from '../game/careerPhaseEngine';
