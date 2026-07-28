@@ -8,6 +8,7 @@ import {
   actionableInboxCount,
   inboxTimingForMessage,
   inboxMessages,
+  isRoutineInboxWorkHandledByStaff,
   mustRespondInboxCount,
   recommendedInboxCount,
   unreadInboxCount,
@@ -582,6 +583,53 @@ describe('inboxViewModel', () => {
     const state = newState();
     const messages = inboxMessages(state);
     expect(actionableInboxCount(state)).toBe(messages.filter((message) => message.actionable).length);
+  });
+
+  it('removes only confident routine work when staff handles that responsibility', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      staffResponsibilityPolicies: { technical: 'staff_execute_routine' },
+    };
+    expect(isRoutineInboxWorkHandledByStaff(state, {
+      id: 'routine-technical-summary', severity: 'info', category: 'technical', title: 'Routine summary',
+      route: '/technical', routeLabel: 'Open Technical Center', actionable: false,
+      responsibility: 'technical', routineDelegatable: true,
+    })).toBe(true);
+    expect(isRoutineInboxWorkHandledByStaff(state, {
+      id: 'protected-technical-decision', severity: 'action', category: 'technical', title: 'Project decision',
+      route: '/technical', routeLabel: 'Open Technical Center', actionable: true,
+      responsibility: 'technical', routineDelegatable: false,
+    })).toBe(false);
+  });
+
+  it('keeps routine work visible when the assigned staff confidence is low', () => {
+    const base = newState();
+    const state: GameState = {
+      ...base,
+      staff: [
+        ...(base.staff ?? []).filter((member) => member.role !== 'Technical Director'),
+        {
+          id: 'low-confidence-technical-director', name: 'Low Confidence', role: 'Technical Director',
+          nationality: 'Test', rating: 0, salary: 0, signingFee: 0, bio: 'Test fixture.',
+        },
+      ],
+      staffResponsibilityPolicies: { technical: 'staff_execute_routine' },
+    };
+    expect(isRoutineInboxWorkHandledByStaff(state, {
+      id: 'routine-technical-summary', severity: 'info', category: 'technical', title: 'Routine summary',
+      route: '/technical', routeLabel: 'Open Technical Center', actionable: false,
+      responsibility: 'technical', routineDelegatable: true,
+    })).toBe(false);
+  });
+
+  it('persists a selected staff responsibility policy in career state', () => {
+    const next = gameReducer(newState(), {
+      type: 'SET_STAFF_RESPONSIBILITY_POLICY',
+      responsibility: 'race-strategy',
+      policy: 'staff_prepare_player_approval',
+    }) as GameState;
+    expect(next.staffResponsibilityPolicies?.['race-strategy']).toBe('staff_prepare_player_approval');
   });
 
   it('projects timing buckets without adding deadline state', () => {

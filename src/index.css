@@ -5333,6 +5333,128 @@ body {
   grid-template-columns: minmax(220px, 0.75fr) minmax(390px, 1.45fr) minmax(240px, 0.8fr);
 }
 
+.ui-staff-responsibilities-grid.is-three {
+  grid-template-columns: minmax(230px, 0.78fr) minmax(400px, 1.42fr) minmax(260px, 0.8fr);
+}
+
+.ui-staff-responsibility-policy,
+.ui-staff-responsibility-boundaries {
+  background: #252528;
+}
+
+.ui-staff-responsibility-policy .ui-fm-pane-body,
+.ui-staff-responsibility-boundaries .ui-fm-pane-body {
+  padding: 0.75rem;
+}
+
+.ui-staff-responsibility-owner {
+  border-left: 3px solid #b52249;
+  background: #202023;
+  padding: 0.75rem;
+}
+
+.ui-staff-responsibility-owner span,
+.ui-staff-responsibility-owner strong,
+.ui-staff-responsibility-owner p,
+.ui-staff-responsibility-owner small {
+  display: block;
+}
+
+.ui-staff-responsibility-owner span,
+.ui-staff-responsibility-policy h3,
+.ui-staff-responsibility-boundaries h3 {
+  color: #a1a1a8;
+  font-size: 0.52rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ui-staff-responsibility-owner strong {
+  margin-top: 0.2rem;
+  color: #ededee;
+  font-size: 0.82rem;
+}
+
+.ui-staff-responsibility-owner p,
+.ui-staff-responsibility-owner small,
+.ui-staff-responsibility-boundaries p {
+  margin-top: 0.22rem;
+  color: #929299;
+  font-size: 0.56rem;
+  line-height: 1.5;
+}
+
+.ui-staff-responsibility-owner div {
+  height: 0.28rem;
+  margin-top: 0.55rem;
+  background: #424247;
+}
+
+.ui-staff-responsibility-owner i {
+  display: block;
+  height: 100%;
+  background: #c12c52;
+}
+
+.ui-staff-policy-options {
+  margin-top: 0.8rem;
+}
+
+.ui-staff-policy-options > button {
+  display: grid;
+  width: 100%;
+  gap: 0.18rem;
+  border: 1px solid #3d3d42;
+  border-left: 3px solid transparent;
+  background: #1f1f22;
+  padding: 0.62rem;
+  color: #d4d4d8;
+  text-align: left;
+}
+
+.ui-staff-policy-options > button + button {
+  margin-top: 0.35rem;
+}
+
+.ui-staff-policy-options > button:hover,
+.ui-staff-policy-options > button.is-active {
+  background: #35242a;
+}
+
+.ui-staff-policy-options > button.is-active {
+  border-left-color: #d13d61;
+}
+
+.ui-staff-policy-options > button strong {
+  font-size: 0.64rem;
+}
+
+.ui-staff-policy-options > button span {
+  color: #929299;
+  font-size: 0.54rem;
+  line-height: 1.45;
+}
+
+.ui-staff-responsibility-boundaries section + section {
+  margin-top: 0.8rem;
+  border-top: 1px solid #3a3a3f;
+  padding-top: 0.8rem;
+}
+
+.ui-staff-responsibility-boundaries ul {
+  margin: 0.45rem 0 0;
+  padding-left: 1rem;
+  color: #b7b7bc;
+  font-size: 0.57rem;
+  line-height: 1.65;
+}
+
+.ui-staff-responsibility-boundaries .is-warning {
+  border-left: 3px solid #d49a36;
+  padding-left: 0.65rem;
+}
+
 .ui-staff-rating-block {
   border-left: 3px solid #b52249;
   background: #202023;
@@ -5402,7 +5524,8 @@ body {
     grid-template-columns: minmax(540px, 1.6fr) minmax(220px, 0.7fr);
   }
 
-  .ui-staff-departments-grid.is-three {
+  .ui-staff-departments-grid.is-three,
+  .ui-staff-responsibilities-grid.is-three {
     grid-template-columns: minmax(210px, 0.7fr) minmax(390px, 1.5fr);
   }
 }

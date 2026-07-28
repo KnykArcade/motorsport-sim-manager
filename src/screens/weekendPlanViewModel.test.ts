@@ -75,5 +75,17 @@ describe('weekendPlanViewModel', () => {
     expect(plan.staffRecommendation?.owner).toContain(raceEngineer.name);
     expect(plan.staffRecommendation?.confidence).toBeGreaterThan(0);
     expect(plan.staffRecommendation?.approvalBoundary).toContain('approve');
+
+    const advisoryPlan = buildWeekendPlan({
+      phase: 'hub',
+      isMinPackage: false,
+      qualifyingComplete: false,
+      track,
+      forecast,
+      knowledgeGaps: { setup: 0.2, tire: 0.8, reliability: 0.5 },
+      raceEngineer,
+      racePreparationPolicy: 'staff_advisory',
+    });
+    expect(advisoryPlan.staffRecommendation?.summary).toContain('added advice');
   });
 });
