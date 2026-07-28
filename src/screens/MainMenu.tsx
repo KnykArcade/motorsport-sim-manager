@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { loadSavedGame } from '../game/GameContext';
 import { hasSave } from '../game/saveSystem';

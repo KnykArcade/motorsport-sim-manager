@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { Panel } from '../components/Panel';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';

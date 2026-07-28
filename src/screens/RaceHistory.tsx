@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { driverById, teamById } from '../game/careerState';
 import { formatLapTime } from '../sim/lapArchiveEngine';

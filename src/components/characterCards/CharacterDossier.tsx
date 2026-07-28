@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import type { GameState } from '../../game/careerState';
 import type { StaffMember } from '../../types/staffTypes';
 import { Button } from '../Button';

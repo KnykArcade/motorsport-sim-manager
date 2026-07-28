@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
 import { getHiddenNavRoutes, getGameModeLabel } from '../game/modeRestrictions';

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import { WorkspaceBody, WorkspaceHeader, WorkspaceScreen } from '../components/workspace/Workspace';

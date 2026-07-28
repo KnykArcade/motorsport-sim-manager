@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { Button } from '../components/Button';
 import {

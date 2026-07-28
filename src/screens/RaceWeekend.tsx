@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, currentRace } from '../game/careerState';
 import { lastBreakdowns } from '../game/gameReducer';

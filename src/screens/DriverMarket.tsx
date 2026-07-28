@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, carForTeam, driversForTeam, teamById, maxRaceDriversForSeries } from '../game/careerState';
 import { isPreseason } from '../game/rosterEnforcement';
