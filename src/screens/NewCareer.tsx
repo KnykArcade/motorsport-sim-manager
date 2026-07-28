@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { availableSeasons, seriesGroups, loadSeasonBundle, getCachedBundle, initializeMasterRegistry, preloadMarketBundle, type SeasonBundle, type SeriesGroup } from '../data';
@@ -13,6 +13,7 @@ import { EntryStageRail } from '../components/EntryStageRail';
 import type { EntryStep } from './entryRacePresentationViewModel';
 import type { GameMode, Series } from '../types/gameTypes';
 import type { TeamPrincipal } from '../types/principalTypes';
+import { createCareerCreationCoordinator, executeCareerCreation } from './newCareerCreation';
 
 type Step = EntryStep;
 export function NewCareer() {
@@ -23,7 +24,10 @@ export function NewCareer() {
   const [year, setYear] = useState(1995);
   const [series, setSeries] = useState<Series>('F1');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [, setPrincipal] = useState<TeamPrincipal | null>(null);
+  const [principal, setPrincipal] = useState<TeamPrincipal | null>(null);
+  const [isCreatingCareer, setIsCreatingCareer] = useState(false);
+  const [creationError, setCreationError] = useState<string | null>(null);
+  const creationCoordinator = useRef(createCareerCreationCoordinator());
   const [selectedDecade, setSelectedDecade] = useState<number | null>(1990);
   const [groupId, setGroupId] = useState<string>('F1');
   // A stable seed so the engine offers shown here match the created save.
@@ -85,47 +89,35 @@ export function NewCareer() {
 
   const startGame = async (teamPrincipal: TeamPrincipal) => {
     if (!selectedTeamId) return;
-    if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
-      return;
-    }
-    // Populate the master registry from lazily loaded season data.
-    await initializeMasterRegistry(year, series);
-    dispatch({
-      type: 'NEW_GAME',
-      options: {
-        gameMode: mode,
-        seasonYear: year,
-        series,
-        teamId: selectedTeamId,
-        teamPrincipal,
-        seed,
-        bundle: activeBundle,
+    await executeCareerCreation({
+      coordinator: creationCoordinator.current,
+      confirmStart: () => !hasSave() || confirm('Starting a new game overwrites your existing save. Continue?'),
+      initialize: () => initializeMasterRegistry(year, series),
+      onCreating: () => {
+        setCreationError(null);
+        setIsCreatingCareer(true);
+      },
+      onFailure: () => {
+        setIsCreatingCareer(false);
+        setCreationError('Career data could not be loaded. Your existing save was not changed.');
+      },
+      onReady: () => {
+        dispatch({
+          type: 'NEW_GAME',
+          options: {
+            gameMode: mode,
+            seasonYear: year,
+            series,
+            teamId: selectedTeamId,
+            teamPrincipal,
+            seed,
+            bundle: activeBundle,
+            // Single Season mode keeps its historical engine assignment.
+          },
+        });
+        navigate('/hq');
       },
     });
-    navigate('/hq');
-  };
-
-  // For Single Season mode, skip engine selection and auto-assign the historical deal.
-  const startSingleSeason = async (teamPrincipal: TeamPrincipal) => {
-    if (!selectedTeamId) return;
-    if (hasSave() && !confirm('Starting a new game overwrites your existing save. Continue?')) {
-      return;
-    }
-    await initializeMasterRegistry(year, series);
-    dispatch({
-      type: 'NEW_GAME',
-      options: {
-        gameMode: 'SingleSeason',
-        seasonYear: year,
-        series,
-        teamId: selectedTeamId,
-        teamPrincipal,
-        seed,
-        bundle: activeBundle,
-        // No engine choice — createNewGame auto-assigns the historical deal.
-      },
-    });
-    navigate('/hq');
   };
 
   const selectedTeam = activeBundle?.teams.find((t) => t.id === selectedTeamId);
@@ -144,8 +136,8 @@ export function NewCareer() {
   };
 
   return (
-    <div className="ui-new-career min-h-screen px-4 py-6 sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-6xl">
+    <div className="ui-new-career min-h-screen px-4 py-6 sm:px-6 sm:py-10" aria-busy={isCreatingCareer}>
+      <div className="mx-auto max-w-6xl" inert={isCreatingCareer}>
         <button onClick={() => navigate('/')} className="mb-6 text-xs font-semibold uppercase tracking-wide text-neutral-500 hover:text-neutral-300">
           ← Main Menu
         </button>
@@ -453,24 +445,45 @@ export function NewCareer() {
         )}
 
         {step === 'principal' && selectedTeam && (
-          <PrincipalCreator
-            teamName={selectedTeam.name}
-            teamColor={selectedTeam.color}
-            confirmLabel={`Start ${mode === 'Career' ? 'Career' : mode === 'Sandbox' ? 'Sandbox' : 'Season'}`}
-            onBack={() => setStep('team')}
-            onConfirm={(tp) => {
-              setPrincipal(tp);
-              if (mode === 'SingleSeason') {
-                startSingleSeason(tp);
-              } else {
+          <>
+            {creationError && (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-800/70 bg-red-950/30 p-3" role="alert">
+                <div>
+                  <strong className="text-sm text-red-200">Career setup was not completed.</strong>
+                  <p className="mt-1 text-xs text-red-300/80">{creationError}</p>
+                </div>
+                <Button variant="secondary" disabled={!principal} onClick={() => principal && startGame(principal)}>
+                  Retry
+                </Button>
+              </div>
+            )}
+            <PrincipalCreator
+              teamName={selectedTeam.name}
+              teamColor={selectedTeam.color}
+              confirmLabel={`Start ${mode === 'Career' ? 'Career' : mode === 'Sandbox' ? 'Sandbox' : 'Season'}`}
+              isSubmitting={isCreatingCareer}
+              onBack={() => setStep('team')}
+              onConfirm={(tp) => {
+                setPrincipal(tp);
                 startGame(tp);
-              }
-            }}
-          />
+              }}
+            />
+          </>
         )}
           </main>
         </div>
       </div>
+      {isCreatingCareer && (
+        <div className="ui-career-loading-overlay" role="status" aria-live="polite" aria-label="Creating career">
+          <div className="ui-career-loading-card">
+            <div className="ui-career-loading-spinner" aria-hidden="true" />
+            <h2>Building your motorsport universe</h2>
+            <p>Loading historical records and preparing team headquarters.</p>
+            <div className="ui-career-loading-bar" aria-hidden="true"><span /></div>
+            <small>Please wait. Career creation is already in progress.</small>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
