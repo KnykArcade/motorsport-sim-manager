@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { currentRace, teamById } from '../game/careerState';
@@ -17,6 +17,18 @@ import {
 import { workflowDestination } from '../components/layoutWorkflow';
 import { buildManagerOfficeFollowUps } from './managerOfficeFollowUpViewModel';
 import { commandLoopGuide } from './commandLoopGuideViewModel';
+import { commandAgenda } from './commandAgendaViewModel';
+import {
+  inboxInlineActions,
+  nextInboxMessageId,
+  type InboxInlineAction,
+} from './inboxActionViewModel';
+import { prepareAcceptedWeekendRecommendations } from './inboxWeekendAction';
+import {
+  readInboxWorkspaceState,
+  writeInboxWorkspaceState,
+  type InboxWorkspaceState,
+} from './inboxWorkspaceStorage';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
 type InboxSection = 'all' | InboxMessageKind;
@@ -84,22 +96,47 @@ export function Inbox() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedId, setSelectedId] = useState<string>();
+  const [workspaceState, setWorkspaceState] = useState<InboxWorkspaceState | undefined>(() =>
+    state
+      ? readInboxWorkspaceState(
+        typeof window === 'undefined' ? undefined : window.sessionStorage,
+        state.selectedTeamId,
+        state.seasonYear,
+      )
+      : undefined);
+  const [pendingAction, setPendingAction] = useState<InboxInlineAction>();
+  const listBodyRef = useRef<HTMLDivElement>(null);
+  const contextBodyRef = useRef<HTMLDivElement>(null);
+  const restoredWorkspaceRef = useRef(workspaceState);
+
+  useEffect(() => {
+    const restored = restoredWorkspaceRef.current;
+    if (!restored) return;
+    const frame = window.requestAnimationFrame(() => {
+      if (listBodyRef.current) listBodyRef.current.scrollTop = restored.listScrollTop;
+      if (contextBodyRef.current) contextBodyRef.current.scrollTop = restored.contextScrollTop;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   if (!state) return null;
 
-  const filter = filterFromQuery(searchParams.get('category'));
-  const section = sectionFromQuery(searchParams.get('section'));
+  const filter = filterFromQuery(searchParams.get('category') ?? workspaceState?.category ?? null);
+  const section = sectionFromQuery(searchParams.get('section') ?? workspaceState?.section ?? null);
   const messages = inboxMessages(state);
   const read = new Set(state.inboxRead ?? []);
   const filtered = messages.filter((message) =>
     (filter === 'all' ? true : filter === 'action' ? message.actionable : message.category === filter)
     && (section === 'all' || message.kind === section));
+  const selectedId = searchParams.get('message') ?? workspaceState?.selectedMessageId;
   const selectedMessage = filtered.find((message) => message.id === selectedId) ?? filtered[0];
   const unreadCount = messages.filter((message) => !read.has(message.id)).length;
   const team = teamById(state, state.selectedTeamId);
   const race = currentRace(state);
   const workflow = workflowDestination(state);
+  const agenda = commandAgenda(state);
   const guide = commandLoopGuide(state);
+  const inlineActions = selectedMessage ? inboxInlineActions(state, selectedMessage) : [];
   const activeReviewRace = state.careerPhase?.currentPhase === 'post_race_review'
     && state.careerPhase.lastCompletedRaceId
     ? state.calendar.find((entry) => entry.id === state.careerPhase?.lastCompletedRaceId)
@@ -114,23 +151,96 @@ export function Inbox() {
     })
     : undefined;
 
+  const persistWorkspace = (patch: Partial<InboxWorkspaceState>) => {
+    const next: InboxWorkspaceState = {
+      teamId: state.selectedTeamId,
+      seasonYear: state.seasonYear,
+      category: filter,
+      section,
+      selectedMessageId: selectedMessage?.id,
+      listScrollTop: listBodyRef.current?.scrollTop ?? workspaceState?.listScrollTop ?? 0,
+      contextScrollTop: contextBodyRef.current?.scrollTop ?? workspaceState?.contextScrollTop ?? 0,
+      ...patch,
+    };
+    setWorkspaceState(next);
+    writeInboxWorkspaceState(
+      typeof window === 'undefined' ? undefined : window.sessionStorage,
+      next,
+    );
+  };
+
+  const setSelectedMessage = (messageId: string | undefined) => {
+    const next = new URLSearchParams(searchParams);
+    if (messageId) next.set('message', messageId);
+    else next.delete('message');
+    setSearchParams(next);
+    persistWorkspace({ selectedMessageId: messageId });
+    setPendingAction(undefined);
+  };
+
   const setInboxQuery = (key: 'category' | 'section', value: string) => {
     const next = new URLSearchParams(searchParams);
     if (value === 'all') next.delete(key);
     else next.set(key, value);
-    setSelectedId(undefined);
+    next.delete('message');
     setSearchParams(next);
+    persistWorkspace({
+      [key]: value,
+      selectedMessageId: undefined,
+      listScrollTop: 0,
+      contextScrollTop: 0,
+    });
+    setPendingAction(undefined);
   };
 
   const selectMessage = (message: InboxMessage) => {
     if (!read.has(message.id)) dispatch({ type: 'MARK_INBOX_READ', messageIds: [message.id] });
-    setSelectedId(message.id);
+    setSelectedMessage(message.id);
   };
 
-  const dismissSelected = () => {
-    if (!selectedMessage || selectedMessage.blocking) return;
-    dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [selectedMessage.id] });
-    setSelectedId(undefined);
+  const selectNextUnresolved = (resolvedId: string) => {
+    setSelectedMessage(nextInboxMessageId(filtered, resolvedId));
+  };
+
+  const openWorkspace = (message: InboxMessage) => {
+    if (!read.has(message.id)) dispatch({ type: 'MARK_INBOX_READ', messageIds: [message.id] });
+    persistWorkspace({ selectedMessageId: message.id });
+    const returnParams = new URLSearchParams(searchParams);
+    returnParams.set('message', message.id);
+    navigate(message.route, {
+      state: {
+        inboxReturn: `/inbox?${returnParams.toString()}`,
+      },
+    });
+  };
+
+  const confirmInlineAction = () => {
+    if (!selectedMessage || !pendingAction) return;
+    if (pendingAction.kind === 'acknowledge') {
+      dispatch({ type: 'DISMISS_INBOX_MESSAGES', messageIds: [selectedMessage.id] });
+    }
+    if (pendingAction.kind === 'delegate_routine' && selectedMessage.responsibility) {
+      dispatch({
+        type: 'SET_STAFF_RESPONSIBILITY_POLICY',
+        responsibility: selectedMessage.responsibility,
+        policy: 'staff_execute_routine',
+      });
+    }
+    if (pendingAction.kind === 'accept_weekend_recommendations') {
+      const recommendationIds = prepareAcceptedWeekendRecommendations(
+        state,
+        typeof window === 'undefined' ? undefined : window.sessionStorage,
+      );
+      for (const recommendationId of recommendationIds) {
+        dispatch({
+          type: 'RESOLVE_WEEKEND_RECOMMENDATION',
+          recommendationId,
+          resolution: 'Accepted',
+        });
+      }
+    }
+    selectNextUnresolved(selectedMessage.id);
+    setPendingAction(undefined);
   };
 
   return (
@@ -192,7 +302,10 @@ export function Inbox() {
             title={SECTIONS.find((item) => item.id === section)?.label ?? 'All Items'}
             meta={`${filtered.length} item${filtered.length === 1 ? '' : 's'} in this view`}
           />
-          <FmPaneBody>
+          <FmPaneBody
+            bodyRef={listBodyRef}
+            onScroll={(event) => persistWorkspace({ listScrollTop: event.currentTarget.scrollTop })}
+          >
             {filtered.length === 0 ? (
               <div className="ui-inbox-empty">Nothing here — enjoy the quiet week.</div>
             ) : (
@@ -250,14 +363,37 @@ export function Inbox() {
                       <p>{selectedMessage.whyItMatters}</p>
                     </div>
                   )}
+                  {pendingAction && (
+                    <div className="ui-inbox-confirmation" role="alert">
+                      <strong>Confirm inline action</strong>
+                      <h3>{pendingAction.label}</h3>
+                      <p>{pendingAction.consequence}</p>
+                    </div>
+                  )}
                 </article>
               </FmPaneBody>
               <div className="ui-inbox-action-bar">
-                <Button variant="primary" onClick={() => navigate(selectedMessage.route)}>
-                  {selectedMessage.routeLabel} →
-                </Button>
-                {!selectedMessage.blocking && (
-                  <Button onClick={dismissSelected}>Dismiss</Button>
+                {pendingAction ? (
+                  <>
+                    <Button variant="primary" onClick={confirmInlineAction}>
+                      {pendingAction.confirmLabel}
+                    </Button>
+                    <Button onClick={() => setPendingAction(undefined)}>Cancel</Button>
+                  </>
+                ) : (
+                  <>
+                    {inlineActions.map((action) => (
+                      <Button key={action.kind} variant="primary" onClick={() => setPendingAction(action)}>
+                        {action.label}
+                      </Button>
+                    ))}
+                    <Button
+                      variant={inlineActions.length > 0 ? 'ghost' : 'primary'}
+                      onClick={() => openWorkspace(selectedMessage)}
+                    >
+                      {inlineActions.length > 0 ? `Open full workspace · ${selectedMessage.routeLabel}` : selectedMessage.routeLabel} →
+                    </Button>
+                  </>
                 )}
               </div>
             </>
@@ -268,7 +404,11 @@ export function Inbox() {
 
         <FmPane className="ui-inbox-context" ariaLabel="Message context">
           <FmPaneHeader title="Context" meta="Live game state" />
-          <FmPaneBody className="ui-inbox-context-body">
+          <FmPaneBody
+            className="ui-inbox-context-body"
+            bodyRef={contextBodyRef}
+            onScroll={(event) => persistWorkspace({ contextScrollTop: event.currentTarget.scrollTop })}
+          >
             {selectedMessage && (
               <ContextSection title="Selected item">
                 <ContextRow label="Owner" value={selectedMessage.source ?? '—'} />
@@ -294,6 +434,27 @@ export function Inbox() {
             <ContextSection title="Current workflow">
               <p className="ui-inbox-context-callout">{workflow.reason}</p>
               <button type="button" onClick={() => navigate(workflow.to)}>{workflow.label} →</button>
+            </ContextSection>
+
+            <ContextSection title="Weekly agenda">
+              {agenda.nextAction ? (
+                <button
+                  type="button"
+                  className="ui-inbox-context-link"
+                  onClick={() => navigate(agenda.nextAction!.route)}
+                >
+                  <strong>Next · {agenda.nextAction.title}</strong>
+                  <span>{agenda.nextAction.timingLabel} · {agenda.nextAction.routeLabel} →</span>
+                </button>
+              ) : (
+                <p className="ui-inbox-context-callout">No unresolved action is waiting this week.</p>
+              )}
+              {agenda.dueThisWeek.map((item) => (
+                <button key={item.id} type="button" className="ui-inbox-context-link" onClick={() => navigate(item.route)}>
+                  <strong>{item.owner} · {item.title}</strong>
+                  <span>{item.routeLabel} →</span>
+                </button>
+              ))}
             </ContextSection>
 
             {followUps && (
