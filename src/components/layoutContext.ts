@@ -22,8 +22,6 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
     routes: ['/hq', '/inbox', '/news', '/stories', '/paddock'],
     items: [
-      item('/hq', 'Home'),
-      item('/inbox', 'Inbox'),
       item('/news', 'News'),
       item('/stories', 'Paddock Stories'),
       item('/paddock', 'Weekly Agenda'),
@@ -32,9 +30,7 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
     routes: ['/teams', '/drivers', '/principal', '/relationships', '/rivals'],
     items: [
-      item('/teams', 'Teams'),
       item('/teams?filter=player', 'My Team'),
-      item('/drivers', 'Drivers'),
       item('/principal', 'Principal'),
       item('/relationships', 'Driver Relations'),
       item('/rivals', 'Rivalries'),
@@ -43,7 +39,6 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
     routes: ['/preseason', '/briefing', '/weekend', '/live-race', '/results', '/post-race', '/season-review', '/offseason'],
     items: [
-      item('/weekend', 'Race Strategy'),
       item('/briefing', 'Briefing'),
       item('/calendar', 'Calendar'),
       item('/performance', 'Performance'),
@@ -53,18 +48,13 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
     routes: ['/market', '/scouting', '/curves'],
     items: [
-      item('/market', 'Driver Market'),
       item('/scouting', 'Scouting'),
       item('/curves', 'Development'),
-      item('/drivers', 'Current Drivers'),
     ],
   },
   {
     routes: ['/staff', '/technical', '/finance', '/sponsors', '/politics'],
     items: [
-      item('/staff', 'Departments'),
-      item('/technical', 'Technical'),
-      item('/finance', 'Finance'),
       item('/sponsors', 'Commercial'),
       item('/sponsors?tab=owner', 'Owner Vision'),
       item('/politics', 'Regulations'),
@@ -73,7 +63,6 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
     routes: ['/calendar', '/standings', '/history', '/records', '/data', '/performance'],
     items: [
-      item('/standings', 'Championships'),
       item('/calendar', 'Calendar'),
       item('/history', 'Race History'),
       item('/records', 'Records'),

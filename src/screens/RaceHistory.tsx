@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { driverById, teamById } from '../game/careerState';
 import { formatLapTime } from '../sim/lapArchiveEngine';
@@ -22,17 +23,25 @@ import {
   type RaceStoryFilter,
 } from './raceHistoryViewModel';
 import { selectedRecord } from './championshipRecordsViewModel';
+import { EntityBrowseControls } from '../components/EntityBrowseControls';
 
 export function RaceHistory() {
   const { state } = useGame();
+  const [searchParams, setSearchParams] = useSearchParams();
   const archive = useMemo(
     () => [...(state?.raceArchive ?? [])].sort((a, b) => b.season - a.season || b.round - a.round),
     [state?.raceArchive],
   );
-  const [selectedId, setSelectedId] = useState<string | null>(archive[0]?.raceId ?? null);
-  const [tab, setTab] = useState<RaceHistoryTab>('classification');
-  const [page, setPage] = useState(0);
-  const [storyFilter, setStoryFilter] = useState<RaceStoryFilter>('all');
+  const selectedId = searchParams.get('race') ?? archive[0]?.raceId ?? null;
+  const requestedTab = searchParams.get('tab');
+  const tab: RaceHistoryTab = requestedTab === 'qualifying'
+    || requestedTab === 'pace'
+    || requestedTab === 'story'
+    ? requestedTab
+    : 'classification';
+  const requestedFilter = searchParams.get('filter');
+  const storyFilter: RaceStoryFilter = requestedFilter === 'strategy' ? 'strategy' : 'all';
+  const page = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
 
   if (!state) return null;
 
@@ -70,15 +79,29 @@ export function RaceHistory() {
   const activePageSize = tab === 'story' ? RACE_STORY_PAGE_SIZE : RACE_HISTORY_PAGE_SIZE;
   const activePageCount = raceHistoryPageCount(activeEntries.length, activePageSize);
   const safePage = Math.min(page, activePageCount - 1);
+  const selectedArchiveIndex = archive.findIndex((entry) => entry.raceId === selected.raceId);
+
+  function updateQuery(patch: Record<string, string | number | undefined>) {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, String(value));
+    }
+    setSearchParams(next, { replace: true });
+  }
 
   function selectRace(raceId: string) {
-    setSelectedId(raceId);
-    setPage(0);
+    updateQuery({ race: raceId, page: undefined });
   }
 
   function selectTab(nextTab: RaceHistoryTab) {
-    setTab(nextTab);
-    setPage(0);
+    updateQuery({ tab: nextTab, page: undefined });
+  }
+
+  function browseRace(offset: number) {
+    if (!archive.length || selectedArchiveIndex < 0) return;
+    const nextIndex = (selectedArchiveIndex + offset + archive.length) % archive.length;
+    selectRace(archive[nextIndex].raceId);
   }
 
   return (
@@ -114,12 +137,21 @@ export function RaceHistory() {
           <section className="ui-fm-pane ui-race-archive-detail">
             <div className="ui-fm-pane-header">
               <div><div className="ui-fm-pane-title">{selected.gpName} · {RACE_HISTORY_TABS.find((entry) => entry.id === tab)?.label}</div><div className="ui-fm-pane-meta">{selected.trackName} · {selected.season} round {selected.round}</div></div>
-              {tab === 'story' && (
-                <div className="ui-race-story-filter">
-                  <button type="button" className={storyFilter === 'all' ? 'is-active' : ''} onClick={() => { setStoryFilter('all'); setPage(0); }}>All</button>
-                  <button type="button" className={storyFilter === 'strategy' ? 'is-active' : ''} onClick={() => { setStoryFilter('strategy'); setPage(0); }}>Strategy</button>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {tab === 'story' && (
+                  <div className="ui-race-story-filter">
+                    <button type="button" className={storyFilter === 'all' ? 'is-active' : ''} onClick={() => updateQuery({ filter: undefined, page: undefined })}>All</button>
+                    <button type="button" className={storyFilter === 'strategy' ? 'is-active' : ''} onClick={() => updateQuery({ filter: 'strategy', page: undefined })}>Strategy</button>
+                  </div>
+                )}
+                <EntityBrowseControls
+                  position={Math.max(0, selectedArchiveIndex)}
+                  total={archive.length}
+                  noun="archived races"
+                  onPrevious={() => browseRace(-1)}
+                  onNext={() => browseRace(1)}
+                />
+              </div>
             </div>
             <div className="ui-fm-pane-body ui-fm-scroll-column">
               {tab === 'classification' && (
@@ -174,7 +206,14 @@ export function RaceHistory() {
                 )
               )}
             </div>
-            <CompactPagination noun={tab === 'story' ? 'events' : tab === 'pace' ? 'drivers' : 'entries'} total={activeEntries.length} page={safePage} pageCount={activePageCount} pageSize={activePageSize} onPage={setPage} />
+                <CompactPagination
+                  noun={tab === 'story' ? 'events' : tab === 'pace' ? 'drivers' : 'entries'}
+                  total={activeEntries.length}
+                  page={safePage}
+                  pageCount={activePageCount}
+                  pageSize={activePageSize}
+                  onPage={(nextPage) => updateQuery({ page: nextPage })}
+                />
           </section>
 
           <section className="ui-fm-pane ui-race-archive-context">

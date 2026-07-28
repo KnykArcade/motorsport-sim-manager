@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { getTrackById, getRegulationSet } from '../data';
 import { RatingBadge } from '../components/RatingBadge';
@@ -28,19 +28,27 @@ import {
   type CalendarTab,
 } from './seasonOverviewViewModel';
 import { selectedWorkflowEntry, workflowStageForPhase } from './seasonRaceWorkflowViewModel';
+import { EntityBrowseControls } from '../components/EntityBrowseControls';
 
 export function Calendar() {
   const { state } = useGame();
-  const [tab, setTab] = useState<CalendarTab>('schedule');
-  const [page, setPage] = useState(0);
-  const [selectedRaceId, setSelectedRaceId] = useState<string>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: CalendarTab = searchParams.get('tab') === 'results' ? 'results' : 'schedule';
+  const requestedPage = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
+  const selectedRaceId = searchParams.get('race') ?? undefined;
   if (!state) return null;
 
   const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
   const regSet = getRegulationSet(state.regulationSetId);
   const entries = calendarEntriesForTab(state.calendar, tab);
   const tabPageCount = pageCount(entries.length, CALENDAR_PAGE_SIZE);
-  const safePage = Math.min(page, tabPageCount - 1);
+  const requestedRaceIndex = selectedRaceId
+    ? entries.findIndex((entry) => entry.id === selectedRaceId)
+    : -1;
+  const exactRacePage = requestedRaceIndex >= 0
+    ? Math.floor(requestedRaceIndex / CALENDAR_PAGE_SIZE)
+    : requestedPage;
+  const safePage = Math.min(exactRacePage, tabPageCount - 1);
   const visibleEntries = compactPage(entries, safePage, CALENDAR_PAGE_SIZE);
   const completedCount = state.calendar.filter((race) => race.completed).length;
   const remainingCount = state.calendar.length - completedCount;
@@ -49,10 +57,39 @@ export function Calendar() {
   const selectedTrack = selectedRace ? getTrackById(selectedRace.trackId) : undefined;
   const selectedResults = selectedRace ? state.completedRaceResults[selectedRace.id] : undefined;
   const selectedWinner = selectedResults?.find((result) => result.position === 1);
+  const selectedEntryIndex = selectedRace
+    ? entries.findIndex((entry) => entry.id === selectedRace.id)
+    : -1;
+
+  function updateQuery(patch: Record<string, string | number | undefined>) {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === undefined) next.delete(key);
+      else next.set(key, String(value));
+    }
+    setSearchParams(next, { replace: true });
+  }
 
   function selectTab(nextTab: CalendarTab) {
-    setTab(nextTab);
-    setPage(0);
+    updateQuery({
+      tab: nextTab,
+      page: undefined,
+      race: undefined,
+    });
+  }
+
+  function selectRace(raceId: string) {
+    const index = entries.findIndex((entry) => entry.id === raceId);
+    updateQuery({
+      race: raceId,
+      page: index >= 0 ? Math.floor(index / CALENDAR_PAGE_SIZE) : safePage,
+    });
+  }
+
+  function browseRace(offset: number) {
+    if (!entries.length || selectedEntryIndex < 0) return;
+    const nextIndex = (selectedEntryIndex + offset + entries.length) % entries.length;
+    selectRace(entries[nextIndex].id);
   }
 
   return (
@@ -94,7 +131,7 @@ export function Calendar() {
             {visibleEntries.map((race) => {
               const isCurrent = race.round === state.currentRaceIndex + 1 && !state.seasonComplete;
               return (
-                <FmListButton key={race.id} active={selectedRace?.id === race.id} urgent={isCurrent} onClick={() => setSelectedRaceId(race.id)}>
+                <FmListButton key={race.id} active={selectedRace?.id === race.id} urgent={isCurrent} onClick={() => selectRace(race.id)}>
                   <span className="ui-news-list-source">Round {race.round} · {race.completed ? 'Complete' : isCurrent ? 'Current' : 'Upcoming'}</span>
                   <strong>{race.gpName}</strong>
                   <span>{race.trackName} · {race.laps} laps</span>
@@ -109,7 +146,18 @@ export function Calendar() {
           <FmPaneHeader
             title={selectedRace?.gpName ?? 'Event dossier'}
             meta={selectedRace ? `${selectedRace.trackName} · Round ${selectedRace.round}` : 'Select a race'}
-            actions={selectedRace?.completed ? <Badge tone="done">DONE</Badge> : selectedRace?.id === nextRace?.id ? <Badge tone="next">NEXT</Badge> : undefined}
+            actions={selectedRace && (
+              <>
+                {selectedRace.completed ? <Badge tone="done">DONE</Badge> : selectedRace.id === nextRace?.id ? <Badge tone="next">NEXT</Badge> : undefined}
+                <EntityBrowseControls
+                  position={Math.max(0, selectedEntryIndex)}
+                  total={entries.length}
+                  noun="races"
+                  onPrevious={() => browseRace(-1)}
+                  onNext={() => browseRace(1)}
+                />
+              </>
+            )}
           />
           <FmPaneBody className="ui-fm-scroll-column">
             {selectedRace ? (
@@ -148,7 +196,14 @@ export function Calendar() {
           </FmPaneBody>
         </FmPane>
       </FmWorkspaceGrid>
-      <CompactPagination noun="races" total={entries.length} page={safePage} pageCount={tabPageCount} pageSize={CALENDAR_PAGE_SIZE} onPage={setPage} />
+      <CompactPagination
+        noun="races"
+        total={entries.length}
+        page={safePage}
+        pageCount={tabPageCount}
+        pageSize={CALENDAR_PAGE_SIZE}
+        onPage={(nextPage) => updateQuery({ page: nextPage, race: undefined })}
+      />
       </WorkspaceBody>
     </WorkspaceScreen>
   );

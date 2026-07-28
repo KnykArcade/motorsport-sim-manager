@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useGame } from '../game/GameContext';
 import { teamById, currentRace } from '../game/careerState';
@@ -14,6 +14,13 @@ import { contextualNavigationForRoute, pageIdentityForRoute } from './layoutCont
 import { workflowDestination } from './layoutWorkflow';
 import { NavIcon } from './NavIcon';
 import { inboxMessages, mustRespondInboxCount, unreadInboxCount } from '../screens/inboxViewModel';
+import { GlobalSearch } from './GlobalSearch';
+import {
+  readNavigationHistory,
+  updateNavigationHistory,
+  writeNavigationHistory,
+  type NavigationHistoryEntry,
+} from './layoutHistory';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -36,14 +43,50 @@ export function Layout({ children }: { children: ReactNode }) {
     [state],
   );
   const firstBlockingMessage = blockingMessages[0];
+  const contextualAttention = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const message of state ? inboxMessages(state) : []) {
+      if (!message.actionable && !message.blocking) continue;
+      const path = routePath(message.route);
+      counts.set(path, (counts.get(path) ?? 0) + 1);
+    }
+    return counts;
+  }, [state]);
   const currentRound = state
     ? Math.min(state.currentRaceIndex + 1, Math.max(1, state.calendar.length))
     : 0;
+  const storedNavigationHistory = readNavigationHistory(
+    typeof window === 'undefined' ? undefined : window.sessionStorage,
+  );
+  const currentHistoryEntry: NavigationHistoryEntry = {
+    to: `${location.pathname}${location.search}`,
+    title: pageIdentity.title,
+    visitedAt: (storedNavigationHistory[0]?.visitedAt ?? 0) + 1,
+  };
+  const navigationHistory = updateNavigationHistory(
+    storedNavigationHistory,
+    currentHistoryEntry,
+  );
 
   const goTo = (to: string) => {
     setMobileNavigationOpen(false);
     navigate(to);
   };
+
+  useEffect(() => {
+    if (!state) return;
+    const current = readNavigationHistory(
+      typeof window === 'undefined' ? undefined : window.sessionStorage,
+    );
+    writeNavigationHistory(
+      typeof window === 'undefined' ? undefined : window.sessionStorage,
+      updateNavigationHistory(current, {
+        to: `${location.pathname}${location.search}`,
+        title: pageIdentity.title,
+        visitedAt: (current[0]?.visitedAt ?? 0) + 1,
+      }),
+    );
+  }, [location.pathname, location.search, pageIdentity.title, state]);
 
   return (
     <EraThemeProvider theme={era}>
@@ -124,12 +167,25 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="hidden shrink-0 items-center gap-1 sm:flex">
               <button type="button" className="ui-history-button" aria-label="Go back" onClick={() => navigate(-1)}>‹</button>
               <button type="button" className="ui-history-button" aria-label="Go forward" onClick={() => navigate(1)}>›</button>
+              <details className="ui-history-menu">
+                <summary aria-label="Open recent navigation history">Recent</summary>
+                <div>
+                  {navigationHistory.length ? navigationHistory.map((entry) => (
+                    <button key={`${entry.to}:${entry.visitedAt}`} type="button" onClick={() => goTo(entry.to)}>
+                      <strong>{entry.title}</strong>
+                      <span>{entry.to}</span>
+                    </button>
+                  )) : <p>No recent workspaces.</p>}
+                </div>
+              </details>
             </div>
 
             <div className="ui-page-identity min-w-0 flex-1">
               <div className="ui-page-section">{pageIdentity.section}</div>
               <h1>{pageIdentity.title}</h1>
             </div>
+
+            {state && <GlobalSearch state={state} hiddenRoutes={hiddenRoutes} onNavigate={goTo} />}
 
             {team && (
               <div className="ui-topbar-team hidden min-w-0 items-center gap-2 xl:flex">
@@ -201,7 +257,12 @@ export function Layout({ children }: { children: ReactNode }) {
                   aria-current={active ? 'page' : undefined}
                   className={active ? 'is-active' : ''}
                 >
-                  {navItem.label}
+                  <span>{navItem.label}</span>
+                  {(contextualAttention.get(routePath(navItem.to)) ?? 0) > 0 && (
+                    <strong className="ui-context-attention">
+                      {contextualAttention.get(routePath(navItem.to))}
+                    </strong>
+                  )}
                 </NavLink>
               );
             })}
