@@ -5,6 +5,7 @@ import type { AnalyticsMonitor } from '../../../sim/analyticsMonitor';
 import type { Race } from '../../../types/gameTypes';
 import type { LiveCarState, LiveRaceState, PitStopState } from '../../../types/liveTypes';
 import { F11990sLiveRaceScreen } from './F11990sLiveRaceScreen';
+import { DEFAULT_LIVE_RACE_WORKSPACE_PREFERENCES } from '../liveRaceWorkspaceModel';
 
 const basePit: PitStopState = {
   plannedStops: 1,
@@ -154,6 +155,9 @@ describe('F11990sLiveRaceScreen', () => {
         forecast={[{ label: 'Now', condition: 'Sunny', wet: false, temp: 22 }]}
         monitor={monitor()}
         activeRecs={[]}
+        workspacePreferences={DEFAULT_LIVE_RACE_WORKSPACE_PREFERENCES}
+        delegationProfile={{ policy: 'player', owner: 'Strategist', confidence: 50, confidenceLabel: 'Low' }}
+        autoPauseNotice={null}
         needsDecision={false}
         decisionSecondsLeft={null}
         playing={false}
@@ -168,6 +172,9 @@ describe('F11990sLiveRaceScreen', () => {
         onOpenOrders={vi.fn()}
         onOpenStrategy={vi.fn()}
         onOpenLog={vi.fn()}
+        onWorkspacePreferences={vi.fn()}
+        onResetWorkspacePreferences={vi.fn()}
+        onFocusDriver={vi.fn()}
         onExit={vi.fn()}
         onFinishRace={vi.fn()}
         onPit={vi.fn()}
@@ -206,6 +213,14 @@ describe('F11990sLiveRaceScreen', () => {
     expect(html).toContain('aria-label="Advance one lap"');
     expect(html).toContain('aria-label="Set playback speed to 1 times"');
     expect(html).toContain('aria-label="Skip to end of race"');
+    expect(html).toContain('Race workspace');
+    expect(html).toContain('Track View');
+    expect(html).toContain('Data View');
+    expect(html).toContain('Strategy Drawer');
+    expect(html).toContain('data-testid="live-race-strategy-drawer"');
+    expect(html).toContain('Persistent Strategy Drawer');
+    expect(html).toContain('No modeled fuel-use change');
+    expect(html).toContain('Quarter distance');
   });
 
   it('renders the full timing field instead of truncating the tower', () => {
@@ -240,6 +255,9 @@ describe('F11990sLiveRaceScreen', () => {
         forecast={[{ label: 'Now', condition: 'Sunny', wet: false, temp: 22 }]}
         monitor={monitor()}
         activeRecs={[]}
+        workspacePreferences={DEFAULT_LIVE_RACE_WORKSPACE_PREFERENCES}
+        delegationProfile={{ policy: 'player', owner: 'Strategist', confidence: 50, confidenceLabel: 'Low' }}
+        autoPauseNotice={null}
         needsDecision={false}
         decisionSecondsLeft={null}
         playing={false}
@@ -254,6 +272,9 @@ describe('F11990sLiveRaceScreen', () => {
         onOpenOrders={vi.fn()}
         onOpenStrategy={vi.fn()}
         onOpenLog={vi.fn()}
+        onWorkspacePreferences={vi.fn()}
+        onResetWorkspacePreferences={vi.fn()}
+        onFocusDriver={vi.fn()}
         onExit={vi.fn()}
         onFinishRace={vi.fn()}
         onPit={vi.fn()}
