@@ -472,12 +472,14 @@ body {
   color: var(--era-heading);
 }
 
-.ui-workspace-tabs button:disabled {
+.ui-workspace-tabs button:disabled,
+.ui-workspace-tabs button[aria-disabled="true"] {
   cursor: not-allowed;
   color: color-mix(in srgb, var(--era-text-muted) 48%, transparent);
 }
 
-.ui-workspace-tabs button:disabled:hover {
+.ui-workspace-tabs button:disabled:hover,
+.ui-workspace-tabs button[aria-disabled="true"]:hover {
   color: color-mix(in srgb, var(--era-text-muted) 48%, transparent);
 }
 
@@ -8290,10 +8292,29 @@ body {
 
 .ui-career-launch-step {
   display: flex;
+  width: 100%;
   gap: 0.6rem;
+  border-top: 0;
+  border-right: 0;
   border-bottom: 1px solid #35353a;
   border-left: 3px solid transparent;
+  background: transparent;
   padding: 0.75rem 0.65rem;
+  color: inherit;
+  text-align: left;
+}
+
+.ui-career-launch-step:not(:disabled) {
+  cursor: pointer;
+}
+
+.ui-career-launch-step:not(:disabled):hover,
+.ui-career-launch-step.is-viewing {
+  background: color-mix(in srgb, var(--era-accent-soft) 56%, #1d1d20);
+}
+
+.ui-career-launch-step:disabled {
+  cursor: not-allowed;
 }
 
 .ui-career-launch-step > span {
@@ -8348,6 +8369,39 @@ body {
 
 .ui-career-launch-step.is-upcoming {
   opacity: 0.58;
+}
+
+.ui-first-day-navigation {
+  margin: 0.35rem;
+  border: 1px solid var(--era-border);
+  background: var(--era-panel-bg);
+  padding: 0.8rem;
+}
+
+.ui-first-day-navigation span,
+.ui-first-day-navigation strong {
+  display: block;
+}
+
+.ui-first-day-navigation span {
+  color: var(--era-accent-strong);
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ui-first-day-navigation strong {
+  margin-top: 0.35rem;
+  color: var(--era-heading);
+  font-size: 0.75rem;
+}
+
+.ui-first-day-navigation p {
+  margin-top: 0.45rem;
+  color: var(--era-text-muted);
+  font-size: 0.62rem;
+  line-height: 1.5;
 }
 
 .ui-career-launch-rail-note {
@@ -8776,5 +8830,28 @@ body {
 
   .ui-race-package-workspace > .era-panel:first-child {
     grid-row: auto;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 760px) {
+  .ui-app-shell.is-first-day-focus .ui-sidebar {
+    width: 11.5rem;
+  }
+
+  .ui-app-shell.is-first-day-focus .ui-career-launch-workspace {
+    grid-template-columns: minmax(170px, 0.25fr) minmax(0, 1fr);
+  }
+
+  .ui-app-shell.is-first-day-focus .ui-career-launch-step {
+    padding: 0.55rem;
+  }
+
+  .ui-app-shell.is-first-day-focus .ui-career-launch-rail-note {
+    margin: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .ui-app-shell.is-first-day-focus .ui-career-launch-content .era-panel-body {
+    padding: 0.65rem;
   }
 }

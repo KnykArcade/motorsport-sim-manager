@@ -198,23 +198,24 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const focusedRelationship = searchParams.get('focus') ?? undefined;
+  const focusedDriverParam = searchParams.get('driver') ?? undefined;
   const focusedPersonId = focusedRelationship?.includes(':')
     ? focusedRelationship.slice(focusedRelationship.indexOf(':') + 1)
     : focusedRelationship;
   const focusedRelationshipId = focusedRelationship?.includes(':')
     ? focusedRelationship
     : focusedRelationship ? `Driver:${focusedRelationship}` : undefined;
-  const [activeSection, setActiveSection] = useState<'overview' | 'hierarchy' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>(
-    focusedRelationshipId?.startsWith('Driver:') ? 'race' : focusedRelationshipId ? 'hierarchy' : 'overview',
-  );
-  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string | undefined>(
-    focusedRelationshipId,
-  );
-  const [selectedDriverId, setSelectedDriverId] = useState<string | undefined>(
-    focusedRelationshipId?.startsWith('Driver:') ? focusedPersonId : undefined,
-  );
+  const requestedSection = searchParams.get('tab');
+  const querySection = ['overview', 'hierarchy', 'activity', 'race', 'reserve', 'clauses', 'orders'].includes(requestedSection ?? '')
+    ? requestedSection as 'overview' | 'hierarchy' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'
+    : undefined;
+  const activeSection = querySection
+    ?? (focusedDriverParam || focusedRelationshipId?.startsWith('Driver:') ? 'race' : focusedRelationshipId ? 'hierarchy' : 'overview');
+  const selectedRelationshipId = focusedRelationshipId;
+  const selectedDriverId = focusedDriverParam
+    ?? (focusedRelationshipId?.startsWith('Driver:') ? focusedPersonId : undefined);
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   if (!state) return null;
@@ -277,7 +278,12 @@ export function Relationships() {
 
   const handleReviewRelationship = (profile: RelationshipAttentionProfile) => {
     if (profile.target.type === 'Driver') {
-      setActiveSection(activeDrivers.some((driver) => driver.id === profile.target.id) ? 'race' : 'reserve');
+      const nextSection = activeDrivers.some((driver) => driver.id === profile.target.id) ? 'race' : 'reserve';
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', nextSection);
+      next.set('driver', profile.target.id);
+      next.delete('focus');
+      setSearchParams(next);
       return;
     }
     if (profile.target.type === 'RivalPrincipal') {
@@ -315,8 +321,12 @@ export function Relationships() {
         ]}
         active={activeSection}
         onChange={(next) => {
-          setActiveSection(next);
-          if (next === 'race' || next === 'reserve') setSelectedDriverId(undefined);
+          const params = new URLSearchParams(searchParams);
+          if (next === 'overview') params.delete('tab');
+          else params.set('tab', next);
+          params.delete('focus');
+          params.delete('driver');
+          setSearchParams(params);
         }}
         ariaLabel="Relationship management sections"
       />
@@ -331,7 +341,14 @@ export function Relationships() {
                   key={`${profile.target.type}:${profile.target.id}`}
                   active={selectedRelationship?.target.type === profile.target.type && selectedRelationship.target.id === profile.target.id}
                   urgent={profile.status === 'MustActNow'}
-                  onClick={() => setSelectedRelationshipId(`${profile.target.type}:${profile.target.id}`)}
+                  onClick={() => {
+                    const id = `${profile.target.type}:${profile.target.id}`;
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('tab');
+                    next.delete('driver');
+                    next.set('focus', id);
+                    setSearchParams(next);
+                  }}
                 >
                   <span className="ui-news-list-source">Authority #{profile.authorityRank} · {profile.target.type}</span>
                   <strong>{profile.target.name}</strong>
@@ -461,7 +478,17 @@ export function Relationships() {
               {driversInSection.map((driver) => {
                 const relationship = rels[driver.id];
                 return (
-                  <FmListButton key={driver.id} active={selectedSectionDriver?.id === driver.id} onClick={() => setSelectedDriverId(driver.id)}>
+                  <FmListButton
+                    key={driver.id}
+                    active={selectedSectionDriver?.id === driver.id}
+                    onClick={() => {
+                      const next = new URLSearchParams(searchParams);
+                      next.set('tab', activeSection);
+                      next.set('driver', driver.id);
+                      next.delete('focus');
+                      setSearchParams(next);
+                    }}
+                  >
                     <span className="ui-news-list-source">#{driver.number} · {activeSection === 'race' ? 'Race driver' : 'Reserve'}</span>
                     <strong>{driver.name}</strong>
                     <span>{relationship ? `${computeConfidenceState(relationship)} · ${overallConfidenceScore(relationship)} confidence` : 'Relationship data initializing'}</span>

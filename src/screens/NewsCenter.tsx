@@ -61,11 +61,8 @@ export function NewsCenter() {
   const { state } = useGame();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialView = searchParams.get('tab') === 'media' ? 'media' : searchParams.get('tab') === 'storylines' ? 'storylines' : 'feed';
+  const view: NewsView = searchParams.get('tab') === 'media' ? 'media' : searchParams.get('tab') === 'storylines' ? 'storylines' : 'feed';
   const focusedItemId = searchParams.get('focus') ?? undefined;
-  const [view, setView] = useState<NewsView>(initialView);
-  const [selectedNewsId, setSelectedNewsId] = useState<string | undefined>(focusedItemId);
-  const [selectedStorylineId, setSelectedStorylineId] = useState<string>();
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
   const [teamFilter, setTeamFilter] = useState<'all' | 'myTeam'>('all');
@@ -120,8 +117,8 @@ export function NewsCenter() {
   }, [state?.drivers, state?.news, state?.newsArchive, state?.teams]);
 
   const chapterCounts = useMemo(() => storylineChapterCounts(storylines), [storylines]);
-  const selectedNews = selectedNewsItem(filteredNews, selectedNewsId);
-  const selectedStoryline = selectedNewsStoryline(storylines, selectedStorylineId);
+  const selectedNews = selectedNewsItem(filteredNews, focusedItemId);
+  const selectedStoryline = selectedNewsStoryline(storylines, focusedItemId);
   const attentionCount = (state?.news ?? []).filter((item) => item.priority === 'critical' || item.priority === 'high').length;
 
   const clearAllFilters = () => {
@@ -135,11 +132,19 @@ export function NewsCenter() {
   };
 
   const setNewsView = (next: NewsView) => {
-    setView(next);
     const params = new URLSearchParams(searchParams);
     if (next === 'feed') params.delete('tab');
     else params.set('tab', next);
-    setSearchParams(params, { replace: true });
+    params.delete('focus');
+    setSearchParams(params);
+  };
+
+  const selectFocusedItem = (id: string, nextView: NewsView) => {
+    const params = new URLSearchParams(searchParams);
+    if (nextView === 'feed') params.delete('tab');
+    else params.set('tab', nextView);
+    params.set('focus', id);
+    setSearchParams(params);
   };
 
   return (
@@ -189,7 +194,9 @@ export function NewsCenter() {
                     key={item.id}
                     active={selectedNews?.id === item.id}
                     urgent={item.priority === 'critical' || item.priority === 'high'}
-                    onClick={() => setSelectedNewsId(item.id)}
+                    onClick={() => {
+                      selectFocusedItem(item.id, 'feed');
+                    }}
                   >
                     <span className="ui-news-list-source">{categoryLabel(item.category)}</span>
                     <strong>{item.headline}</strong>
@@ -232,7 +239,9 @@ export function NewsCenter() {
           <StorylineWorkspace
             storylines={storylines}
             selected={selectedStoryline}
-            onSelect={setSelectedStorylineId}
+            onSelect={(id) => {
+              selectFocusedItem(id, 'storylines');
+            }}
           />
         )}
       </WorkspaceBody>

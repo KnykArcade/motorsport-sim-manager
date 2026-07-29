@@ -22,6 +22,7 @@ import {
   type NavigationHistoryEntry,
 } from './layoutHistory';
 import { DecisionFollowThroughBar } from './DecisionFollowThroughBar';
+import { needsCareerLaunch } from '../game/careerPhaseEngine';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -42,6 +43,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const era = getEraTheme(state?.series, state?.seasonYear);
   const eraConfig = getEraThemeConfig(era);
   const workflow = state ? workflowDestination(state) : undefined;
+  const firstDayFocus = !!state
+    && location.pathname === '/career-launch'
+    && needsCareerLaunch(state);
   const inboxUnread = useMemo(() => (state ? unreadInboxCount(state) : 0), [state]);
   const mustRespond = useMemo(() => (state ? mustRespondInboxCount(state) : 0), [state]);
   const contextualAttention = useMemo(() => {
@@ -91,7 +95,10 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <EraThemeProvider theme={era}>
-      <div className={`era-app ui-app-shell ${eraConfig.className} flex h-screen w-full overflow-hidden`} data-era={era}>
+      <div
+        className={`era-app ui-app-shell ${firstDayFocus ? 'is-first-day-focus' : ''} ${eraConfig.className} flex h-screen w-full overflow-hidden`}
+        data-era={era}
+      >
         {mobileNavigationOpen && (
           <button
             type="button"
@@ -115,8 +122,19 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <nav className="ui-sidebar-navigation min-h-0 flex-1 overflow-y-auto px-2 py-2" aria-label="Game navigation">
-            {navigationGroups.map((group) => (
+          <nav
+            className="ui-sidebar-navigation min-h-0 flex-1 overflow-y-auto px-2 py-2"
+            aria-label={firstDayFocus ? 'First-day navigation' : 'Game navigation'}
+          >
+            {firstDayFocus ? (
+              <section className="ui-first-day-navigation">
+                <span>First-day briefing</span>
+                <strong>{workflow?.label ?? 'Complete appointment'}</strong>
+                <p>
+                  Finish the appointment and handover before opening the wider management system.
+                </p>
+              </section>
+            ) : navigationGroups.map((group) => (
               <section key={group.id} className="ui-sidebar-group">
                 <h2>{group.label}</h2>
                 <div>
@@ -165,7 +183,7 @@ export function Layout({ children }: { children: ReactNode }) {
               Menu
             </button>
 
-            <div className="hidden shrink-0 items-center gap-1 sm:flex">
+            {!firstDayFocus && <div className="hidden shrink-0 items-center gap-1 sm:flex">
               <button type="button" className="ui-history-button" aria-label="Go back" onClick={() => navigate(-1)}>‹</button>
               <button type="button" className="ui-history-button" aria-label="Go forward" onClick={() => navigate(1)}>›</button>
               <details className="ui-history-menu">
@@ -179,16 +197,16 @@ export function Layout({ children }: { children: ReactNode }) {
                   )) : <p>No recent workspaces.</p>}
                 </div>
               </details>
-            </div>
+            </div>}
 
             <div className="ui-page-identity min-w-0 flex-1">
               <div className="ui-page-section">{pageIdentity.section}</div>
               <h1>{pageIdentity.title}</h1>
             </div>
 
-            {state && <GlobalSearch state={state} hiddenRoutes={hiddenRoutes} onNavigate={goTo} />}
+            {state && !firstDayFocus && <GlobalSearch state={state} hiddenRoutes={hiddenRoutes} onNavigate={goTo} />}
 
-            {team && (
+            {team && !firstDayFocus && (
               <div className="ui-topbar-team hidden min-w-0 items-center gap-2 xl:flex">
                 <span className="ui-team-badge shrink-0" style={{ backgroundColor: team.color }} aria-hidden="true">
                   {team.name.slice(0, 2).toUpperCase()}
@@ -200,16 +218,16 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             )}
 
-            <button
+            {!firstDayFocus && <button
               type="button"
               className={`ui-must-respond hidden shrink-0 md:block ${mustRespond > 0 ? 'has-items' : ''}`}
               onClick={() => goTo('/inbox?section=must_respond')}
             >
               <span>Must Respond</span>
               <strong>{mustRespond}</strong>
-            </button>
+            </button>}
 
-            {state && (
+            {state && !firstDayFocus && (
               <div className="ui-season-context hidden shrink-0 lg:grid">
                 <div>
                   <span>Season</span>
@@ -222,7 +240,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             )}
 
-            {race && !state?.seasonComplete && (
+            {race && !state?.seasonComplete && !firstDayFocus && (
               <div className="ui-next-event hidden min-w-0 max-w-48 shrink xl:block">
                 <span>Next Event · R{race.round}</span>
                 <strong>{race.gpName}</strong>
@@ -244,7 +262,7 @@ export function Layout({ children }: { children: ReactNode }) {
             )}
           </header>
 
-          <nav className="ui-context-navigation flex shrink-0 items-stretch overflow-x-auto" aria-label={`${pageIdentity.section} navigation`}>
+          {!firstDayFocus && <nav className="ui-context-navigation flex shrink-0 items-stretch overflow-x-auto" aria-label={`${pageIdentity.section} navigation`}>
             {contextualNavigation.map((navItem) => {
               const active = isNavigationItemActive(navItem, location.pathname, location.search);
               return (
@@ -263,9 +281,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 </NavLink>
               );
             })}
-          </nav>
+          </nav>}
 
-          <DecisionFollowThroughBar />
+          {!firstDayFocus && <DecisionFollowThroughBar />}
 
           <main className="era-content ui-main-content min-h-0 flex-1 overflow-auto p-3" data-route={location.pathname}>
             {children}

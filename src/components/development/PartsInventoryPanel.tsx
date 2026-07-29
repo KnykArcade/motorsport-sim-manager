@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Button } from '../Button';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../TechnicalTable';
 import {
@@ -35,8 +36,9 @@ const CONDITION_TONES = {
   Critical: 'bg-red-500 text-red-300',
 } as const;
 
-export function PartsInventoryPanel() {
+export function PartsInventoryPanel({ focusedPartId }: { focusedPartId?: string }) {
   const { state, dispatch } = useGame();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<'fitted' | 'manufacturing' | 'spares'>('fitted');
   const [selectedDriverId, setSelectedDriverId] = useState<string>();
   if (!state) return null;
@@ -52,10 +54,25 @@ export function PartsInventoryPanel() {
   const fittedCount = parts.inventory.filter((part) => part.status === 'fitted').length;
   const spareCount = parts.inventory.filter((part) => part.status === 'spare').length;
   const repairCount = parts.inventory.filter((part) => part.status === 'repairing').length;
-  const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? drivers[0];
+  const focusedPart = parts.inventory.find((part) => part.id === focusedPartId);
+  const focusedOrder = parts.manufacturingQueue.find((order) => order.id === focusedPartId);
+  const activeView = focusedPart?.status === 'fitted'
+    ? 'fitted'
+    : focusedPart
+      ? 'spares'
+      : focusedOrder
+        ? 'manufacturing'
+        : view;
+  const selectedDriver = drivers.find((driver) => driver.id === (focusedPart?.fittedDriverId ?? selectedDriverId)) ?? drivers[0];
   const spareAndRepairParts = parts.inventory
     .filter((part) => part.status === 'spare' || part.status === 'repairing')
     .sort((a, b) => PART_TYPES.indexOf(a.type) - PART_TYPES.indexOf(b.type) || b.condition - a.condition);
+  const clearRouteFocus = () => {
+    if (!searchParams.has('focus')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('focus');
+    setSearchParams(next);
+  };
 
   return (
     <div className="ui-parts-factory-workspace">
@@ -110,16 +127,19 @@ export function PartsInventoryPanel() {
           <button
             key={id}
             type="button"
-            onClick={() => setView(id)}
-            aria-current={view === id ? 'page' : undefined}
-            className={`rounded px-3 py-2 text-xs font-semibold ${view === id ? 'bg-amber-600 text-black' : 'text-neutral-400 hover:bg-neutral-800'}`}
+            onClick={() => {
+              clearRouteFocus();
+              setView(id);
+            }}
+            aria-current={activeView === id ? 'page' : undefined}
+            className={`rounded px-3 py-2 text-xs font-semibold ${activeView === id ? 'bg-amber-600 text-black' : 'text-neutral-400 hover:bg-neutral-800'}`}
           >
             {label}
           </button>
         ))}
       </nav>
 
-      {view === 'fitted' && selectedDriver && (
+      {activeView === 'fitted' && selectedDriver && (
         <FmWorkspaceGrid columns="three" className="ui-parts-garage-grid">
           <FmPane>
             <FmPaneHeader title="Race cars" meta={`${drivers.length} active drivers`} />
@@ -128,7 +148,10 @@ export function PartsInventoryPanel() {
                 <FmListButton
                   key={driver.id}
                   active={selectedDriver.id === driver.id}
-                  onClick={() => setSelectedDriverId(driver.id)}
+                  onClick={() => {
+                    clearRouteFocus();
+                    setSelectedDriverId(driver.id);
+                  }}
                 >
                   <span>Car #{driver.number}</span>
                   <strong>{driver.name}</strong>
@@ -151,6 +174,7 @@ export function PartsInventoryPanel() {
                       label={seriesPartLabel(type, state.series)}
                       part={fitted}
                       spare={bestSpare}
+                      focused={fitted?.id === focusedPartId}
                       onFit={() => bestSpare && dispatch({ type: 'FIT_PART', partId: bestSpare.id, driverId: selectedDriver.id })}
                     />
                   );
@@ -184,7 +208,7 @@ export function PartsInventoryPanel() {
         </FmWorkspaceGrid>
       )}
 
-      {view === 'manufacturing' && (
+      {activeView === 'manufacturing' && (
         <div className="mt-5">
           <div className="mb-3 text-sm font-semibold text-neutral-200">Factory Manufacturing</div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -216,12 +240,16 @@ export function PartsInventoryPanel() {
           </div>
       )}
 
-      {view === 'manufacturing' && parts.manufacturingQueue.length > 0 && (
+      {activeView === 'manufacturing' && parts.manufacturingQueue.length > 0 && (
         <div className="mt-5 rounded-lg border border-blue-900/70 bg-blue-950/20 p-3">
           <div className="mb-2 text-sm font-semibold text-blue-200">Active Factory Orders</div>
           <div className="space-y-2">
             {parts.manufacturingQueue.map((order) => (
-              <div key={order.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-300">
+              <div
+                key={order.id}
+                aria-current={focusedPartId === order.id ? 'true' : undefined}
+                className={`flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-300 ${focusedPartId === order.id ? 'ring-1 ring-amber-500/70' : ''}`}
+              >
                 <span>{order.quantity}x {seriesPartLabel(order.type, state.series)} · Generation {order.designGeneration}</span>
                 <span>{order.roundsRemaining}/{order.totalRounds} rounds remaining</span>
               </div>
@@ -230,7 +258,7 @@ export function PartsInventoryPanel() {
         </div>
       )}
 
-      {view === 'spares' && (
+      {activeView === 'spares' && (
         <div className="mt-5">
           <div className="mb-3 text-sm font-semibold text-neutral-200">Spares & Repairs</div>
           {spareAndRepairParts.length === 0 ? (
@@ -243,7 +271,7 @@ export function PartsInventoryPanel() {
               <tbody>{spareAndRepairParts.map((part) => {
               const quote = repairQuote(part);
               const canRepair = part.status === 'spare' && part.condition < part.maximumCondition - 1 && team.budget >= quote.cost;
-              return <TechnicalTableRow key={part.id}><TechnicalTableCell className="font-semibold text-neutral-100">{part.name}</TechnicalTableCell><TechnicalTableCell>{seriesPartLabel(part.type, state.series)}<div className="text-neutral-500">Generation {part.designGeneration}</div></TechnicalTableCell><TechnicalTableCell>{part.racesUsed} races<div className={part.condition < 30 ? 'text-red-300' : 'text-neutral-400'}>{Math.round(part.condition)}% condition</div></TechnicalTableCell><TechnicalTableCell>{part.status === 'repairing' ? <span className="text-amber-300">Repair: {part.repairRoundsRemaining} round{part.repairRoundsRemaining === 1 ? '' : 's'}</span> : <div className="flex gap-2"><Button className="px-2 py-1 text-xs" disabled={!canRepair} onClick={() => dispatch({ type: 'REPAIR_PART', partId: part.id })}>Repair {formatMoney(quote.cost)}</Button><Button className="px-2 py-1 text-xs" variant="danger" onClick={() => dispatch({ type: 'RETIRE_PART', partId: part.id })}>Retire</Button></div>}</TechnicalTableCell></TechnicalTableRow>;
+              return <TechnicalTableRow key={part.id} className={focusedPartId === part.id ? 'bg-amber-500/10 ring-1 ring-inset ring-amber-500/70' : ''}><TechnicalTableCell className="font-semibold text-neutral-100">{part.name}</TechnicalTableCell><TechnicalTableCell>{seriesPartLabel(part.type, state.series)}<div className="text-neutral-500">Generation {part.designGeneration}</div></TechnicalTableCell><TechnicalTableCell>{part.racesUsed} races<div className={part.condition < 30 ? 'text-red-300' : 'text-neutral-400'}>{Math.round(part.condition)}% condition</div></TechnicalTableCell><TechnicalTableCell>{part.status === 'repairing' ? <span className="text-amber-300">Repair: {part.repairRoundsRemaining} round{part.repairRoundsRemaining === 1 ? '' : 's'}</span> : <div className="flex gap-2"><Button className="px-2 py-1 text-xs" disabled={!canRepair} onClick={() => dispatch({ type: 'REPAIR_PART', partId: part.id })}>Repair {formatMoney(quote.cost)}</Button><Button className="px-2 py-1 text-xs" variant="danger" onClick={() => dispatch({ type: 'RETIRE_PART', partId: part.id })}>Retire</Button></div>}</TechnicalTableCell></TechnicalTableRow>;
                 })}</tbody>
             </TechnicalTable>
           )}
@@ -258,12 +286,14 @@ function FittedPartRow({
   label,
   part,
   spare,
+  focused,
   onFit,
 }: {
   type: PartType;
   label: string;
   part?: CarPart;
   spare?: CarPart;
+  focused?: boolean;
   onFit: () => void;
 }) {
   if (!part) {
@@ -278,7 +308,10 @@ function FittedPartRow({
   const tone = CONDITION_TONES[conditionLabel];
   const shouldReplace = part.condition < 60 && spare && spare.condition > part.condition + 5;
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
+    <div
+      aria-current={focused ? 'true' : undefined}
+      className={`rounded-lg border bg-neutral-950/50 p-3 ${focused ? 'border-amber-500/80 ring-1 ring-amber-500/30' : 'border-neutral-800'}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm text-neutral-100">{label} · {part.name}</div>

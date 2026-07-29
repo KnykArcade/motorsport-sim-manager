@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
@@ -49,10 +48,9 @@ export function Politics() {
   const { state, dispatch } = useGame();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    requestedTab && TABS.some((tab) => tab.key === requestedTab) ? requestedTab as TabKey : 'regulations',
-  );
-  const [selectedProposalId, setSelectedProposalId] = useState<string | undefined>(searchParams.get('focus') ?? undefined);
+  const activeTab: TabKey =
+    requestedTab && TABS.some((tab) => tab.key === requestedTab) ? requestedTab as TabKey : 'regulations';
+  const selectedProposalId = searchParams.get('focus') ?? undefined;
   if (!state) return null;
 
   const proposals = state.regulationProposals ?? [];
@@ -106,10 +104,10 @@ export function Politics() {
         items={TABS.map((tab) => ({ id: tab.key, label: `${tab.label}${tab.key === 'proposals' ? ` (${proposals.length})` : ''}` }))}
         active={activeTab}
         onChange={(tab) => {
-          setActiveTab(tab);
           const next = new URLSearchParams(searchParams);
           if (tab === 'regulations') next.delete('tab');
           else next.set('tab', tab);
+          next.delete('focus');
           setSearchParams(next);
         }}
         ariaLabel="Regulations and politics sections"
@@ -177,7 +175,12 @@ export function Politics() {
                   key={proposal.id}
                   active={selectedProposal?.id === proposal.id}
                   urgent={!proposal.playerVote && !votingLocked}
-                  onClick={() => setSelectedProposalId(proposal.id)}
+                  onClick={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.set('tab', 'proposals');
+                    next.set('focus', proposal.id);
+                    setSearchParams(next);
+                  }}
                 >
                   <span>{proposal.category} · {proposal.playerVote ?? 'No vote set'}</span>
                   <strong>{proposal.title}</strong>

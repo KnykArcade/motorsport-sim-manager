@@ -42,13 +42,13 @@ export function TechnicalCenter() {
   const { state } = useGame();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [section, setSection] = useState<TechnicalSection>(() => technicalSectionFromQuery(searchParams.get('section')));
-  const activeSection = searchParams.has('section') ? technicalSectionFromQuery(searchParams.get('section')) : section;
+  const activeSection = technicalSectionFromQuery(searchParams.get('section'));
+  const focusedId = searchParams.get('focus') ?? undefined;
   const navigateTechnicalSection = (next: TechnicalSection) => {
-    setSection(next);
     const params = new URLSearchParams(searchParams);
     if (next === 'command') params.delete('section');
     else params.set('section', next);
+    params.delete('focus');
     setSearchParams(params);
   };
   if (!state) return null;
@@ -133,9 +133,9 @@ export function TechnicalCenter() {
           )}
         >
           <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
-            {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} />}
+            {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} focusedId={focusedId} />}
             {activeSection === 'development' && <UnifiedDevelopmentBody />}
-            {activeSection === 'parts' && <PartsInventoryPanel />}
+            {activeSection === 'parts' && <PartsInventoryPanel focusedPartId={focusedId} />}
             {activeSection === 'facilities' && <FacilitiesBody />}
             {activeSection === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
           </Suspense>
@@ -145,7 +145,15 @@ export function TechnicalCenter() {
   );
 }
 
-function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (section: TechnicalSection) => void }) {
+function CommandPanel({
+  state,
+  onNavigate,
+  focusedId,
+}: {
+  state: GameState;
+  onNavigate: (section: TechnicalSection) => void;
+  focusedId?: string;
+}) {
   const team = teamById(state, state.selectedTeamId);
   const research = researchStateForTeam(state, state.selectedTeamId);
   const activeUpgrades = activeUpgradePrograms(state);
@@ -164,7 +172,7 @@ function CommandPanel({ state, onNavigate }: { state: GameState; onNavigate: (se
   return (
     <div className="ui-technical-command-grid">
       <OperatingPlanPanel state={state} />
-      <TechnicalBriefingPanel state={state} onNavigate={onNavigate} />
+      <TechnicalBriefingPanel state={state} onNavigate={onNavigate} focusedId={focusedId} />
       <Panel title="Car performance snapshot">
         {effectiveCars.length === 0 ? <p className="text-sm text-neutral-500">Current car ratings are not available yet.</p> : <TechnicalTable>
           <TechnicalTableHead><TechnicalTableRow><TechnicalTableCell header>Driver / car</TechnicalTableCell><TechnicalTableCell header>Overall</TechnicalTableCell><TechnicalTableCell header>Power unit</TechnicalTableCell><TechnicalTableCell header>Aero</TechnicalTableCell><TechnicalTableCell header>Mechanical</TechnicalTableCell><TechnicalTableCell header>Reliability</TechnicalTableCell><TechnicalTableCell header>Parts condition</TechnicalTableCell></TechnicalTableRow></TechnicalTableHead>
@@ -292,7 +300,15 @@ function OperatingPlanPanel({ state }: { state: GameState }) {
   );
 }
 
-function TechnicalBriefingPanel({ state, onNavigate }: { state: GameState; onNavigate: (section: TechnicalSection) => void }) {
+function TechnicalBriefingPanel({
+  state,
+  onNavigate,
+  focusedId,
+}: {
+  state: GameState;
+  onNavigate: (section: TechnicalSection) => void;
+  focusedId?: string;
+}) {
   const { dispatch } = useGame();
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const director = staffByRole(state.staff ?? [])['Technical Director'];
@@ -308,7 +324,11 @@ function TechnicalBriefingPanel({ state, onNavigate }: { state: GameState; onNav
       ) : (
         <ul className="space-y-2">
           {proposals.map((proposal) => (
-            <li key={proposal.id} className="flex flex-wrap items-center gap-3 rounded border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+            <li
+              key={proposal.id}
+              aria-current={focusedId === proposal.id ? 'true' : undefined}
+              className={`flex flex-wrap items-center gap-3 rounded border bg-neutral-900/40 px-3 py-2 ${focusedId === proposal.id ? 'border-amber-500/80 ring-1 ring-amber-500/30' : 'border-neutral-800'}`}
+            >
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-neutral-100">{proposal.title}</div>
                 <div className="text-xs text-neutral-400">{proposal.reason}</div>

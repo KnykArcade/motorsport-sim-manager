@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import {
@@ -145,13 +145,12 @@ const MEANINGFUL_PRESEASON_BRIEFINGS = PRESEASON_BRIEFINGS.filter(
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedTask = searchParams.get('task') as PreseasonTab | null;
-  const [activeTab, setActiveTab] = useState<PreseasonTab>(
+  const activeTab: PreseasonTab =
     requestedTask && MEANINGFUL_PRESEASON_TABS.includes(requestedTask)
       ? requestedTask
-      : 'driverLineup',
-  );
+      : 'driverLineup';
 
   if (!state) return null;
 
@@ -191,7 +190,7 @@ export function PreSeasonSetup() {
     const nextTab = MEANINGFUL_PRESEASON_BRIEFINGS
       .slice(currentIndex + 1)
       .find((tab) => !approvals[tab.id]);
-    if (nextTab) setActiveTab(nextTab.id);
+    if (nextTab) setSearchParams({ task: nextTab.id });
   };
 
   // Engine supplier info.
@@ -271,7 +270,7 @@ export function PreSeasonSetup() {
           urgent: !approvals[briefing.id],
         }))}
         active={activeTab}
-        onChange={setActiveTab}
+        onChange={(nextTab) => setSearchParams({ task: nextTab })}
         ariaLabel="Preseason decisions"
         listTitle="First-week plan"
         listMeta={`${approvedCount}/${totalTabs} decisions confirmed`}
