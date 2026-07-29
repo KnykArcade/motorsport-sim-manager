@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import {
   activeDriversForTeam,
@@ -128,10 +128,26 @@ const ROUTINE_PRESEASON_TABS: PreseasonTab[] = [
   'roundOnePreview',
 ];
 
+const MEANINGFUL_PRESEASON_TABS: PreseasonTab[] = [
+  'driverLineup',
+  'carDevelopment',
+  'seasonObjectives',
+];
+
+const MEANINGFUL_PRESEASON_BRIEFINGS = PRESEASON_BRIEFINGS.filter(
+  (briefing) => MEANINGFUL_PRESEASON_TABS.includes(briefing.id),
+);
+
 export function PreSeasonSetup() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<PreseasonTab>('teamOverview');
+  const [searchParams] = useSearchParams();
+  const requestedTask = searchParams.get('task') as PreseasonTab | null;
+  const [activeTab, setActiveTab] = useState<PreseasonTab>(
+    requestedTask && MEANINGFUL_PRESEASON_TABS.includes(requestedTask)
+      ? requestedTask
+      : 'driverLineup',
+  );
 
   if (!state) return null;
 
@@ -154,9 +170,10 @@ export function PreSeasonSetup() {
   const approvals = getPreseasonApprovals(state);
   const checklistComplete = isPreseasonChecklistComplete(state);
 
-  const activeBriefing = PRESEASON_BRIEFINGS.find((briefing) => briefing.id === activeTab) ?? PRESEASON_BRIEFINGS[0];
-  const approvedCount = Object.values(approvals).filter(Boolean).length;
-  const totalTabs = PRESEASON_BRIEFINGS.length;
+  const activeBriefing = MEANINGFUL_PRESEASON_BRIEFINGS.find((briefing) => briefing.id === activeTab)
+    ?? MEANINGFUL_PRESEASON_BRIEFINGS[0];
+  const approvedCount = MEANINGFUL_PRESEASON_TABS.filter((tabId) => approvals[tabId]).length;
+  const totalTabs = MEANINGFUL_PRESEASON_TABS.length;
 
   const advanceToBriefing = () => {
     if (!checklistComplete) return;
@@ -166,8 +183,10 @@ export function PreSeasonSetup() {
 
   const approveTab = (tabId: PreseasonTab) => {
     dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
-    const currentIndex = PRESEASON_BRIEFINGS.findIndex((tab) => tab.id === tabId);
-    const nextTab = PRESEASON_BRIEFINGS[currentIndex + 1];
+    const currentIndex = MEANINGFUL_PRESEASON_BRIEFINGS.findIndex((tab) => tab.id === tabId);
+    const nextTab = MEANINGFUL_PRESEASON_BRIEFINGS
+      .slice(currentIndex + 1)
+      .find((tab) => !approvals[tab.id]);
     if (nextTab) setActiveTab(nextTab.id);
   };
 
@@ -182,14 +201,14 @@ export function PreSeasonSetup() {
 
   // Driver lineup validation: NASCAR requires 1 race driver, all other series 2.
   const hasValidLineup = activeDrivers.length >= minDrivers;
-  const remainingApprovals = totalTabs - approvedCount;
   const pendingRoutineApprovals = ROUTINE_PRESEASON_TABS.filter((tabId) => !approvals[tabId]);
-  const acknowledgeRoutineBriefings = () => {
-    for (const tabId of pendingRoutineApprovals) {
-      dispatch({ type: 'APPROVE_PRESEASON_TAB', tabId });
-    }
-  };
-  const advanceBlockedReason = checklistComplete ? undefined : `${remainingApprovals} review${remainingApprovals === 1 ? '' : 's'} remaining`;
+  const welcomePackAcknowledged = pendingRoutineApprovals.length === 0;
+  const remainingMeaningfulTasks = totalTabs - approvedCount;
+  const remainingApprovals = remainingMeaningfulTasks + (welcomePackAcknowledged ? 0 : 1);
+  const acknowledgeWelcomePack = () => dispatch({ type: 'ACKNOWLEDGE_PRESEASON_WELCOME_PACK' });
+  const advanceBlockedReason = checklistComplete
+    ? undefined
+    : `${remainingApprovals} first-week item${remainingApprovals === 1 ? '' : 's'} remaining`;
 
   return (
     <WorkspaceScreen className="era-feature-screen era-preseason-setup-screen">
@@ -205,7 +224,7 @@ export function PreSeasonSetup() {
         </>}
       />
       <MetricStrip>
-        <WorkspaceMetric label="Review progress" value={`${approvedCount}/${totalTabs}`} detail={checklistComplete ? 'Preseason checklist complete' : `${remainingApprovals} confirmations required`} />
+        <WorkspaceMetric label="First-week tasks" value={`${approvedCount}/${totalTabs}`} detail={checklistComplete ? 'Preseason decisions complete' : `${remainingMeaningfulTasks} decisions remaining`} />
         <WorkspaceMetric label="Available budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : 'Testing programme not complete'} />
         <WorkspaceMetric label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Required seats filled' : 'Driver signing required'} />
         <WorkspaceMetric label="Race 1 readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Pending'} detail={race?.gpName ?? 'Opening event unavailable'} />
@@ -222,15 +241,15 @@ export function PreSeasonSetup() {
             <div className="font-semibold text-neutral-100">Preseason operations desk</div>
             <div className="truncate text-neutral-400">
               {checklistComplete
-                ? 'All preseason reviews are confirmed. The Race 1 briefing is ready to open.'
-                : `${remainingApprovals} review${remainingApprovals === 1 ? '' : 's'} still need confirmation before the Race 1 briefing.`}
+                ? 'All three preseason decisions are confirmed. The Race 1 briefing is ready to open.'
+                : `${remainingApprovals} first-week item${remainingApprovals === 1 ? '' : 's'} still need attention before the Race 1 briefing.`}
             </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {pendingRoutineApprovals.length > 0 && (
-            <Button variant="ghost" onClick={acknowledgeRoutineBriefings}>
-              Acknowledge routine briefings ({pendingRoutineApprovals.length})
+          {!welcomePackAcknowledged && (
+            <Button variant="ghost" onClick={acknowledgeWelcomePack}>
+              Acknowledge Welcome Pack
             </Button>
           )}
           <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
@@ -240,16 +259,16 @@ export function PreSeasonSetup() {
       </div>
       <WorkspaceBody className="ui-phase14-workspace ui-preseason-workspace">
       <div className="ui-preseason-command-grid">
-        <Panel title="Welcome to the season" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Start here</span>}>
+        <Panel title="Your first management week" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Three decisions</span>}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div className="space-y-3">
               <p className="text-sm text-neutral-300">
-                This is your preseason onboarding desk: a quick introduction to the team, then a short set of season-start briefings to confirm before Round 1.
+                Your first-day handover is complete. Confirm the race lineup, finish the car launch and testing programme, then agree the owner mandate before Round 1.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <InfoBlock label="Team" value={team?.name ?? '—'} detail={`Reputation ${Math.round(team?.reputation ?? 0)} · Morale ${Math.round(team?.morale ?? 0)}%`} />
                 <InfoBlock label="Team Principal" value={state.principal?.name ?? 'Your principal'} detail={`Level ${state.principal?.level ?? 0} · ${Math.round(state.principal?.reputation ?? 0)} reputation`} />
-                <InfoBlock label="Budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : 'Testing programme still pending'} />
+                <InfoBlock label="Welcome Pack" value={welcomePackAcknowledged ? 'Acknowledged' : 'Pending'} detail="Team, budget, commercial, and Race 1 reports" />
                 <InfoBlock label="Grid readiness" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Lineup is ready for Race 1' : 'Driver signing still required'} />
               </div>
             </div>
@@ -282,7 +301,7 @@ export function PreSeasonSetup() {
         <div className="ui-preseason-briefing-list">
           <Panel title="Season progress" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{approvedCount}/{totalTabs} confirmed</span>}>
             <div className="space-y-2">
-              {PRESEASON_BRIEFINGS.map((briefing, index) => {
+              {MEANINGFUL_PRESEASON_BRIEFINGS.map((briefing, index) => {
                 const approved = approvals[briefing.id];
                 const isActive = activeTab === briefing.id;
                 return (

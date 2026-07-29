@@ -20,7 +20,7 @@ const item = (to: string, label: string): NavigationItem => ({
 
 const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
   {
-    routes: ['/hq', '/inbox', '/news', '/stories', '/paddock'],
+    routes: ['/hq', '/career-launch', '/inbox', '/news', '/stories', '/paddock'],
     items: [
       item('/news', 'News'),
       item('/stories', 'Paddock Stories'),
@@ -75,6 +75,7 @@ const CONTEXT_GROUPS: ReadonlyArray<ContextGroup> = [
 
 const PAGE_IDENTITIES: ReadonlyArray<{ route: string; identity: PageIdentity }> = [
   { route: '/hq', identity: { section: 'Management', title: 'Home' } },
+  { route: '/career-launch', identity: { section: 'Management', title: 'First Day' } },
   { route: '/inbox', identity: { section: 'Management', title: 'Inbox' } },
   { route: '/news', identity: { section: 'Management', title: 'News Center' } },
   { route: '/stories', identity: { section: 'Management', title: 'Paddock Stories' } },

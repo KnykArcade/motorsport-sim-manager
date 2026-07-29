@@ -31,6 +31,27 @@ describe('layout workflow destination', () => {
     expect(workflowDestination(stateFor('race_weekend')).label).toBe('Open Weekend Overview');
   });
 
+  it('keeps an incomplete first-day appointment ahead of saved workspace history', () => {
+    const state = stateFor('pre_season_setup', {
+      lastWorkspace: '/technical?section=parts',
+      careerPhase: {
+        currentPhase: 'pre_season_setup',
+        careerLaunch: {
+          required: true,
+          currentStep: 'teamHandover',
+          welcomePackAcknowledged: false,
+        },
+      },
+    });
+
+    expect(workflowDestination(state)).toMatchObject({
+      to: '/career-launch',
+      label: 'Review Team Handover',
+    });
+    expect(resumeDestination(state)).toBe('/career-launch');
+    expect(isResumableWorkspace('/career-launch')).toBe(true);
+  });
+
   it('routes Continue to the first required paddock decision', () => {
     const state = stateFor('paddock_week', {
       careerPhase: {

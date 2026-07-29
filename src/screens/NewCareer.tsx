@@ -115,7 +115,7 @@ export function NewCareer() {
             // Single Season mode keeps its historical engine assignment.
           },
         });
-        navigate('/hq');
+        navigate('/career-launch');
       },
     });
   };

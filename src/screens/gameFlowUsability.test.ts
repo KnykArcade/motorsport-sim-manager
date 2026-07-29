@@ -20,11 +20,23 @@ describe('Phase 15 game-flow usability contract', () => {
 
   it('keeps routine workload reducible without delegating consequential preseason choices', () => {
     const preseason = source('PreSeasonSetup.tsx');
-    expect(preseason).toContain('Acknowledge routine briefings');
+    const launch = source('CareerLaunch.tsx');
+    expect(preseason).toContain('Acknowledge Welcome Pack');
     expect(preseason).toMatch(/ROUTINE_PRESEASON_TABS[\s\S]*teamOverview[\s\S]*budget[\s\S]*sponsorsEngine[\s\S]*roundOnePreview/);
-    expect(preseason).not.toMatch(/ROUTINE_PRESEASON_TABS[\s\S]{0,180}carDevelopment/);
-    expect(preseason).not.toMatch(/ROUTINE_PRESEASON_TABS[\s\S]{0,180}seasonObjectives/);
+    const routineTabs = preseason.match(/const ROUTINE_PRESEASON_TABS[^=]*=\s*\[([\s\S]*?)\];/)?.[1] ?? '';
+    expect(routineTabs).not.toContain('carDevelopment');
+    expect(routineTabs).not.toContain('seasonObjectives');
+    expect(launch).toContain('Confirm the race lineup');
+    expect(launch).toContain('Launch and test the car');
+    expect(launch).toContain('Agree the owner mandate');
     expect(source('WeekendCommandMeeting.tsx')).toContain('Delegate remaining');
+  });
+
+  it('routes a newly created career into the persistent first-day flow', () => {
+    expect(source('NewCareer.tsx')).toContain("navigate('/career-launch')");
+    expect(source('../app/App.tsx')).toContain('needsCareerLaunch(state)');
+    expect(source('CareerLaunch.tsx')).toContain("dispatch({ type: 'COMPLETE_CAREER_LAUNCH' })");
+    expect(source('CareerLaunch.tsx')).toContain("navigate('/preseason?task=driverLineup')");
   });
 
   it('persists race-weekend drafts and clears them only at race handoff', () => {
