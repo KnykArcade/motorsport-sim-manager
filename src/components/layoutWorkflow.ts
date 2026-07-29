@@ -5,6 +5,8 @@ import type { CareerPhase } from '../types/careerPhaseTypes';
 import { inboxMessages } from '../screens/inboxViewModel';
 import { paddockEventDestination } from '../screens/paddockAgendaViewModel';
 import { routeAccessForState, routeDefinitionForPath } from '../app/routeCatalog';
+import { garageAddressForRace } from '../sim/garageLeadershipEngine';
+import { offseasonResumeDestination } from '../game/careerJourney';
 
 export type WorkflowDestination = {
   to: string;
@@ -167,6 +169,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
       const race = Array.isArray(state.calendar) ? currentRace(state) : undefined;
       const qualifyingComplete = !!(race && state.qualifyingResults?.[race.id]);
       const planConfirmed = !!(race && state.weekendPlans?.some((plan) => plan.raceId === race.id));
+      const garageAddressComplete = !!(race && garageAddressForRace(state, race.id));
       const practiceStarted = !!(
         race
         && state.weekendPractice?.raceId === race.id
@@ -180,11 +183,17 @@ export function workflowDestination(state: GameState): WorkflowDestination {
             ? 'practice-setup'
             : 'overview';
       const detail = stage === 'race-plan'
-        ? {
-          label: 'Complete Race Plan',
-          context: 'Race plan',
-          reason: 'Finish leadership preparation and start the race.',
-        }
+        ? garageAddressComplete
+          ? {
+            label: 'Start Live Race',
+            context: 'Race ready',
+            reason: 'The race plan and garage address are complete. Open the live-race handoff.',
+          }
+          : {
+            label: 'Deliver Garage Address',
+            context: 'Race leadership',
+            reason: 'The race plan is confirmed. Deliver or delegate the garage address before starting.',
+          }
         : stage === 'qualifying'
           ? {
             label: 'Review Qualifying',
@@ -250,6 +259,16 @@ export function isResumableWorkspace(workspace: string, state?: GameState): bool
 export function resumeDestination(state: GameState): string {
   const nextAction = workflowDestination(state);
   if (nextAction.priority !== 'race_workflow') return nextAction.to;
+  const offseason = offseasonResumeDestination(state);
+  if (offseason) return offseason;
+  if (
+    nextAction.phase === 'season_complete'
+    || nextAction.phase === 'pre_race_briefing'
+    || nextAction.phase === 'race_weekend'
+    || nextAction.phase === 'post_race_review'
+  ) {
+    return nextAction.to;
+  }
   return state.lastWorkspace && isResumableWorkspace(state.lastWorkspace, state)
     ? state.lastWorkspace
     : nextAction.to;

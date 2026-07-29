@@ -49,6 +49,18 @@ describe('Phase 15 game-flow usability contract', () => {
     expect(weekend).toContain("nextQuery.set('stage'");
   });
 
+  it('keeps completed-season transitions failure-safe and mode-correct', () => {
+    const seasonReview = source('SeasonReview.tsx');
+    const offseason = source('Offseason.tsx');
+    expect(seasonReview).toContain('seasonEndingPlan(state.gameMode)');
+    expect(seasonReview).toContain("navigate('/career-launch')");
+    expect(seasonReview).toContain('singleSeasonReplayOptions(state, validation.bundle)');
+    expect(offseason).toContain('validateSeasonBundle(nextBundle, nextYear, state.series)');
+    expect(offseason).not.toContain("catch(() => {\n        dispatch({ type: 'ADVANCE_SEASON' })");
+    expect(offseason).toContain("navigate('/preseason')");
+    expect(offseason).toContain('Season advancement stopped safely.');
+  });
+
   it('retains decision space at the supported 1024 by 720 floor', () => {
     const css = source('../index.css');
     expect(css).toContain('@media (min-width: 1024px) and (max-height: 760px)');

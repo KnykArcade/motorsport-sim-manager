@@ -117,6 +117,9 @@ export type NewGameOptions = {
   // The player-created Team Principal ("Paddock Credentials"). Optional so tests
   // and legacy callers still work; when absent a default profile is used.
   teamPrincipal?: TeamPrincipal;
+  // Legacy replay fallback when the original creator payload is unavailable.
+  // This preserves the visible principal identity without changing save data.
+  principalName?: string;
   // The player's chosen season-1 engine deal. Optional; when absent the deal is
   // the auto-assigned one from createInitialEngineState.
   initialEngineSupplierId?: string;
@@ -181,7 +184,7 @@ export function createNewGame(options: NewGameOptions): GameState {
         teamReputations,
         options.seasonYear,
         seed,
-        teamPrincipal?.name ?? 'You',
+        teamPrincipal?.name ?? options.principalName ?? 'You',
       )
     : undefined;
   // Seed the job-market profile's starting reputation from the created identity.

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
@@ -22,6 +22,13 @@ import {
   FmWorkspaceGrid,
 } from '../components/workspace/FmPane';
 import { isSingleSeasonMode } from '../game/modeRestrictions';
+import { loadSeasonBundle, preloadMarketBundle } from '../data';
+import {
+  seasonEndingPlan,
+  singleSeasonReplayOptions,
+  validateSeasonBundle,
+} from '../game/careerJourney';
+import { createCareerCreationCoordinator } from './newCareerCreation';
 import { ARCHETYPE_SPECS, TRAIT_LABELS } from '../sim/aiTeamEngine';
 import {
   RESULT_PAGE_SIZE,
@@ -36,6 +43,9 @@ export function SeasonReview() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<SeasonReviewTab>('honours');
   const [page, setPage] = useState(0);
+  const [replaying, setReplaying] = useState(false);
+  const [replayError, setReplayError] = useState<string>();
+  const replayCoordinator = useRef(createCareerCreationCoordinator());
   if (!state) return null;
 
   const driverName = (id: string) => state.drivers.find((driver) => driver.id === id)?.name ?? id;
@@ -55,17 +65,31 @@ export function SeasonReview() {
   const pageCount = transitionPageCount(activeStandings.length, RESULT_PAGE_SIZE);
   const safePage = Math.min(page, pageCount - 1);
 
-  const replaySeason = () => {
-    dispatch({
-      type: 'NEW_GAME',
-      options: {
-        gameMode: state.gameMode,
-        seasonYear: state.seasonYear,
-        series: state.series,
-        teamId: state.selectedTeamId,
-      },
-    });
-    navigate('/hq');
+  const ending = seasonEndingPlan(state.gameMode);
+
+  const replaySeason = async () => {
+    if (state.gameMode !== 'SingleSeason' || !replayCoordinator.current.tryAcquire()) return;
+    setReplayError(undefined);
+    setReplaying(true);
+    try {
+      const [loadedBundle] = await Promise.all([
+        loadSeasonBundle(state.seasonYear, state.series),
+        preloadMarketBundle(state.seasonYear, state.series),
+      ]);
+      const validation = validateSeasonBundle(loadedBundle, state.seasonYear, state.series);
+      if (!validation.valid) throw new Error(validation.reason);
+      dispatch({
+        type: 'NEW_GAME',
+        options: singleSeasonReplayOptions(state, validation.bundle),
+      });
+      navigate('/career-launch');
+    } catch (error) {
+      replayCoordinator.current.release();
+      setReplaying(false);
+      setReplayError(error instanceof Error
+        ? error.message
+        : 'The historical season could not be rebuilt. The completed save is unchanged.');
+    }
   };
 
   function selectTab(nextTab: SeasonReviewTab) {
@@ -90,6 +114,15 @@ export function SeasonReview() {
       <SeasonWorkflowRail active="season" context={`${state.seasonYear} ${state.series} championship complete`} />
       <WorkspaceTabs items={SEASON_REVIEW_TABS} active={tab} onChange={selectTab} ariaLabel="Season review sections" />
       <WorkspaceBody className="ui-phase14-workspace">
+      {replayError && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded border border-red-800/70 bg-red-950/30 px-3 py-2" role="alert">
+          <div>
+            <strong className="text-sm text-red-200">Replay could not start.</strong>
+            <p className="mt-0.5 text-xs text-red-300/80">{replayError} The completed save is unchanged.</p>
+          </div>
+          <Button variant="secondary" onClick={replaySeason} disabled={replaying}>Retry replay</Button>
+        </div>
+      )}
 
       {tab === 'honours' && (
         <FmWorkspaceGrid className="ui-season-review-grid">
@@ -168,10 +201,8 @@ export function SeasonReview() {
             <FmPaneBody className="ui-phase14-pane-body">
               <div className="ui-phase14-dossier">
                 <section>
-                  <h3>{state.gameMode === 'Career' ? 'Continue the career' : 'Choose the next save path'}</h3>
-                  <p>{state.gameMode === 'Career'
-                    ? 'The offseason processes driver movement, technical carryover, commercial reviews, and the next championship.'
-                    : 'Single Season saves can finish here or replay the same historical year.'}</p>
+                  <h3>{ending.heading}</h3>
+                  <p>{ending.description}</p>
                 </section>
                 {isSingleSeasonMode(state.gameMode) && (
                   <section className="is-warning">
@@ -182,19 +213,22 @@ export function SeasonReview() {
               </div>
             </FmPaneBody>
           </FmPane>
-          <FmDecisionBar actions={state.gameMode === 'Career' ? (
+          <FmDecisionBar actions={ending.kind === 'multi-season' ? (
             <>
               <Button onClick={() => navigate('/')}>Main Menu</Button>
-              <Button variant="primary" onClick={() => navigate('/offseason')}>Enter Offseason →</Button>
+              <Button variant="primary" onClick={() => navigate(ending.nextRoute)}>{ending.nextLabel}</Button>
             </>
           ) : (
             <>
               <Button onClick={() => navigate('/')}>Main Menu</Button>
-              <Button variant="primary" onClick={replaySeason}>Replay Season</Button>
+              <Button variant="primary" onClick={replaySeason} disabled={replaying}>
+                {replaying ? 'Rebuilding Season…' : 'Replay Season'}
+              </Button>
             </>
           )}>
-            <strong className="text-neutral-200">Next meaningful step:</strong>{' '}
-            {state.gameMode === 'Career' ? 'review the transition into next season.' : 'choose whether this save ends or replays.'}
+            <strong className="text-neutral-200">Completed:</strong> final honours and classifications are recorded.{' '}
+            <strong className="text-neutral-200">Optional:</strong> review any standings tab.{' '}
+            <strong className="text-neutral-200">Next:</strong> {ending.nextSummary}
           </FmDecisionBar>
         </div>
       )}

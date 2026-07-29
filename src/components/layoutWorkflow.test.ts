@@ -124,7 +124,7 @@ describe('layout workflow destination', () => {
       weekendPlans: [{ raceId: 'race-1' }],
     } as unknown as GameState)).toMatchObject({
       to: '/weekend?stage=race-plan',
-      label: 'Complete Race Plan',
+      label: 'Deliver Garage Address',
     });
   });
 
@@ -132,16 +132,69 @@ describe('layout workflow destination', () => {
     expect(workflowDestination(stateFor('race_weekend', { seasonComplete: true })).to).toBe('/season-review');
   });
 
-  it('resumes the last valid workspace without advancing the career', () => {
-    const state = stateFor('race_weekend', { lastWorkspace: '/technical?section=parts' });
+  it('resumes the last valid workspace during ordinary management time', () => {
+    const state = stateFor('paddock_week', { lastWorkspace: '/technical?section=parts' });
 
     expect(resumeDestination(state)).toBe('/technical?section=parts');
-    expect(state.careerPhase?.currentPhase).toBe('race_weekend');
+    expect(state.careerPhase?.currentPhase).toBe('paddock_week');
+  });
+
+  it('puts active race transitions ahead of an optional saved workspace', () => {
+    expect(resumeDestination(stateFor('pre_race_briefing', {
+      lastWorkspace: '/technical?section=parts',
+    }))).toBe('/briefing?tab=preparation');
+    expect(resumeDestination(stateFor('race_weekend', {
+      lastWorkspace: '/technical?section=parts',
+    }))).toBe('/weekend?stage=overview');
+    expect(resumeDestination(stateFor('post_race_review', {
+      lastWorkspace: '/technical?section=parts',
+      careerPhase: { currentPhase: 'post_race_review', lastCompletedRaceId: 'race-4' },
+    }))).toBe('/post-race/race-4');
+  });
+
+  it('resumes an entered offseason but otherwise requires the completed-season review', () => {
+    const completed = stateFor('post_race_review', {
+      gameMode: 'Career',
+      seasonComplete: true,
+      lastWorkspace: '/technical?section=parts',
+    });
+    expect(resumeDestination(completed)).toBe('/season-review');
+    expect(resumeDestination({
+      ...completed,
+      lastWorkspace: '/offseason?tab=lineup',
+    })).toBe('/offseason?tab=lineup');
+    expect(resumeDestination({
+      ...completed,
+      gameMode: 'SingleSeason',
+      lastWorkspace: '/offseason',
+    })).toBe('/season-review');
   });
 
   it('falls back to the phase workspace for non-game routes', () => {
     expect(resumeDestination(stateFor('race_weekend', { lastWorkspace: '/settings' }))).toBe('/weekend?stage=overview');
     expect(isResumableWorkspace('/post-race/race-1')).toBe(true);
     expect(isResumableWorkspace('/live-race/race-1')).toBe(false);
+  });
+
+  it('distinguishes race-plan leadership from the live-race handoff', () => {
+    const plan = { raceId: 'race-1' };
+    const base = stateFor('race_weekend', {
+      currentRaceIndex: 0,
+      calendar: [{ id: 'race-1' }],
+      weekendPlans: [plan],
+    });
+
+    expect(workflowDestination(base)).toMatchObject({
+      to: '/weekend?stage=race-plan',
+      label: 'Deliver Garage Address',
+    });
+    expect(workflowDestination({
+      ...base,
+      garageAddresses: [{ raceId: 'race-1' }],
+    } as unknown as GameState)).toMatchObject({
+      to: '/weekend?stage=race-plan',
+      label: 'Start Live Race',
+      context: 'Race ready',
+    });
   });
 });
