@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
-import { Panel } from '../components/Panel';
+import { CoreWorkspaceSection as Panel } from '../components/workspace/CoreWorkspace';
 import { RatingBadge } from '../components/RatingBadge';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
 import { CharacterDossierButton } from '../components/characterCards/CharacterDossier';

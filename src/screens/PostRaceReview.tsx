@@ -3,7 +3,12 @@ import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { getTrackById } from '../data';
 import { buildPostRaceSummary, getCareerPhase, getOrCreatePhaseState } from '../game/careerPhaseEngine';
-import { Panel } from '../components/Panel';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
+import { FmKeyValue } from '../components/workspace/FmPane';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { RaceResultTable } from '../components/RaceResultTable';
@@ -16,7 +21,6 @@ import {
   WorkspaceHeader,
   WorkspaceMetric,
   WorkspaceScreen,
-  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import {
   POST_RACE_REVIEW_TABS,
@@ -89,6 +93,28 @@ export function PostRaceReview() {
   const tabs = POST_RACE_REVIEW_TABS.map((item) => item.id === 'investigation' && technicalRisk.unresolvedCount > 0
     ? { ...item, label: `${item.label} · ${technicalRisk.unresolvedCount}` }
     : item);
+  const workspaceItems = tabs.map((item) => ({
+    ...item,
+    description: item.id === 'overview'
+      ? 'Result causes, leadership accountability, driver performance, and technical findings'
+      : item.id === 'classification'
+        ? 'Complete stored race result and team classification'
+        : item.id === 'incidents'
+          ? 'Race events, damage, and repair consequences'
+          : item.id === 'investigation'
+            ? 'Failure cases, evidence confidence, response, and unresolved risk'
+            : 'Driver and constructor championship impact',
+    status: item.id === 'overview'
+      ? bestFinish !== null ? `Best finish P${bestFinish}` : 'No finish'
+      : item.id === 'classification'
+        ? `${results.length} entries`
+        : item.id === 'incidents'
+          ? `${events.length} events`
+          : item.id === 'investigation'
+            ? technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedCount} unresolved` : 'Clear'
+            : `${isActiveReview ? summary?.pointsGained ?? 0 : historicalPoints ?? 0} team points`,
+    urgent: item.id === 'investigation' && technicalRisk.unresolvedCount > 0,
+  }));
   const inboxActions = actionableInboxCount(state);
   const weekendPractice = state.weekendPractice?.raceId === raceId ? state.weekendPractice : undefined;
   const garageAddress = garageAddressForRace(state, raceId);
@@ -156,8 +182,50 @@ export function PostRaceReview() {
           Technical review is optional, but continuing with {technicalRisk.unresolvedCount} unresolved case{technicalRisk.unresolvedCount === 1 ? '' : 's'} keeps a reliability penalty active for future races.
         </div>
       )}
-      <WorkspaceTabs items={tabs} active={activeTab} onChange={setActiveTab} ariaLabel="Post-race review sections" />
       <WorkspaceBody className="ui-phase14-workspace ui-post-race-workspace">
+      <CoreWorkspaceFrame
+        items={workspaceItems}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Post-race review sections"
+        listTitle="Debrief agenda"
+        listMeta={`${race.gpName} · Round ${race.round}`}
+        contextTitle="Race consequences"
+        contextMeta={isActiveReview ? 'Active review' : 'Historical record'}
+        context={(
+          <>
+            <CoreWorkspaceContextGroup title="Team outcome">
+              <FmKeyValue label="Best finish" value={bestFinish !== null ? `P${bestFinish}` : 'No finish'} />
+              <FmKeyValue label="Points scored" value={isActiveReview ? summary?.pointsGained ?? 0 : historicalPoints ?? 0} />
+              <FmKeyValue label="Budget impact" value={isActiveReview ? formatMoney(summary?.budgetImpact ?? 0) : 'Historical'} />
+              <FmKeyValue label="Car condition" value={isActiveReview ? `${Math.round(summary?.carCondition ?? 0)}%` : 'Read only'} />
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Outstanding follow-up">
+              <FmKeyValue label="Technical cases" value={technicalRisk.unresolvedCount} />
+              <FmKeyValue label="Active risk" value={technicalRisk.unresolvedRisk} />
+              <FmKeyValue label="Inbox actions" value={inboxActions} />
+              {technicalRisk.unresolvedCount > 0 && (
+                <p className="mt-2 text-xs text-orange-300">Continuing leaves the unresolved reliability penalty active for future races.</p>
+              )}
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Next step">
+              {isActiveReview ? (
+                state.seasonComplete ? (
+                  <Button className="w-full" variant="primary" onClick={() => navigate('/season-review')}>Open Season Review →</Button>
+                ) : (
+                  <Button className="w-full" variant="primary" onClick={continueToPaddock}>
+                    {technicalRisk.unresolvedCount > 0 ? 'Continue with unresolved risk →' : 'Continue to Paddock Week →'}
+                  </Button>
+                )
+              ) : (
+                <Button className="w-full" onClick={() => navigate('/hq')}>Return to Manager Office →</Button>
+              )}
+              <Button className="mt-2 w-full" variant="ghost" onClick={() => navigate(`/performance?raceId=${raceId}`)}>Open Data Hub →</Button>
+            </CoreWorkspaceContextGroup>
+          </>
+        )}
+        className="ui-core-post-race"
+      >
 
       {activeTab === 'investigation' && (
         <FailureInvestigationPanel state={state} raceId={raceId} isActiveReview={isActiveReview} dispatch={dispatch} />
@@ -371,6 +439,7 @@ export function PostRaceReview() {
           </div>}
         </div>}
       </div>}
+      </CoreWorkspaceFrame>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

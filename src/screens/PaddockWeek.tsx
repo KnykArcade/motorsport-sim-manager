@@ -21,7 +21,7 @@ import {
   hasAdvisorDisagreement,
 } from '../sim/phase18AdvisorEngine';
 import { getGameModeLabel } from '../game/modeRestrictions';
-import { Panel } from '../components/Panel';
+import { CoreWorkspaceSection as Panel } from '../components/workspace/CoreWorkspace';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { NewsPanel } from '../components/NewsPanel';

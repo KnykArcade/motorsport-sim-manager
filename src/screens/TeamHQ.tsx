@@ -11,7 +11,11 @@ import {
   FmPaneHeader,
   FmWorkspaceGrid,
 } from '../components/workspace/FmPane';
-import { Panel } from '../components/Panel';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
 import { RegulationPanel } from '../components/RegulationPanel';
 import { StandingsTable } from '../components/StandingsTable';
 import { StatBar } from '../components/StatBar';
@@ -287,6 +291,58 @@ export function TeamHQ() {
         )}
 
         {tab !== 'race' && (
+          <CoreWorkspaceFrame
+            items={TEAM_HQ_TABS.filter((item) => item.id !== 'race').map((item) => ({
+              ...item,
+              description: item.id === 'car'
+                ? 'Current performance, regulations, and technical position'
+                : item.id === 'organization'
+                  ? 'Department strength, academy capacity, and team capability'
+                  : item.id === 'personnel'
+                    ? 'Drivers, principal, morale, and confidence'
+                    : item.id === 'news'
+                      ? 'Team stories and the wider paddock'
+                      : 'Driver and constructor championship position',
+              status: item.id === 'car'
+                ? car ? `${Math.round(car.condition)}% condition` : 'No car'
+                : item.id === 'organization'
+                  ? orgRatings ? `${orgRatings.overallTeamRating}/100` : 'No rating'
+                  : item.id === 'personnel'
+                    ? `${drivers.length} drivers`
+                    : item.id === 'news'
+                      ? `${state.news.length} stories`
+                      : home.teamChampionshipPosition ? `Team P${home.teamChampionshipPosition}` : 'Unranked',
+            }))}
+            active={tab}
+            onChange={setTab}
+            ariaLabel="Manager home reference sections"
+            listTitle="Team reference"
+            listMeta={team?.name ?? 'Team'}
+            contextTitle="Team context"
+            contextMeta={`${state.seasonYear} ${state.series}`}
+            context={(
+              <>
+                <CoreWorkspaceContextGroup title="Current status">
+                  <FmKeyValue label="Budget" value={team ? formatBudget(team.budget) : '—'} />
+                  <FmKeyValue label="Morale" value={`${Math.round(team?.morale ?? 0)}%`} />
+                  <FmKeyValue label="Car condition" value={`${Math.round(car?.condition ?? 0)}%`} />
+                  <FmKeyValue label="Race seats" value={`${activeDrivers.length}/${minDrivers}`} />
+                </CoreWorkspaceContextGroup>
+                <CoreWorkspaceContextGroup title="Next management action">
+                  <p className="ui-fm-detail-copy">{workflow.reason}</p>
+                  <Button className="mt-3 w-full" variant="primary" onClick={() => navigate(workflow.to)}>{workflow.label} →</Button>
+                </CoreWorkspaceContextGroup>
+                <CoreWorkspaceContextGroup title="Department advice">
+                  {recommendations.slice(0, 2).map((recommendation) => (
+                    <button key={recommendation.id} type="button" className="ui-home-context-link" onClick={() => navigate(recommendation.route)}>
+                      <strong>{recommendation.owner}</strong>
+                      <span>{recommendation.recommendation}</span>
+                    </button>
+                  ))}
+                </CoreWorkspaceContextGroup>
+              </>
+            )}
+          >
           <div className="ui-fm-scroll-column">
             {tab === 'car' && ratings && (
               <div className="grid gap-4 lg:grid-cols-2">
@@ -363,6 +419,7 @@ export function TeamHQ() {
               </div>
             )}
           </div>
+          </CoreWorkspaceFrame>
         )}
       </WorkspaceBody>
       {tab === 'race' && (

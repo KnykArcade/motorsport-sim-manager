@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
-import { Panel } from '../components/Panel';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
 import { Button } from '../components/Button';
 import { RENEW_THRESHOLD, SACK_THRESHOLD } from '../sim/principalEngine';
 import { ratingColor } from '../components/ui';
@@ -29,7 +33,6 @@ import {
   WorkspaceBody,
   WorkspaceHeader,
   WorkspaceScreen,
-  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import {
   FmKeyValue,
@@ -77,6 +80,23 @@ export function TeamPrincipal() {
   const careerTimeline = principalCareerTimeline(state);
   const expectation = state.teamExpectations?.[state.selectedTeamId];
   const createdPrincipal = state.teamPrincipal;
+  const workspaceItems = PRINCIPAL_COMMAND_TABS.map((item) => ({
+    ...item,
+    label: `${item.label}${item.id === 'career' && offers.length ? ` (${offers.length})` : ''}`,
+    status: item.id === 'standing'
+      ? `${principal.jobSecurity}% security`
+      : item.id === 'relationships'
+        ? `${relationships.length} drivers`
+        : item.id === 'identity'
+          ? identity ? 'Defined' : 'Not set'
+          : item.id === 'culture'
+            ? culture ? 'Active' : 'No profile'
+            : item.id === 'departments'
+              ? `${departments ? Object.keys(departments).length : 0} departments`
+              : `${offers.length} approaches`,
+    urgent: item.id === 'standing' && principal.jobSecurity < RENEW_THRESHOLD
+      || item.id === 'relationships' && relationships.some((relationship) => relationship.trust < 35 || relationship.frustration >= 80),
+  }));
 
   return (
     <WorkspaceScreen className="ui-team-people-screen">
@@ -97,14 +117,41 @@ export function TeamPrincipal() {
         <div className="ui-principal-profile-stat"><span>Job security</span><strong className={securityTone(principal.jobSecurity)}>{principal.jobSecurity}</strong></div>
         <div className="ui-principal-profile-stat"><span>Career market</span><strong>{offers.length}</strong></div>
       </div>
-      <WorkspaceTabs
-        items={PRINCIPAL_COMMAND_TABS.map((item) => ({ id: item.id, label: `${item.label}${item.id === 'career' && offers.length ? ` (${offers.length})` : ''}` }))}
+      <WorkspaceBody className="overflow-hidden">
+      <CoreWorkspaceFrame
+        items={workspaceItems}
         active={activeTab}
         onChange={setActiveTab}
         ariaLabel="Team Principal command center sections"
-      />
-      <WorkspaceBody className="space-y-3">
-      <p className="text-[11px] text-neutral-500">{PRINCIPAL_COMMAND_TABS.find((item) => item.id === activeTab)?.description}</p>
+        listTitle="Principal agenda"
+        listMeta={`${commitments.length} active commitment${commitments.length === 1 ? '' : 's'}`}
+        contextTitle="Leadership context"
+        contextMeta={currentTeam?.name ?? 'Between teams'}
+        context={(
+          <>
+            <CoreWorkspaceContextGroup title="Current standing">
+              <FmKeyValue label="Reputation" value={principal.reputation} />
+              <FmKeyValue label="Job security" value={`${principal.jobSecurity}%`} />
+              <FmKeyValue label="Contract" value={`${principal.contractYearsRemaining} year${principal.contractYearsRemaining === 1 ? '' : 's'}`} />
+              <FmKeyValue label="Career offers" value={offers.length} />
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Board expectations">
+              <FmKeyValue label="Primary objective" value={expectation?.primaryObjective ?? 'No current target'} />
+              <FmKeyValue label="Constructor minimum" value={expectation?.minimumConstructorPosition ? `P${expectation.minimumConstructorPosition}` : 'Not specified'} />
+              <FmKeyValue label="Target points" value={expectation?.targetPoints ?? 'Not specified'} />
+              <FmKeyValue label="Board autonomy" value={state.boardroom?.autonomy ?? 'Standard'} />
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Required attention">
+              <p className="ui-fm-detail-copy">
+                {commitments.length > 0
+                  ? `${commitments.length} active promise${commitments.length === 1 ? '' : 's'} or leadership commitment${commitments.length === 1 ? '' : 's'} remain on record.`
+                  : 'No active driver, public, or department commitment is waiting.'}
+              </p>
+              <Button className="mt-3 w-full" onClick={() => navigate('/relationships')}>Open Relationship Center →</Button>
+            </CoreWorkspaceContextGroup>
+          </>
+        )}
+      >
 
       {activeTab === 'standing' && (
         <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -381,6 +428,7 @@ export function TeamPrincipal() {
           </div>
         </div>
       )}
+      </CoreWorkspaceFrame>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

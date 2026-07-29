@@ -9,14 +9,18 @@ import {
   driversForTeam,
   minRaceDriversForSeries,
 } from '../game/careerState';
-import { getTrackById, getRegulationSet } from '../data';
+import { getTrackById } from '../data';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { developmentSlots } from '../sim/facilityEngine';
 import { activeUpgradePrograms } from '../sim/technicalAdapters';
-import { Panel } from '../components/Panel';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
+import { FmKeyValue } from '../components/workspace/FmPane';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
-import { RegulationPanel } from '../components/RegulationPanel';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { NewsPanel } from '../components/NewsPanel';
 import { formatMoney } from '../components/ui';
@@ -258,85 +262,62 @@ export function PreSeasonSetup() {
         </div>
       </div>
       <WorkspaceBody className="ui-phase14-workspace ui-preseason-workspace">
-      <div className="ui-preseason-command-grid">
-        <Panel title="Your first management week" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Three decisions</span>}>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <div className="space-y-3">
-              <p className="text-sm text-neutral-300">
-                Your first-day handover is complete. Confirm the race lineup, finish the car launch and testing programme, then agree the owner mandate before Round 1.
+      <CoreWorkspaceFrame
+        items={MEANINGFUL_PRESEASON_BRIEFINGS.map((briefing) => ({
+          id: briefing.id,
+          label: briefing.title,
+          description: briefing.summary,
+          status: approvals[briefing.id] ? 'Confirmed' : briefing.eyebrow,
+          urgent: !approvals[briefing.id],
+        }))}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Preseason decisions"
+        listTitle="First-week plan"
+        listMeta={`${approvedCount}/${totalTabs} decisions confirmed`}
+        detailTitle={activeBriefing.title}
+        detailMeta={activeBriefing.eyebrow}
+        contextTitle="Preseason context"
+        contextMeta={race?.gpName ?? 'Opening race'}
+        context={(
+          <>
+            <CoreWorkspaceContextGroup title="Completion">
+              <FmKeyValue label="Welcome Pack" value={welcomePackAcknowledged ? 'Acknowledged' : 'Pending'} />
+              <FmKeyValue label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} />
+              <FmKeyValue label="Technical programme" value={canConfirmDevelopment ? 'Ready to confirm' : 'Incomplete'} />
+              <FmKeyValue label="Owner mandate" value={approvals.seasonObjectives ? 'Confirmed' : 'Pending'} />
+              {!welcomePackAcknowledged && (
+                <Button className="mt-3 w-full" onClick={acknowledgeWelcomePack}>Acknowledge Welcome Pack</Button>
+              )}
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Team handover">
+              <FmKeyValue label="Team" value={team?.name ?? '—'} />
+              <FmKeyValue label="Principal" value={state.principal?.name ?? 'Your principal'} />
+              <FmKeyValue label="Budget" value={team ? formatMoney(team.budget) : '—'} />
+              <FmKeyValue label="Readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Testing pending'} />
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Race drivers">
+              {activeDrivers.map((driver) => (
+                <FmKeyValue key={driver.id} label={`#${driver.number} ${driver.name}`} value={`OVR ${driver.ratings.overall}`} />
+              ))}
+              {drivers.length > activeDrivers.length && (
+                <p className="mt-2 text-xs text-neutral-500">Reserve: {drivers.slice(activeDrivers.length).map((driver) => driver.name).join(', ')}</p>
+              )}
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Next step">
+              <p className="ui-fm-detail-copy">
+                {checklistComplete
+                  ? 'All three decisions are complete. Open the Race 1 briefing.'
+                  : `${remainingApprovals} first-week item${remainingApprovals === 1 ? '' : 's'} remain before Race 1.`}
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <InfoBlock label="Team" value={team?.name ?? '—'} detail={`Reputation ${Math.round(team?.reputation ?? 0)} · Morale ${Math.round(team?.morale ?? 0)}%`} />
-                <InfoBlock label="Team Principal" value={state.principal?.name ?? 'Your principal'} detail={`Level ${state.principal?.level ?? 0} · ${Math.round(state.principal?.reputation ?? 0)} reputation`} />
-                <InfoBlock label="Welcome Pack" value={welcomePackAcknowledged ? 'Acknowledged' : 'Pending'} detail="Team, budget, commercial, and Race 1 reports" />
-                <InfoBlock label="Grid readiness" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Lineup is ready for Race 1' : 'Driver signing still required'} />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 p-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Drivers</div>
-                <div className="mt-2 space-y-2">
-                  {activeDrivers.map((driver) => (
-                    <div key={driver.id} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="text-neutral-200">{driver.name}</span>
-                      <span className="text-neutral-500">#{driver.number} · OVR {driver.ratings.overall}</span>
-                    </div>
-                  ))}
-                  {drivers.length > activeDrivers.length && (
-                    <div className="text-xs text-neutral-500">
-                      Reserve drivers: {drivers.slice(activeDrivers.length).map((driver) => driver.name).join(', ')}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {(() => {
-                const regSet = getRegulationSet(state.regulationSetId);
-                if (!regSet) return null;
-                return <RegulationPanel regulationSet={regSet} seasonYear={state.seasonYear} locked={isSingleSeason} compact />;
-              })()}
-            </div>
-          </div>
-        </Panel>
-
-        <div className="ui-preseason-briefing-list">
-          <Panel title="Season progress" actions={<span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{approvedCount}/{totalTabs} confirmed</span>}>
-            <div className="space-y-2">
-              {MEANINGFUL_PRESEASON_BRIEFINGS.map((briefing, index) => {
-                const approved = approvals[briefing.id];
-                const isActive = activeTab === briefing.id;
-                return (
-                  <button
-                    key={briefing.id}
-                    type="button"
-                    onClick={() => setActiveTab(briefing.id)}
-                    className={`flex w-full items-start gap-3 rounded-lg border px-3 py-3 text-left transition ${
-                      isActive
-                        ? 'border-[var(--era-accent)] bg-[var(--era-accent-soft)]'
-                        : 'border-neutral-800 bg-neutral-950/40 hover:border-neutral-700'
-                    }`}
-                  >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900 text-xs font-bold text-neutral-200">
-                      {approved ? '✓' : briefing.order}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-neutral-100">{briefing.title}</span>
-                        <span className="text-[10px] uppercase tracking-wide text-neutral-500">{briefing.eyebrow}</span>
-                      </span>
-                      <span className="mt-1 block text-xs text-neutral-400">{briefing.summary}</span>
-                    </span>
-                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                      {approved ? 'Done' : index === 0 ? 'Intro' : 'Next task'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </Panel>
-        </div>
-      </div>
-
-      <div className="space-y-4">
+              <Button className="mt-3 w-full" variant="primary" onClick={advanceToBriefing} disabled={!checklistComplete} title={advanceBlockedReason}>
+                Advance to Race 1 Briefing →
+              </Button>
+            </CoreWorkspaceContextGroup>
+          </>
+        )}
+      >
+      <div className="space-y-0">
         {activeTab === 'teamOverview' && (
           <BriefingPanel
             briefing={activeBriefing}
@@ -636,6 +617,7 @@ export function PreSeasonSetup() {
           </BriefingPanel>
         )}
       </div>
+      </CoreWorkspaceFrame>
       </WorkspaceBody>
     </WorkspaceScreen>
   );
