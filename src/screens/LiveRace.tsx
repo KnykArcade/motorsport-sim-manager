@@ -44,17 +44,14 @@ import { SelectedDriverPanel } from './liveRace/SelectedDriverPanel';
 import { liveRaceAdvanceBlockedReason, selectedLiveCar } from './entryRacePresentationViewModel';
 import {
   canDelegateLiveRaceRecommendation,
+  liveRaceDnfAlertFromTransition,
   liveRaceAutoPauseReason,
   liveRaceDelegationProfile,
+  type LiveRaceDnfAlert,
   useLiveRaceWorkspacePreferences,
 } from './liveRace/liveRaceWorkspaceModel';
 
 type Speed = 1 | 5 | 15 | 30;
-
-type DnfAlert = {
-  lap: number;
-  entries: Array<{ driverId: string; cause: string; isPlayer?: boolean }>;
-};
 
 export function LiveRace() {
   const { raceId } = useParams();
@@ -89,8 +86,8 @@ export function LiveRace() {
   const animatedTrackProgressRef = useRef<Record<string, number>>({});
   const [modal, setModal] = useState<'log' | 'strategy' | 'orders' | null>(null);
   const [ordersFocusDriverId, setOrdersFocusDriverId] = useState<string | null>(null);
-  const [dnfAlert, setDnfAlert] = useState<DnfAlert | null>(null);
-  const [aiDnfFlash, setAiDnfFlash] = useState<DnfAlert | null>(null);
+  const [dnfAlert, setDnfAlert] = useState<LiveRaceDnfAlert | null>(null);
+  const [aiDnfFlash, setAiDnfFlash] = useState<LiveRaceDnfAlert | null>(null);
   const [decisionSecondsLeft, setDecisionSecondsLeft] = useState<number | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [autoPauseNotice, setAutoPauseNotice] = useState<string | null>(null);
@@ -151,7 +148,7 @@ export function LiveRace() {
         setPlaying(false);
         setAutoPauseNotice(pauseReason);
       }
-      const alert = dnfAlertFromTransition(s, next);
+      const alert = liveRaceDnfAlertFromTransition(s, next);
       if (alert) {
         const playerEntries = alert.entries.filter((entry) => entry.isPlayer);
         const aiEntries = alert.entries.filter((entry) => !entry.isPlayer);
@@ -824,21 +821,12 @@ export function LiveRace() {
   );
 }
 
-function dnfAlertFromTransition(previous: LiveRaceState, next: LiveRaceState): DnfAlert | null {
-  const previousRunning = new Map(previous.cars.map((car) => [car.driverId, car.running]));
-  const entries = next.cars
-    .filter((car) => previousRunning.get(car.driverId) && !car.running && car.status === 'DNF')
-    .map((car) => ({ driverId: car.driverId, cause: car.lastIncident ?? 'Retired', isPlayer: car.isPlayer }));
-  if (entries.length === 0) return null;
-  return { lap: next.currentLap, entries };
-}
-
 function DnfOverlay({
   alert,
   nameOf,
   onClose,
 }: {
-  alert: DnfAlert;
+  alert: LiveRaceDnfAlert;
   nameOf: (driverId: string) => string;
   onClose: () => void;
 }) {

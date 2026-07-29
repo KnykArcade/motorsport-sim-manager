@@ -61,6 +61,49 @@ function completeFirstDay(state: GameState): GameState {
   return gameReducer(next, { type: 'COMPLETE_CAREER_LAUNCH' }) ?? next;
 }
 
+function liveRaceReady(state: GameState): GameState {
+  const race = state.calendar[state.currentRaceIndex];
+  if (!race || !state.careerPhase) throw new Error('Live Race fixture has no current event');
+  const ready = {
+    ...state,
+    careerPhase: {
+      ...state.careerPhase,
+      currentPhase: 'race_weekend',
+      careerLaunch: state.careerPhase.careerLaunch
+        ? { ...state.careerPhase.careerLaunch, required: false }
+        : undefined,
+    },
+    garageAddresses: [{
+      raceId: race.id,
+      teamId: state.selectedTeamId,
+      seasonYear: state.seasonYear,
+      round: race.round,
+      tone: 'CalmExecute',
+      messageLabel: 'Calm and execute',
+      delegated: false,
+      recommendedTone: 'CalmExecute',
+      recommendationReason: 'Rendered Live Race fixture',
+      reactions: [],
+    }],
+  };
+  const qualifying = gameReducer(ready, {
+    type: 'RUN_QUALIFYING',
+    decisions: ready.drivers
+      .filter((driver) => driver.teamId === ready.selectedTeamId)
+      .map((driver) => ({
+        driverId: driver.id,
+        setupId: '',
+        runPlanId: 'StandardPush',
+        runs: 2,
+        tyreApproach: 'Standard',
+      })),
+  });
+  if (!qualifying?.qualifyingResults[race.id]) {
+    throw new Error('Live Race fixture could not complete qualifying');
+  }
+  return qualifying;
+}
+
 async function mountSavedCareer(state: GameState) {
   await page.viewport(1280, 720);
   localStorage.clear();
@@ -156,6 +199,31 @@ describe('Phase 28 rendered real-play verification', () => {
       expect(shell.scrollWidth).toBeLessThanOrEqual(width);
       expect(action.getBoundingClientRect().right).toBeLessThanOrEqual(width);
       expect(workspace?.getBoundingClientRect().height ?? 0).toBeGreaterThan(240);
+    }
+  });
+
+  it('renders Live Race as an isolated full-screen workspace at supported viewport sizes', async () => {
+    const state = liveRaceReady(completeFirstDay(newCareer('Career')));
+    const race = state.calendar[state.currentRaceIndex];
+    await mountSavedCareer(state);
+    window.location.hash = `#/live-race/${race.id}`;
+
+    const liveRaceScreen = page.getByTestId('f1-1990s-live-race-screen');
+    await expect.element(liveRaceScreen).toBeInTheDocument();
+    await expect.element(page.getByRole('navigation', { name: 'Game navigation' })).not.toBeInTheDocument();
+
+    for (const [width, height] of [[1024, 720], [1280, 720], [1920, 1080]] as const) {
+      await page.viewport(width, height);
+      const element = liveRaceScreen.element();
+      const bounds = element.getBoundingClientRect();
+      expect(document.querySelector('.ui-sidebar')).toBeNull();
+      expect(document.querySelector('.ui-topbar')).toBeNull();
+      expect(document.querySelector('.ui-context-navigation')).toBeNull();
+      expect(document.querySelector('.ui-main-content')).toBeNull();
+      expect(bounds.left).toBe(0);
+      expect(bounds.top).toBe(0);
+      expect(bounds.width).toBe(width);
+      expect(bounds.height).toBe(height);
     }
   });
 });

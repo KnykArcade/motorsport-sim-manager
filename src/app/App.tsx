@@ -81,9 +81,11 @@ type ExtraRouteCheck = (state: GameState, pathname: string) => {
 function InGameRoute({
   children,
   extraCheck,
+  immersive = false,
 }: {
   children: ReactNode;
   extraCheck?: ExtraRouteCheck;
+  immersive?: boolean;
 }) {
   const { state } = useGame();
   const navigate = useNavigate();
@@ -94,7 +96,9 @@ function InGameRoute({
   const extra = access.available && extraCheck
     ? extraCheck(state, location.pathname)
     : { allowed: true };
-  if (access.available && extra.allowed) return <Layout>{children}</Layout>;
+  if (access.available && extra.allowed) {
+    return immersive ? <>{children}</> : <Layout>{children}</Layout>;
+  }
 
   const nextAction = workflowDestination(state);
   const definition = access.definition ?? routeDefinitionForPath(location.pathname);
@@ -196,7 +200,7 @@ export default function App() {
           <Route path="/history" element={<InGameRoute><RaceHistory /></InGameRoute>} />
           <Route path="/performance" element={<InGameRoute><PerformanceDataHub /></InGameRoute>} />
           <Route path="/weekend" element={<InGameRoute extraCheck={raceWeekendCheck}><RaceWeekend /></InGameRoute>} />
-          <Route path="/live-race/:raceId" element={<InGameRoute extraCheck={liveRaceCheck}><LiveRace /></InGameRoute>} />
+          <Route path="/live-race/:raceId" element={<InGameRoute extraCheck={liveRaceCheck} immersive><LiveRace /></InGameRoute>} />
           <Route path="/results/:raceId" element={<InGameRoute><RaceResults /></InGameRoute>} />
           <Route path="/season-review" element={<InGameRoute><SeasonReview /></InGameRoute>} />
           <Route path="/offseason" element={<InGameRoute><Offseason /></InGameRoute>} />

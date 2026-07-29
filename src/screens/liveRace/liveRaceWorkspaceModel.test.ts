@@ -9,6 +9,7 @@ import {
   buildLiveRaceStrategyProjection,
   canDelegateLiveRaceRecommendation,
   driverIdForRaceEvent,
+  liveRaceDnfAlertFromTransition,
   liveRaceAutoPauseReason,
   liveRaceWorkspaceStorageKey,
   loadLiveRaceWorkspacePreferences,
@@ -201,6 +202,154 @@ describe('live race workflow decisions', () => {
       mechanicalProblems: false,
       engineerMessages: false,
     })).toBeNull();
+  });
+
+  it('keeps running through an AI-only DNF while preserving its retirement alert', () => {
+    const player = car();
+    const opponent = car({
+      driverId: 'driver-ai',
+      teamId: 'team-ai',
+      isPlayer: false,
+    });
+    const previous = live({ cars: [player, opponent] });
+    const next = live({
+      currentLap: 21,
+      cars: [
+        player,
+        {
+          ...opponent,
+          running: false,
+          status: 'DNF',
+          position: null,
+          retiredOnLap: 21,
+          lastIncident: 'Engine failure',
+        },
+      ],
+      events: [{
+        lap: 21,
+        text: 'Opponent retires — engine failure.',
+        category: 'incident',
+      }],
+      retirements: 1,
+      lastIncident: {
+        lap: 21,
+        driverIds: ['driver-ai'],
+        severity: 0.6,
+        safetyCarDeployed: false,
+        trackProgress: 0.4,
+      },
+    });
+
+    expect(liveRaceAutoPauseReason(previous, next, {
+      incidents: true,
+      pitWindows: false,
+      weatherChanges: false,
+      mechanicalProblems: false,
+      engineerMessages: false,
+    })).toBeNull();
+    expect(liveRaceDnfAlertFromTransition(previous, next)).toMatchObject({
+      lap: 21,
+      entries: [{ driverId: 'driver-ai', isPlayer: false }],
+    });
+  });
+
+  it.each(['driver-1', 'driver-2'])(
+    'pauses and raises the acknowledgment alert when player driver %s retires',
+    (retiredDriverId) => {
+      const playerOne = car({ driverId: 'driver-1' });
+      const playerTwo = car({ driverId: 'driver-2' });
+      const previous = live({ cars: [playerOne, playerTwo] });
+      const next = live({
+        currentLap: 21,
+        cars: [playerOne, playerTwo].map((entry) => entry.driverId === retiredDriverId
+          ? {
+              ...entry,
+              running: false,
+              status: 'DNF' as const,
+              position: null,
+              retiredOnLap: 21,
+              lastIncident: 'Gearbox failure',
+            }
+          : entry),
+        events: [{
+          lap: 21,
+          text: 'Player car retires — gearbox failure.',
+          category: 'incident',
+        }],
+        retirements: 1,
+        lastIncident: {
+          lap: 21,
+          driverIds: [retiredDriverId],
+          severity: 0.6,
+          safetyCarDeployed: false,
+          trackProgress: 0.6,
+        },
+      });
+
+      expect(liveRaceAutoPauseReason(previous, next, {
+        incidents: true,
+        pitWindows: false,
+        weatherChanges: false,
+        mechanicalProblems: false,
+        engineerMessages: false,
+      })).toContain('new incident');
+      expect(liveRaceDnfAlertFromTransition(previous, next)).toMatchObject({
+        entries: [{ driverId: retiredDriverId, isPlayer: true }],
+      });
+    },
+  );
+
+  it('pauses for simultaneous player and AI retirements and for ordinary non-DNF incidents', () => {
+    const player = car();
+    const opponent = car({
+      driverId: 'driver-ai',
+      teamId: 'team-ai',
+      isPlayer: false,
+    });
+    const previous = live({ cars: [player, opponent] });
+    const simultaneous = live({
+      currentLap: 21,
+      cars: [player, opponent].map((entry) => ({
+        ...entry,
+        running: false,
+        status: 'DNF' as const,
+        position: null,
+        retiredOnLap: 21,
+        lastIncident: 'Collision',
+      })),
+      events: [{ lap: 21, text: 'Two cars retire after contact.', category: 'incident' }],
+      retirements: 2,
+      lastIncident: {
+        lap: 21,
+        driverIds: ['driver-1', 'driver-ai'],
+        severity: 0.9,
+        safetyCarDeployed: true,
+        trackProgress: 0.7,
+      },
+    });
+    const ordinaryIncident = live({
+      currentLap: 21,
+      cars: [player, opponent],
+      events: [{ lap: 21, text: 'Opponent spins but continues.', category: 'incident' }],
+      lastIncident: {
+        lap: 21,
+        driverIds: ['driver-ai'],
+        severity: 0.3,
+        safetyCarDeployed: false,
+        trackProgress: 0.2,
+      },
+    });
+    const settings = {
+      incidents: true,
+      pitWindows: false,
+      weatherChanges: false,
+      mechanicalProblems: false,
+      engineerMessages: false,
+    };
+
+    expect(liveRaceAutoPauseReason(previous, simultaneous, settings)).toContain('new incident');
+    expect(liveRaceDnfAlertFromTransition(previous, simultaneous)?.entries).toHaveLength(2);
+    expect(liveRaceAutoPauseReason(previous, ordinaryIncident, settings)).toContain('new incident');
   });
 
   it('delegates only confident routine strategy advice and escalates major calls', () => {
