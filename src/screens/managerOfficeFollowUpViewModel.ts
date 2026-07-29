@@ -37,8 +37,8 @@ export function buildManagerOfficeFollowUps(input: {
       id: `follow-up-news-${item.id}`,
       title: item.headline,
       detail: item.body ?? 'Race-weekend story from the motorsport world.',
-      route: '/news',
-      routeLabel: 'Open News Center',
+      route: `/news?tab=feed&focus=${encodeURIComponent(item.id)}`,
+      routeLabel: 'Open Relevant Story',
       round: item.round,
       timestamp: item.timestamp,
     }));
@@ -63,8 +63,8 @@ export function buildManagerOfficeFollowUps(input: {
       id: `follow-up-action-${message.id}`,
       title: message.title,
       detail: message.whyItMatters ?? message.body ?? 'This item still needs attention.',
-      route: message.route,
-      routeLabel: message.routeLabel,
+      route: message.actionTarget?.route ?? message.route,
+      routeLabel: message.actionTarget?.routeLabel ?? message.routeLabel,
       round: message.round,
       timestamp: message.timestamp,
     }));

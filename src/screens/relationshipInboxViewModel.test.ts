@@ -32,7 +32,7 @@ describe('relationship Inbox alert', () => {
       severity: 'critical',
       category: 'people',
       title: 'Relationship priority: Team Owner',
-      route: '/relationships',
+      route: '/relationships?focus=Owner%3Aowner',
       actionable: true,
     });
     expect(message?.source).toBe('Relationship advisor');

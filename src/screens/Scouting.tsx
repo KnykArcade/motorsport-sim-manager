@@ -250,6 +250,7 @@ export function Scouting() {
         <IntelligenceDashboard
           state={state}
           budget={budget}
+          focusedReportId={searchParams.get('focus') ?? undefined}
           filter={intelFilter}
           onFilter={setIntelFilter}
           onAction={(reportId, action) => dispatch({ type: 'RESOLVE_INTELLIGENCE_ACTION', reportId, action })}
@@ -336,21 +337,22 @@ export function Scouting() {
         </Panel>
       )}
 
-      {bundle && activeTab === 'senior' && <ScoutingTargetList items={seniorRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
-      {bundle && activeTab === 'youth' && <ScoutingTargetList items={youthRows} budget={budget} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
+      {bundle && activeTab === 'senior' && <ScoutingTargetList items={seniorRows} budget={budget} preferredId={focusedTargetId ?? undefined} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
+      {bundle && activeTab === 'youth' && <ScoutingTargetList items={youthRows} budget={budget} preferredId={focusedTargetId ?? undefined} sort={scoutingSort} onSort={(key) => updateScoutingSort(key, setScoutingSort)} />}
       </WorkspaceBody>
     </WorkspaceScreen>
   );
 }
 
-function IntelligenceDashboard({ state, budget, filter, onFilter, onAction }: {
+function IntelligenceDashboard({ state, budget, focusedReportId, filter, onFilter, onAction }: {
   state: NonNullable<ReturnType<typeof useGame>['state']>;
   budget: number;
+  focusedReportId?: string;
   filter: 'Active' | 'History';
   onFilter: (filter: 'Active' | 'History') => void;
   onAction: (reportId: string, action: IntelligenceAction) => void;
 }) {
-  const [selectedId, setSelectedId] = useState<string>();
+  const [selectedId, setSelectedId] = useState<string | undefined>(focusedReportId);
   const allReports = state.phase18?.intelligenceReports ?? [];
   const reports = allReports.filter((report) => filter === 'Active'
     ? (report.status ?? 'Active') === 'Active'
@@ -489,16 +491,18 @@ function updateScoutingSort(
 function ScoutingTargetList({
   items,
   budget,
+  preferredId,
   sort,
   onSort,
 }: {
   items: ScoutingTargetRow[];
   budget: number;
+  preferredId?: string;
   sort: ScoutingListSort;
   onSort: (key: ScoutingListSortKey) => void;
 }) {
   const ordered = sortScoutingListItems(items, sort) as ScoutingTargetRow[];
-  const [selectedId, setSelectedId] = useState<string>();
+  const [selectedId, setSelectedId] = useState<string | undefined>(preferredId);
   const selected = selectedScoutingTarget(ordered, selectedId);
   return (
     <FmWorkspaceGrid columns="two" className="ui-scouting-target-grid">

@@ -46,7 +46,10 @@ export function TechnicalCenter() {
   const activeSection = searchParams.has('section') ? technicalSectionFromQuery(searchParams.get('section')) : section;
   const navigateTechnicalSection = (next: TechnicalSection) => {
     setSection(next);
-    setSearchParams(next === 'command' ? {} : { section: next });
+    const params = new URLSearchParams(searchParams);
+    if (next === 'command') params.delete('section');
+    else params.set('section', next);
+    setSearchParams(params);
   };
   if (!state) return null;
 

@@ -21,6 +21,7 @@ import {
   writeNavigationHistory,
   type NavigationHistoryEntry,
 } from './layoutHistory';
+import { DecisionFollowThroughBar } from './DecisionFollowThroughBar';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { state, saveNow } = useGame();
@@ -263,6 +264,8 @@ export function Layout({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
+
+          <DecisionFollowThroughBar />
 
           <main className="era-content ui-main-content min-h-0 flex-1 overflow-auto p-3" data-route={location.pathname}>
             {children}

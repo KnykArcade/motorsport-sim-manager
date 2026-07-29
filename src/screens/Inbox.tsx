@@ -29,6 +29,7 @@ import {
   writeInboxWorkspaceState,
   type InboxWorkspaceState,
 } from './inboxWorkspaceStorage';
+import { inboxActionNavigationState } from './decisionActionTarget';
 
 type InboxFilter = 'all' | 'action' | InboxCategory;
 type InboxSection = 'all' | InboxMessageKind;
@@ -208,9 +209,11 @@ export function Inbox() {
     const returnParams = new URLSearchParams(searchParams);
     returnParams.set('message', message.id);
     navigate(message.route, {
-      state: {
-        inboxReturn: `/inbox?${returnParams.toString()}`,
-      },
+      state: inboxActionNavigationState(
+        `/inbox?${returnParams.toString()}`,
+        message.title,
+        message.actionTarget!,
+      ),
     });
   };
 
@@ -416,6 +419,13 @@ export function Inbox() {
                 <ContextRow label="Priority" value={SEVERITY_LABELS[selectedMessage.severity]} />
                 <ContextRow label="Category" value={selectedMessage.category} />
                 {selectedMessage.timing && <ContextRow label="Timing" value={inboxTimingLabel(selectedMessage.timing)} />}
+                {selectedMessage.actionTarget && (
+                  <>
+                    <ContextRow label="Destination" value={selectedMessage.actionTarget.routeLabel} />
+                    <ContextRow label="Resolution" value={selectedMessage.actionTarget.resolutionCondition} />
+                    <ContextRow label="Follow-up" value={selectedMessage.actionTarget.followUpLabel} />
+                  </>
+                )}
               </ContextSection>
             )}
 

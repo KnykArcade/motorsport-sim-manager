@@ -108,8 +108,9 @@ describe('inboxViewModel', () => {
       : undefined;
 
     expect(item).toMatchObject({
-      route: '/drivers',
+      route: `/drivers?focus=${encodeURIComponent(driver!.id)}`,
       routeLabel: 'Open Drivers',
+      actionable: false,
     });
   });
 
@@ -164,7 +165,7 @@ describe('inboxViewModel', () => {
     expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
       id: 'inbox-market-signing-market-driver-2',
       title: 'Queued signing: Queued Market Driver',
-      route: '/offseason',
+      route: '/offseason?tab=lineup&focus=market-driver-2',
       routeLabel: 'Confirm Lineup',
       kind: 'recommended',
       timing: 'season_end',
@@ -439,7 +440,7 @@ describe('inboxViewModel', () => {
       },
     };
     expect(inboxMessages(state).find((message) => message.id === 'inbox-critical-parts')?.route)
-      .toBe('/technical?section=parts');
+      .toBe(`/technical?section=parts&focus=${encodeURIComponent(fitted!.id)}`);
   });
 
   it('maps news priority to inbox severity', () => {
@@ -473,7 +474,7 @@ describe('inboxViewModel', () => {
       id: 'inbox-news-news-finance',
       actionable: true,
       kind: 'recommended',
-      route: '/finance',
+      route: '/finance?focus=news-finance',
       source: 'Team leadership',
     }));
   });
@@ -500,12 +501,12 @@ describe('inboxViewModel', () => {
     expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
       id: 'inbox-sponsor-relationships-at-risk',
       severity: 'critical',
-      route: '/sponsors?tab=objectives',
+      route: `/sponsors?tab=objectives&focus=${encodeURIComponent(firstSponsor.id)}`,
       actionable: true,
     }));
     expect(inboxMessages(state)).toContainEqual(expect.objectContaining({
       id: 'inbox-news-sponsor-breach',
-      route: '/sponsors?tab=objectives',
+      route: '/sponsors?tab=objectives&focus=sponsor-breach',
       actionable: true,
     }));
   });

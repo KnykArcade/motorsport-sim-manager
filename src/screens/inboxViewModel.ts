@@ -21,6 +21,11 @@ import {
   staffResponsibilities,
   staffResponsibilityPolicy,
 } from './staffResponsibilitiesViewModel';
+import {
+  focusedRoute,
+  type DecisionActionFocus,
+  type DecisionActionTarget,
+} from './decisionActionTarget';
 
 export type InboxSeverity = 'critical' | 'action' | 'info';
 
@@ -61,6 +66,12 @@ export type InboxMessage = {
   responsibility?: StaffResponsibilityId;
   /** Safe routine information that can leave the Inbox when confidently delegated. */
   routineDelegatable?: boolean;
+  /** Stable identity and precise owning destination shared by every surface. */
+  actionTarget?: DecisionActionTarget;
+};
+
+type InboxMessageInput = Omit<InboxMessage, 'actionTarget'> & {
+  actionTarget?: Partial<DecisionActionTarget> & { focus?: DecisionActionFocus };
 };
 
 const SEVERITY_ORDER: Record<InboxSeverity, number> = { critical: 0, action: 1, info: 2 };
@@ -86,8 +97,8 @@ function newsSeverity(item: NewsItem): InboxSeverity {
   return 'info';
 }
 
-function technicalMessages(state: GameState): InboxMessage[] {
-  const messages: InboxMessage[] = [];
+function technicalMessages(state: GameState): InboxMessageInput[] {
+  const messages: InboxMessageInput[] = [];
   const technical = technicalStateForTeam(state, state.selectedTeamId);
   const slots = developmentSlots(state.facilities);
   const active = technical?.activeProjects.length ?? 0;
@@ -100,7 +111,7 @@ function technicalMessages(state: GameState): InboxMessage[] {
       category: 'technical',
       title: `Technical Director's briefing: ${proposals.length} proposal${proposals.length === 1 ? '' : 's'} awaiting your decision`,
       body: proposals.map((proposal) => proposal.title).join(' · '),
-      route: '/technical',
+      route: focusedRoute('/technical', { section: 'command', id: proposals[0].id }),
       routeLabel: 'Open Technical Center',
       actionable: true,
       responsibility: 'technical',
@@ -117,7 +128,7 @@ function technicalMessages(state: GameState): InboxMessage[] {
       category: 'technical',
       title: `${criticalParts.length} fitted component${criticalParts.length === 1 ? ' is' : 's are'} at critical condition`,
       body: criticalParts.map((part) => `${part.name} (${Math.round(part.condition)}%)`).join(' · '),
-      route: '/technical?section=parts',
+      route: focusedRoute('/technical', { section: 'parts', id: criticalParts[0].id }),
       routeLabel: 'Open Parts & Factory',
       actionable: true,
       responsibility: 'technical',
@@ -142,8 +153,8 @@ function technicalMessages(state: GameState): InboxMessage[] {
   return messages;
 }
 
-function paddockMessages(state: GameState): InboxMessage[] {
-  const messages: InboxMessage[] = [];
+function paddockMessages(state: GameState): InboxMessageInput[] {
+  const messages: InboxMessageInput[] = [];
   for (const session of (state.media?.sessions ?? []).filter((entry) => entry.status === 'Pending')) {
     const crisis = session.type === 'Crisis';
     messages.push({
@@ -152,7 +163,7 @@ function paddockMessages(state: GameState): InboxMessage[] {
       category: 'paddock',
       title: crisis ? `Crisis media response: ${session.title}` : `Media availability: ${session.title}`,
       body: `${session.questions.length - session.answers.length} question${session.questions.length - session.answers.length === 1 ? '' : 's'} remain. You may answer or decline the session.`,
-      route: '/news?tab=media',
+      route: focusedRoute('/news', { tab: 'media', id: session.id }),
       routeLabel: 'Open Media Session',
       actionable: true,
       blocking: false,
@@ -191,7 +202,7 @@ function paddockMessages(state: GameState): InboxMessage[] {
       category: 'paddock',
       title: `Intelligence: ${report.title}`,
       body: report.summary,
-      route: '/scouting',
+      route: focusedRoute('/scouting', { tab: 'intelligence', id: report.id }),
       routeLabel: 'Open Intelligence',
       actionable: true,
       round: report.discoveredRound,
@@ -208,7 +219,7 @@ function paddockMessages(state: GameState): InboxMessage[] {
       category: 'paddock',
       title: item.status === 'FindingsReady' ? 'Failure investigation findings are ready' : 'A failure is awaiting investigation',
       body: item.incidentSummary,
-      route: '/paddock',
+      route: focusedRoute('/paddock', { tab: 'debrief', id: item.id }),
       routeLabel: 'Open Paddock Week',
       actionable: true,
       round: item.round,
@@ -274,8 +285,8 @@ function paddockMessages(state: GameState): InboxMessage[] {
   return messages;
 }
 
-function peopleMessages(state: GameState): InboxMessage[] {
-  const messages: InboxMessage[] = [];
+function peopleMessages(state: GameState): InboxMessageInput[] {
+  const messages: InboxMessageInput[] = [];
   const currentRound = state.calendar[state.currentRaceIndex]?.round ?? state.currentRaceIndex + 1;
   const recruitmentNames = new Map([
     ...state.drivers.map((driver) => [driver.id, driver.name] as const),
@@ -332,7 +343,7 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `Queued signing: ${signing.name}`,
       body: 'The driver is queued for the next season. Review the lineup before confirming the rollover.',
-      route: '/offseason',
+      route: focusedRoute('/offseason', { tab: 'lineup', id: signing.sourceId }),
       routeLabel: 'Confirm Lineup',
       actionable: true,
       kind: 'recommended',
@@ -361,7 +372,7 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `${raceEngineer.name} prepared the weekend plan`,
       body: `${pendingWeekendRecommendations.length} staff recommendation${pendingWeekendRecommendations.length === 1 ? '' : 's'} prepared for the active weekend.`,
-      route: '/weekend',
+      route: focusedRoute('/weekend', { section: 'overview', id: race.id }),
       routeLabel: 'Open Weekend Plan',
       actionable: true,
       source: 'Race engineering',
@@ -385,7 +396,7 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `Promise to ${driver?.name ?? 'a driver'} is coming due`,
       body: promise.notes ?? `Due ${promise.dueSeason}${promise.dueRound ? ` · R${promise.dueRound}` : ''}.`,
-      route: '/relationships',
+      route: focusedRoute('/relationships', { id: promise.driverId }),
       routeLabel: 'Open Driver Relations',
       actionable: true,
       round: promise.dueRound,
@@ -444,9 +455,11 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: `${driver.name}'s contract needs attention`,
       body: `Current term: ${driver.contractYearsRemaining ?? 1} year${(driver.contractYearsRemaining ?? 1) === 1 ? '' : 's'} remaining.`,
-      route: canNegotiate ? `/drivers/${encodeURIComponent(driver.id)}/negotiate` : '/drivers',
+      route: canNegotiate
+        ? `/drivers/${encodeURIComponent(driver.id)}/negotiate`
+        : focusedRoute('/drivers', { id: driver.id }),
       routeLabel: canNegotiate ? 'Open Negotiation' : 'Open Drivers',
-      actionable: true,
+      actionable: canNegotiate,
     });
   });
 
@@ -458,7 +471,7 @@ function peopleMessages(state: GameState): InboxMessage[] {
       category: 'people',
       title: offer.kind === 'Offer' ? `Job offer from ${team?.name ?? 'a rival team'}` : `${team?.name ?? 'A rival team'} is rumored to be interested in you`,
       body: `${offer.objective} · ${offer.contractYears}-year deal · ${offer.budgetTier} budget`,
-      route: '/principal',
+      route: focusedRoute('/principal', { tab: 'career', id: offer.id }),
       routeLabel: 'Open Principal',
       actionable: offer.kind === 'Offer',
     });
@@ -466,8 +479,8 @@ function peopleMessages(state: GameState): InboxMessage[] {
   return messages;
 }
 
-function businessMessages(state: GameState): InboxMessage[] {
-  const messages: InboxMessage[] = [];
+function businessMessages(state: GameState): InboxMessageInput[] {
+  const messages: InboxMessageInput[] = [];
   const endangeredSponsors = (state.commercial?.sponsors ?? []).filter((sponsor) =>
     sponsor.relationshipStatus === 'Warning' || sponsor.relationshipStatus === 'Breach' || sponsor.confidence <= 40,
   );
@@ -478,7 +491,7 @@ function businessMessages(state: GameState): InboxMessage[] {
       category: 'business',
       title: `${endangeredSponsors.length} sponsor relationship${endangeredSponsors.length === 1 ? '' : 's'} at risk`,
       body: endangeredSponsors.map((sponsor) => `${sponsor.name}: ${sponsor.relationshipStatus ?? 'Warning'}`).join(' · '),
-      route: '/sponsors?tab=objectives',
+      route: focusedRoute('/sponsors', { tab: 'objectives', id: endangeredSponsors[0].id }),
       routeLabel: 'Review Sponsor Objectives',
       actionable: true,
     });
@@ -491,7 +504,7 @@ function businessMessages(state: GameState): InboxMessage[] {
       category: 'business',
       title: `${expiringSponsors.length} sponsor contract${expiringSponsors.length === 1 ? '' : 's'} entering final season`,
       body: expiringSponsors.map((sponsor) => sponsor.name).join(' · '),
-      route: '/sponsors?tab=portfolio',
+      route: focusedRoute('/sponsors', { tab: 'portfolio', id: expiringSponsors[0].id }),
       routeLabel: 'Review Sponsor Portfolio',
       actionable: true,
     });
@@ -504,7 +517,7 @@ function businessMessages(state: GameState): InboxMessage[] {
       category: 'business',
       title: `${openVotes.length} regulation vote${openVotes.length === 1 ? '' : 's'} open`,
       body: openVotes.map((proposal) => proposal.title).join(' · '),
-      route: '/politics',
+      route: focusedRoute('/politics', { tab: 'proposals', id: openVotes[0].id }),
       routeLabel: 'Open Regulations',
       actionable: true,
     });
@@ -518,7 +531,7 @@ function businessMessages(state: GameState): InboxMessage[] {
       category: 'business',
       title: 'Budget is critically low',
       body: `Only $${(team.budget / 1_000_000).toFixed(1)}M remaining — operations may stall.`,
-      route: '/finance',
+      route: focusedRoute('/finance', { tab: 'overview', id: 'available-balance' }),
       routeLabel: 'Open Finance',
       actionable: true,
     });
@@ -526,7 +539,7 @@ function businessMessages(state: GameState): InboxMessage[] {
   return messages;
 }
 
-function newsMessages(state: GameState): InboxMessage[] {
+function newsMessages(state: GameState): InboxMessageInput[] {
   return state.news.slice(0, 40).map((item) => {
     const triage = newsTriage(state, item);
     const transferStory = state.transferCalendar?.stories.find((story) => item.id.endsWith(story.id));
@@ -539,7 +552,8 @@ function newsMessages(state: GameState): InboxMessage[] {
       category: 'news' as const,
       title: item.headline,
       body: triage ? `${triage.recommendation}${item.body ? ` ${item.body}` : ''}` : item.body,
-      route: transferRoute ?? triage?.route ?? '/news',
+      route: transferRoute
+        ?? (triage ? focusedRoute(triage.route, { id: item.id }) : focusedRoute('/news', { tab: 'feed', id: item.id })),
       routeLabel: transferRoute ? 'Review Market Outcome' : triage?.routeLabel ?? 'Open News Center',
       actionable: Boolean(triage),
       source: triage?.owner,
@@ -550,7 +564,7 @@ function newsMessages(state: GameState): InboxMessage[] {
   });
 }
 
-function withTaskSemantics(message: InboxMessage): InboxMessage {
+function withTaskSemantics(message: InboxMessageInput): InboxMessageInput {
   const kind: InboxMessageKind = message.category === 'news'
     ? message.actionable ? 'recommended' : 'news'
     : message.kind
@@ -570,6 +584,67 @@ function withTaskSemantics(message: InboxMessage): InboxMessage {
   };
 }
 
+function actionFocus(message: InboxMessageInput): DecisionActionFocus {
+  const [pathname, query = ''] = message.route.split('?');
+  const params = new URLSearchParams(query);
+  const explicitKind: DecisionActionFocus['kind'] = pathname === '/technical'
+    ? message.id.includes('parts') ? 'component' : 'proposal'
+    : pathname === '/paddock' ? 'event'
+      : pathname === '/relationships' || pathname === '/principal' ? 'person'
+        : pathname === '/scouting' || pathname === '/performance' ? 'report'
+          : pathname.includes('negotiate') || pathname === '/market' ? 'contract'
+            : pathname === '/sponsors' ? 'commercial'
+              : pathname === '/finance' ? 'finance'
+                : pathname === '/politics' ? 'regulation'
+                  : pathname === '/news' ? 'story'
+                    : 'workspace';
+  return message.actionTarget?.focus ?? {
+    kind: explicitKind,
+    id: params.get('focus') ?? params.get('target') ?? message.id,
+    tab: params.get('tab') ?? undefined,
+    section: params.get('section') ?? undefined,
+  };
+}
+
+function resolutionCondition(message: InboxMessageInput): string {
+  if (!message.actionable) return 'No gameplay decision is required; acknowledge or monitor this information.';
+  if (message.id.startsWith('inbox-paddock-')) return 'Choose one of the owning paddock event options.';
+  if (message.id.startsWith('inbox-failure-')) return 'Investigate the failure and record the technical response.';
+  if (message.id.includes('contract') || message.id.includes('negotiation')) return 'Accept, reject, revise, or close the active contract decision.';
+  if (message.id.startsWith('inbox-regulation-')) return 'Record a vote on every open regulation proposal.';
+  if (message.id.startsWith('inbox-weekend-plan-')) return 'Accept or override the prepared staff recommendations.';
+  if (message.id.startsWith('inbox-promise-')) return 'Fulfil the promise through its recorded gameplay condition or allow its deadline outcome.';
+  if (message.id.startsWith('inbox-low-budget')) return 'Restore available cash above the critical operating threshold.';
+  return 'Complete the highlighted action in the owning workspace.';
+}
+
+function immediateConsequence(message: InboxMessageInput): string {
+  if (!message.actionable) return 'The item is recorded as reviewed; no gameplay value changes.';
+  return message.whyItMatters ?? message.body ?? 'The authoritative gameplay system records the completed decision.';
+}
+
+function withActionTarget(state: GameState, message: InboxMessageInput): InboxMessage {
+  const timing = inboxTimingForMessage(state, message);
+  const target: DecisionActionTarget = {
+    actionId: message.id,
+    owner: message.source ?? SOURCE_LABELS[message.category],
+    route: message.route,
+    routeLabel: message.routeLabel,
+    focus: actionFocus(message),
+    status: message.actionable ? 'unresolved' : 'informational',
+    deadline: inboxTimingLabel(timing),
+    resolutionCondition: resolutionCondition(message),
+    immediateConsequence: immediateConsequence(message),
+    delayedConsequence: message.actionable
+      ? 'Any longer-term effect remains visible in the owning system after this item clears.'
+      : undefined,
+    followUpRoute: message.blocking ? '/inbox?section=must_respond' : '/inbox?section=recommended',
+    followUpLabel: message.blocking ? 'Next required decision' : 'Next unresolved recommendation',
+    ...message.actionTarget,
+  };
+  return { ...message, timing, actionTarget: target } as InboxMessage;
+}
+
 export function inboxTimingLabel(timing: InboxTiming): string {
   switch (timing) {
     case 'due_this_week':
@@ -583,7 +658,7 @@ export function inboxTimingLabel(timing: InboxTiming): string {
   }
 }
 
-export function inboxTimingForMessage(state: GameState, message: InboxMessage): InboxTiming {
+export function inboxTimingForMessage(state: GameState, message: InboxMessageInput): InboxTiming {
   const text = `${message.title} ${message.body ?? ''}`.toLowerCase();
   if (message.blocking) return 'due_this_week';
   if (message.timing) return message.timing;
@@ -617,7 +692,7 @@ export function inboxMessages(state: GameState): InboxMessage[] {
   const dismissed = new Set(state.inboxDismissed ?? []);
   return [...actionItems, ...newsMessages(state)]
     .map(withTaskSemantics)
-    .map((message) => ({ ...message, timing: inboxTimingForMessage(state, message) }))
+    .map((message) => withActionTarget(state, message))
     .filter((message) => !isRoutineInboxWorkHandledByStaff(state, message))
     .filter((message) => message.blocking || !dismissed.has(message.id))
     .sort((a, b) =>

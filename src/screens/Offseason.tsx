@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import {
   CoreWorkspaceContextGroup,
@@ -32,8 +32,14 @@ type OffseasonTab = 'overview' | 'lineup' | 'academy' | 'market' | 'advance';
 export function Offseason() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [advancing, setAdvancing] = useState(false);
-  const [tab, setTab] = useState<OffseasonTab>('overview');
+  const requestedTab = searchParams.get('tab');
+  const [tab, setTab] = useState<OffseasonTab>(
+    requestedTab && ['overview', 'lineup', 'academy', 'market', 'advance'].includes(requestedTab)
+      ? requestedTab as OffseasonTab
+      : 'overview',
+  );
   if (!state) return null;
 
   const nextYear = state.seasonYear + 1;
@@ -157,7 +163,13 @@ export function Offseason() {
       <CoreWorkspaceFrame
         items={workspaceItems}
         active={tab}
-        onChange={setTab}
+        onChange={(nextTab) => {
+          setTab(nextTab);
+          const next = new URLSearchParams(searchParams);
+          if (nextTab === 'overview') next.delete('tab');
+          else next.set('tab', nextTab);
+          setSearchParams(next);
+        }}
         ariaLabel="Offseason management sections"
         listTitle="Transition agenda"
         listMeta={`${nextYear} season planning`}
