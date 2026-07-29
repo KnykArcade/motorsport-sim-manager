@@ -6,8 +6,13 @@ import type { GameState } from '../game/careerState';
 import { getRouteRestrictionInfo } from '../game/modeRestrictions';
 import { developmentSlots } from '../sim/facilityEngine';
 import { formatMoney } from '../components/ui';
-import { Panel } from '../components/Panel';
-import { WorkspaceBody, WorkspaceHeader, WorkspaceScreen, WorkspaceTabs } from '../components/workspace/Workspace';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
+import { FmKeyValue } from '../components/workspace/FmPane';
+import { WorkspaceBody, WorkspaceHeader, WorkspaceScreen } from '../components/workspace/Workspace';
 import { TechnicalTable, TechnicalTableCell, TechnicalTableHead, TechnicalTableRow } from '../components/TechnicalTable';
 import { activeDriversForTeam } from '../game/careerState';
 import { carWithFittedParts } from '../sim/partsEngine';
@@ -35,6 +40,7 @@ const PartsInventoryPanel = lazy(() => import('../components/development/PartsIn
 
 export function TechnicalCenter() {
   const { state } = useGame();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [section, setSection] = useState<TechnicalSection>(() => technicalSectionFromQuery(searchParams.get('section')));
   const activeSection = searchParams.has('section') ? technicalSectionFromQuery(searchParams.get('section')) : section;
@@ -50,6 +56,29 @@ export function TechnicalCenter() {
   const parts = state.teamParts?.[state.selectedTeamId];
   const slots = developmentSlots(state.facilities);
   const lockInfo = getRouteRestrictionInfo('/engine', state.gameMode);
+  const technicalItems = TECHNICAL_SECTIONS.map((item) => ({
+    ...item,
+    description: item.id === 'command'
+      ? 'Car condition, programme status, recommendations, and immediate actions'
+      : item.id === 'development'
+        ? 'Active upgrades, research direction, and available capacity'
+        : item.id === 'parts'
+          ? 'Fitted components, inventory, repairs, and factory work'
+          : item.id === 'facilities'
+            ? 'Department capability and construction pipeline'
+            : 'Supplier performance and future agreement',
+    status: item.id === 'command'
+      ? `${activeUpgrades.length + (research?.activeProjects.length ?? 0)} active programme${activeUpgrades.length + (research?.activeProjects.length ?? 0) === 1 ? '' : 's'}`
+      : item.id === 'development'
+        ? `${activeUpgrades.length + (research?.activeProjects.length ?? 0)}/${slots} capacity`
+        : item.id === 'parts'
+          ? `${parts?.manufacturingQueue.length ?? 0} factory order${parts?.manufacturingQueue.length === 1 ? '' : 's'}`
+          : item.id === 'facilities'
+            ? `${state.facilities?.pendingUpgrades.length ?? 0} upgrade${state.facilities?.pendingUpgrades.length === 1 ? '' : 's'} queued`
+            : lockInfo ? 'Mode restricted' : 'Supplier review',
+    disabled: item.id === 'engine' && !!lockInfo,
+    disabledReason: lockInfo?.reason,
+  }));
 
   return (
     <WorkspaceScreen className="era-feature-screen era-technical-screen ui-technical-commercial-screen">
@@ -66,20 +95,48 @@ export function TechnicalCenter() {
           </div>
         )}
       />
-      <WorkspaceTabs
-        items={TECHNICAL_SECTIONS}
-        active={activeSection}
-        onChange={navigateTechnicalSection}
-        ariaLabel="Technical Center sections"
-      />
       <WorkspaceBody className="overflow-hidden">
-        <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
-          {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} />}
-          {activeSection === 'development' && <UnifiedDevelopmentBody />}
-          {activeSection === 'parts' && <PartsInventoryPanel />}
-          {activeSection === 'facilities' && <FacilitiesBody />}
-          {activeSection === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
-        </Suspense>
+        <CoreWorkspaceFrame
+          items={technicalItems}
+          active={activeSection}
+          onChange={navigateTechnicalSection}
+          ariaLabel="Technical Center sections"
+          listTitle="Technical areas"
+          listMeta={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}/${slots} capacity committed`}
+          contextTitle="Technical context"
+          contextMeta={team?.name ?? 'Team'}
+          context={(
+            <>
+              <CoreWorkspaceContextGroup title="Current resources">
+                <FmKeyValue label="Available budget" value={formatMoney(team?.budget ?? 0)} />
+                <FmKeyValue label="Technical points" value={research?.tpp.balance ?? 0} />
+                <FmKeyValue label="Programme capacity" value={`${activeUpgrades.length + (research?.activeProjects.length ?? 0)}/${slots}`} />
+                <FmKeyValue label="Factory orders" value={parts?.manufacturingQueue.length ?? 0} />
+              </CoreWorkspaceContextGroup>
+              <CoreWorkspaceContextGroup title="Department guidance">
+                <p className="ui-fm-detail-copy">
+                  {activeSection === 'command'
+                    ? 'Review the current car and the Technical Director briefing, then open the owning technical area for any approved work.'
+                    : `The ${TECHNICAL_SECTIONS.find((item) => item.id === activeSection)?.label ?? 'selected'} workspace owns its existing controls and consequences.`}
+                </p>
+              </CoreWorkspaceContextGroup>
+              <CoreWorkspaceContextGroup title="Direct actions">
+                <div className="space-y-2">
+                  <Button className="w-full" onClick={() => navigate('/inbox?category=technical')}>Open Technical Inbox →</Button>
+                  <Button variant="ghost" className="w-full" onClick={() => navigate('/weekend')}>Open Race & Car Setup →</Button>
+                </div>
+              </CoreWorkspaceContextGroup>
+            </>
+          )}
+        >
+          <Suspense fallback={<div className="py-8 text-center text-sm text-neutral-500">Loading…</div>}>
+            {activeSection === 'command' && <CommandPanel state={state} onNavigate={navigateTechnicalSection} />}
+            {activeSection === 'development' && <UnifiedDevelopmentBody />}
+            {activeSection === 'parts' && <PartsInventoryPanel />}
+            {activeSection === 'facilities' && <FacilitiesBody />}
+            {activeSection === 'engine' && (lockInfo ? <LockedEnginePanel title={lockInfo.title} reason={lockInfo.reason} focus={lockInfo.focus} /> : <EngineSupplierBody />)}
+          </Suspense>
+        </CoreWorkspaceFrame>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

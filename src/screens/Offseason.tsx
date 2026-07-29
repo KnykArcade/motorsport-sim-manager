@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useGame } from '../game/GameContext';
-import { Panel } from '../components/Panel';
+import {
+  CoreWorkspaceContextGroup,
+  CoreWorkspaceFrame,
+  CoreWorkspaceSection as Panel,
+} from '../components/workspace/CoreWorkspace';
+import { FmKeyValue } from '../components/workspace/FmPane';
 import { SeasonWorkflowRail } from '../components/workspace/SeasonWorkflowRail';
 import { Button } from '../components/Button';
 import { DriverDossierButton } from '../components/driverCards/DriverDossier';
@@ -11,7 +16,6 @@ import {
   WorkspaceHeader,
   WorkspaceMetric,
   WorkspaceScreen,
-  WorkspaceTabs,
 } from '../components/workspace/Workspace';
 import { activeDriversForTeam } from '../game/careerState';
 import { thirdDriverAmbitions } from '../sim/contractEngine';
@@ -62,6 +66,30 @@ export function Offseason() {
     { id: 'market', label: `Market Outlook (${marketMovement})` },
     { id: 'advance', label: 'Advance Season' },
   ];
+  const workspaceItems = tabs.map((item) => ({
+    ...item,
+    description: item.id === 'overview'
+      ? 'Review every item that will carry into the next season'
+      : item.id === 'lineup'
+        ? 'Confirm queued race-seat changes and reserve ambitions'
+        : item.id === 'academy'
+          ? 'Resolve first options and development rights'
+          : item.id === 'market'
+            ? 'Preview arrivals, retirements, and cross-series movement'
+            : 'Confirm readiness and roll the universe forward',
+    status: item.id === 'overview'
+      ? state.seasonComplete ? 'Season complete' : 'Season in progress'
+      : item.id === 'lineup'
+        ? `${signings.length} queued`
+        : item.id === 'academy'
+          ? `${unresolvedAcademyRights} unresolved`
+          : item.id === 'market'
+            ? `${marketMovement} movements`
+            : canAdvance ? 'Ready' : 'Blocked',
+    urgent: item.id === 'academy' && unresolvedAcademyRights > 0
+      || item.id === 'lineup' && atRiskReserves.length > 0
+      || item.id === 'advance' && !canAdvance,
+  }));
 
   const advance = () => {
     setAdvancing(true);
@@ -125,8 +153,38 @@ export function Offseason() {
           {state.seasonComplete ? `${nextYear} rollover ${canAdvance ? 'ready' : 'review'}` : 'Season in progress'}
         </span>
       </div>
-      <WorkspaceTabs items={tabs} active={tab} onChange={setTab} ariaLabel="Offseason management sections" />
       <WorkspaceBody className="ui-phase14-workspace ui-offseason-workspace">
+      <CoreWorkspaceFrame
+        items={workspaceItems}
+        active={tab}
+        onChange={setTab}
+        ariaLabel="Offseason management sections"
+        listTitle="Transition agenda"
+        listMeta={`${nextYear} season planning`}
+        contextTitle="Rollover context"
+        contextMeta={canAdvance ? 'Ready to advance' : 'Review required'}
+        context={(
+          <>
+            <CoreWorkspaceContextGroup title="Transition readiness">
+              <FmKeyValue label="Season status" value={state.seasonComplete ? 'Complete' : 'In progress'} />
+              <FmKeyValue label="Queued signings" value={signings.length} />
+              <FmKeyValue label="Academy choices" value={`${academyDecisionCount}/${promotionEligible.length}`} />
+              <FmKeyValue label="At-risk reserves" value={atRiskReserves.length} />
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Consequences">
+              <p className="ui-fm-detail-copy">
+                Advancing applies queued seats, develops the academy, settles commercial and owner reviews, carries technical work forward, and lets every rival team make its own offseason decisions.
+              </p>
+            </CoreWorkspaceContextGroup>
+            <CoreWorkspaceContextGroup title="Primary action">
+              <Button className="w-full" variant="primary" onClick={advance} disabled={!canAdvance} title={advanceBlockedReason}>
+                {advancing ? 'Loading…' : `Advance to ${nextYear} Season →`}
+              </Button>
+              {!state.seasonComplete && <p className="mt-2 text-xs text-neutral-500">Finish the current championship before the rollover can begin.</p>}
+            </CoreWorkspaceContextGroup>
+          </>
+        )}
+      >
 
       {tab === 'overview' && <>
         <Panel title="Transition Readiness">
@@ -448,6 +506,7 @@ export function Offseason() {
           )}
         </div>
       </Panel>}
+      </CoreWorkspaceFrame>
       </WorkspaceBody>
     </WorkspaceScreen>
   );

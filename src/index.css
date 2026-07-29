@@ -3337,6 +3337,84 @@ body {
   border-left-color: #d49a36;
 }
 
+.ui-fm-list-button.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ui-core-workspace-grid {
+  height: 100%;
+}
+
+.ui-core-workspace-detail-body {
+  background: #1b1b1e;
+}
+
+.ui-core-workspace-context-body {
+  background: #19191c;
+}
+
+.ui-core-workspace-section {
+  border-bottom: 1px solid #343439;
+  background: transparent;
+}
+
+.ui-core-workspace-section:last-child {
+  border-bottom: 0;
+}
+
+.ui-core-workspace-section-header {
+  display: flex;
+  min-height: 35px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  border-bottom: 1px solid #303035;
+  background: #222225;
+  padding: 0.45rem 0.65rem;
+}
+
+.ui-core-workspace-section-header h2 {
+  overflow: hidden;
+  color: #c9c9cd;
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ui-core-workspace-section-actions {
+  flex: 0 0 auto;
+}
+
+.ui-core-workspace-section-body {
+  padding: 0.65rem;
+}
+
+.ui-core-workspace-context-group {
+  border-bottom: 1px solid #343439;
+  padding: 0.65rem;
+}
+
+.ui-core-workspace-context-group:last-child {
+  border-bottom: 0;
+}
+
+.ui-core-workspace-context-group h3 {
+  margin-bottom: 0.4rem;
+  color: #929299;
+  font-size: 0.54rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-core-post-race .ui-post-race-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .ui-fm-key-value {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
