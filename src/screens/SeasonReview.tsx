@@ -171,12 +171,12 @@ export function SeasonReview() {
                   <h3>{state.gameMode === 'Career' ? 'Continue the career' : 'Choose the next save path'}</h3>
                   <p>{state.gameMode === 'Career'
                     ? 'The offseason processes driver movement, technical carryover, commercial reviews, and the next championship.'
-                    : 'Single Season saves can replay the same year or convert into a multi-year Career before continuing.'}</p>
+                    : 'Single Season saves can finish here or replay the same historical year.'}</p>
                 </section>
                 {isSingleSeasonMode(state.gameMode) && (
                   <section className="is-warning">
                     <h3>Single Season boundary</h3>
-                    <p>Offseason, multi-year development, and season advance remain locked until the save is converted to Career.</p>
+                    <p>Offseason, multi-year development, and season advance are not part of this historical replay mode.</p>
                   </section>
                 )}
               </div>
@@ -190,12 +190,11 @@ export function SeasonReview() {
           ) : (
             <>
               <Button onClick={() => navigate('/')}>Main Menu</Button>
-              <Button onClick={() => navigate('/offseason')}>Convert to Career</Button>
               <Button variant="primary" onClick={replaySeason}>Replay Season</Button>
             </>
           )}>
             <strong className="text-neutral-200">Next meaningful step:</strong>{' '}
-            {state.gameMode === 'Career' ? 'review the transition into next season.' : 'choose whether this save ends, replays, or becomes a career.'}
+            {state.gameMode === 'Career' ? 'review the transition into next season.' : 'choose whether this save ends or replays.'}
           </FmDecisionBar>
         </div>
       )}

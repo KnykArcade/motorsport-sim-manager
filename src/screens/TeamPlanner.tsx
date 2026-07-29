@@ -21,6 +21,7 @@ import {
 } from '../components/workspace/Workspace';
 import { activeDriversForTeam } from '../game/careerState';
 import { useGame } from '../game/GameContext';
+import { workflowDestination } from '../components/layoutWorkflow';
 import {
   buildTeamPlanner,
   plannerHorizon,
@@ -76,6 +77,7 @@ export function TeamPlanner() {
   const placements = placementState.key === storageKey
     ? placementState.values
     : readPlacements(storageKey);
+  const nextAction = state ? workflowDestination(state) : undefined;
 
   useEffect(() => {
     if (!storageKey) return;
@@ -338,7 +340,11 @@ export function TeamPlanner() {
           <>
             <Button variant="ghost" onClick={clearHorizon}>Clear what-if placements</Button>
             <Button variant="secondary" onClick={() => navigate('/finance')}>Review Finance</Button>
-            <Button variant="primary" onClick={() => navigate('/offseason')}>Open Offseason</Button>
+            {state?.seasonComplete && state.gameMode === 'Career' ? (
+              <Button variant="primary" onClick={() => navigate('/offseason')}>Open Offseason</Button>
+            ) : nextAction ? (
+              <Button variant="primary" onClick={() => navigate(nextAction.to)}>{nextAction.label}</Button>
+            ) : null}
           </>
         )}
       >

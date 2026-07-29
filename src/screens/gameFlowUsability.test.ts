@@ -8,8 +8,9 @@ function source(relativePath: string): string {
 describe('Phase 15 game-flow usability contract', () => {
   it('shows the exact next action instead of a generic Continue label', () => {
     const layout = source('../components/Layout.tsx');
-    expect(layout).toContain("firstBlockingMessage ? 'Respond in Inbox' : workflow.label");
-    expect(layout).toContain(': workflow.reason}');
+    expect(layout).toContain('onClick={() => goTo(workflow.to)}');
+    expect(layout).toContain('<span>{workflow.label} →</span>');
+    expect(layout).toContain('title={workflow.reason}');
   });
 
   it('routes handoffs directly to the required race-preparation decision', () => {
@@ -34,7 +35,8 @@ describe('Phase 15 game-flow usability contract', () => {
 
   it('routes a newly created career into the persistent first-day flow', () => {
     expect(source('NewCareer.tsx')).toContain("navigate('/career-launch')");
-    expect(source('../app/App.tsx')).toContain('needsCareerLaunch(state)');
+    expect(source('../app/routeCatalog.ts')).toContain('needsCareerLaunch(state)');
+    expect(source('../app/App.tsx')).toContain('routeAccessForState(location.pathname, state)');
     expect(source('CareerLaunch.tsx')).toContain("dispatch({ type: 'COMPLETE_CAREER_LAUNCH' })");
     expect(source('CareerLaunch.tsx')).toContain("navigate('/preseason?task=driverLineup')");
   });

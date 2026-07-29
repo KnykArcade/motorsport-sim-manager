@@ -31,6 +31,27 @@ describe('layout workflow destination', () => {
     expect(workflowDestination(stateFor('race_weekend')).label).toBe('Open Weekend Overview');
   });
 
+  it('prioritizes a missing race lineup before the normal race workflow', () => {
+    const state = stateFor('pre_season_setup', {
+      gameMode: 'Career',
+      series: 'F1',
+      selectedTeamId: 'player-team',
+      teams: [{ id: 'player-team' }],
+      drivers: [],
+    });
+
+    expect(workflowDestination(state)).toMatchObject({
+      to: '/market',
+      label: 'Complete Race Lineup',
+      priority: 'race_lineup',
+      blocked: true,
+    });
+    expect(resumeDestination({
+      ...state,
+      lastWorkspace: '/technical',
+    })).toBe('/market');
+  });
+
   it('keeps an incomplete first-day appointment ahead of saved workspace history', () => {
     const state = stateFor('pre_season_setup', {
       lastWorkspace: '/technical?section=parts',
@@ -52,7 +73,7 @@ describe('layout workflow destination', () => {
     expect(isResumableWorkspace('/career-launch')).toBe(true);
   });
 
-  it('routes Continue to the first required paddock decision', () => {
+  it('routes Continue through the Inbox for the first mandatory decision', () => {
     const state = stateFor('paddock_week', {
       careerPhase: {
         currentPhase: 'paddock_week',
@@ -69,8 +90,9 @@ describe('layout workflow destination', () => {
     });
 
     expect(workflowDestination(state)).toMatchObject({
-      to: '/paddock?tab=decisions&focus=required-focus',
-      label: 'Open Operations Agenda',
+      to: '/inbox?section=must_respond&message=inbox-paddock-required-focus',
+      label: 'Respond in Inbox',
+      priority: 'must_respond',
       blocked: true,
       blockerCount: 1,
     });

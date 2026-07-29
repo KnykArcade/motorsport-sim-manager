@@ -94,11 +94,7 @@ export function TeamHQ() {
   const teamName = (id: string) => state.teams.find((candidate) => candidate.id === id)?.name ?? id;
   const teamColor = (id: string) => state.teams.find((candidate) => candidate.id === id)?.color;
 
-  const primaryAction = state.seasonComplete
-    ? { label: 'Season Review', route: '/season-review' }
-    : hasEnoughDrivers
-      ? { label: `Open ${workflow.context}`, route: workflow.to }
-      : { label: `Fill Race Seats (${activeDrivers.length}/${minDrivers})`, route: '/market' };
+  const primaryAction = { label: workflow.label, route: workflow.to };
 
   return (
     <WorkspaceScreen className="era-feature-screen era-team-hq ui-phase2-home">
