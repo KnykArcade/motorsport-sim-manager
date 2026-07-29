@@ -62,8 +62,9 @@ export function NewsCenter() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialView = searchParams.get('tab') === 'media' ? 'media' : searchParams.get('tab') === 'storylines' ? 'storylines' : 'feed';
+  const focusedItemId = searchParams.get('focus') ?? undefined;
   const [view, setView] = useState<NewsView>(initialView);
-  const [selectedNewsId, setSelectedNewsId] = useState<string>();
+  const [selectedNewsId, setSelectedNewsId] = useState<string | undefined>(focusedItemId);
   const [selectedStorylineId, setSelectedStorylineId] = useState<string>();
   const [categoryFilter, setCategoryFilter] = useState<NewsCategory | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<NewsPriority | 'all'>('all');
@@ -156,7 +157,7 @@ export function NewsCenter() {
         ariaLabel="News Center sections"
       />
       <WorkspaceBody>
-        {view === 'media' && <MediaSessionsPanel />}
+        {view === 'media' && <MediaSessionsPanel focusedSessionId={focusedItemId} />}
         {view === 'feed' && (
           <FmWorkspaceGrid>
             <FmPane>

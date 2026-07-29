@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { driversForTeam, teamById } from '../game/careerState';
 import { careerMarketBundle } from '../sim/careerMarketEngine';
@@ -62,8 +63,14 @@ const CATEGORY_DESCRIPTIONS: Record<FinanceCategory, string> = {
 
 export function Finance() {
   const { state } = useGame();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [season, setSeason] = useState<number | null>(null);
-  const [tab, setTab] = useState<FinanceWorkspaceTab>('overview');
+  const requestedTab = searchParams.get('tab');
+  const [tab, setTab] = useState<FinanceWorkspaceTab>(
+    requestedTab && FINANCE_WORKSPACE_TABS.some((item) => item.id === requestedTab)
+      ? requestedTab as FinanceWorkspaceTab
+      : 'overview',
+  );
   const [transactionFilter, setTransactionFilter] = useState<FinanceTransactionFilter>('all');
   const [transactionPage, setTransactionPage] = useState(0);
 
@@ -148,7 +155,13 @@ export function Finance() {
           label: workspace.id === 'transactions' ? `${workspace.label} (${transactions.length})` : workspace.label,
         }))}
         active={tab}
-        onChange={setTab}
+        onChange={(nextTab) => {
+          setTab(nextTab);
+          const next = new URLSearchParams(searchParams);
+          if (nextTab === 'overview') next.delete('tab');
+          else next.set('tab', nextTab);
+          setSearchParams(next);
+        }}
         ariaLabel="Finance workspaces"
       />
 

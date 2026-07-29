@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { teamById } from '../game/careerState';
 import { getRegulationSet } from '../data';
@@ -46,8 +47,12 @@ const TABS: { key: TabKey; label: string }[] = [
 
 export function Politics() {
   const { state, dispatch } = useGame();
-  const [activeTab, setActiveTab] = useState<TabKey>('regulations');
-  const [selectedProposalId, setSelectedProposalId] = useState<string>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    requestedTab && TABS.some((tab) => tab.key === requestedTab) ? requestedTab as TabKey : 'regulations',
+  );
+  const [selectedProposalId, setSelectedProposalId] = useState<string | undefined>(searchParams.get('focus') ?? undefined);
   if (!state) return null;
 
   const proposals = state.regulationProposals ?? [];
@@ -100,7 +105,13 @@ export function Politics() {
       <WorkspaceTabs
         items={TABS.map((tab) => ({ id: tab.key, label: `${tab.label}${tab.key === 'proposals' ? ` (${proposals.length})` : ''}` }))}
         active={activeTab}
-        onChange={setActiveTab}
+        onChange={(tab) => {
+          setActiveTab(tab);
+          const next = new URLSearchParams(searchParams);
+          if (tab === 'regulations') next.delete('tab');
+          else next.set('tab', tab);
+          setSearchParams(next);
+        }}
         ariaLabel="Regulations and politics sections"
       />
       <WorkspaceBody className="space-y-4">

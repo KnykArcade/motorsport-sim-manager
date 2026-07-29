@@ -96,9 +96,10 @@ export function Sponsors() {
     : 'portfolio';
   const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
-  const [selectedSponsorId, setSelectedSponsorId] = useState<string | null>(null);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
-  const [selectedNegotiationId, setSelectedNegotiationId] = useState<string | null>(null);
+  const focusedId = searchParams.get('focus');
+  const [selectedSponsorId, setSelectedSponsorId] = useState<string | null>(focusedId);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(focusedId);
+  const [selectedNegotiationId, setSelectedNegotiationId] = useState<string | null>(focusedId);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
   const [offerSort, setOfferSort] = useState<SponsorSort<SponsorOfferSortKey>>({ key: 'annualValue', direction: 'desc' });
   const [negotiationSort, setNegotiationSort] = useState<SponsorSort<SponsorNegotiationSortKey>>({ key: 'deadlineRound', direction: 'asc' });
@@ -144,7 +145,10 @@ export function Sponsors() {
 
   function selectTab(nextTab: SponsorsWorkspaceTab) {
     setTab(nextTab);
-    setSearchParams(nextTab === 'portfolio' ? {} : { tab: nextTab }, { replace: true });
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === 'portfolio') next.delete('tab');
+    else next.set('tab', nextTab);
+    setSearchParams(next, { replace: true });
     if (nextTab === 'portfolio' || nextTab === 'objectives') setSponsorListPage(0);
   }
 

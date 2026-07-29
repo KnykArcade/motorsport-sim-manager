@@ -17,7 +17,7 @@ describe('media session inbox routing', () => {
     const message = inboxMessages(state).find((entry) => entry.id.startsWith('inbox-media-'));
 
     expect(message).toMatchObject({
-      route: '/news?tab=media',
+      route: `/news?tab=media&focus=${encodeURIComponent(state.media!.sessions[0].id)}`,
       routeLabel: 'Open Media Session',
       actionable: true,
       blocking: false,

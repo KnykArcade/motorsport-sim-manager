@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import { activeDriversForTeam, driversForTeam } from '../game/careerState';
 import type { GameState } from '../game/careerState';
@@ -198,9 +198,23 @@ function loyaltyRiskText(modifier: number): string {
 }
 
 export function Relationships() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'hierarchy' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>('overview');
-  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string>();
-  const [selectedDriverId, setSelectedDriverId] = useState<string>();
+  const [searchParams] = useSearchParams();
+  const focusedRelationship = searchParams.get('focus') ?? undefined;
+  const focusedPersonId = focusedRelationship?.includes(':')
+    ? focusedRelationship.slice(focusedRelationship.indexOf(':') + 1)
+    : focusedRelationship;
+  const focusedRelationshipId = focusedRelationship?.includes(':')
+    ? focusedRelationship
+    : focusedRelationship ? `Driver:${focusedRelationship}` : undefined;
+  const [activeSection, setActiveSection] = useState<'overview' | 'hierarchy' | 'activity' | 'race' | 'reserve' | 'clauses' | 'orders'>(
+    focusedRelationshipId?.startsWith('Driver:') ? 'race' : focusedRelationshipId ? 'hierarchy' : 'overview',
+  );
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState<string | undefined>(
+    focusedRelationshipId,
+  );
+  const [selectedDriverId, setSelectedDriverId] = useState<string | undefined>(
+    focusedRelationshipId?.startsWith('Driver:') ? focusedPersonId : undefined,
+  );
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
   if (!state) return null;

@@ -42,14 +42,19 @@ export function relationshipInboxMessage(
       ? 'business'
       : 'people';
   const timing = relationshipActionWindowLabel(signal.actionWindow);
+  const route = signal.id === 'Collective:Commercial'
+    ? `/sponsors?tab=objectives&focus=${encodeURIComponent(signal.id)}`
+    : signal.id === 'PotentialEmployers'
+      ? '/principal?tab=career'
+      : `/relationships?focus=${encodeURIComponent(signal.id)}`;
   return {
     id: `inbox-relationship-${signal.id}`,
     severity: signal.status === 'MustActNow' ? 'critical' : 'action',
     category,
     title: `Relationship priority: ${signal.title}`,
     body: relationshipAdviceBody(signal, timing),
-    route: '/relationships',
-    routeLabel: 'Open Relationships',
+    route,
+    routeLabel: signal.id === 'Collective:Commercial' ? 'Open Sponsor Objectives' : signal.id === 'PotentialEmployers' ? 'Open Career Market' : 'Open Relationships',
     actionable: true,
     source: 'Relationship advisor',
     whyItMatters: relationshipAdviceDetail(signal),

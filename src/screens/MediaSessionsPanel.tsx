@@ -25,9 +25,9 @@ import {
   selectedMediaSession,
 } from './mediaSessionViewModel';
 
-export function MediaSessionsPanel() {
+export function MediaSessionsPanel({ focusedSessionId }: { focusedSessionId?: string }) {
   const { state, dispatch } = useGame();
-  const [selectedId, setSelectedId] = useState<string>();
+  const [selectedId, setSelectedId] = useState<string | undefined>(focusedSessionId);
   if (!state) return null;
 
   const sessions = state.media?.sessions ?? [];

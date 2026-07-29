@@ -49,7 +49,7 @@ export function TeamPrincipal() {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() => principalTabFromQuery(searchParams.get('tab')));
   const [offerPage, setOfferPage] = useState(0);
-  const [selectedOfferId, setSelectedOfferId] = useState<string>();
+  const [selectedOfferId, setSelectedOfferId] = useState<string | undefined>(searchParams.get('focus') ?? undefined);
   if (!state) return null;
 
   const principal = state.principal;
