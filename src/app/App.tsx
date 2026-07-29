@@ -9,7 +9,7 @@ import { garageAddressForRace } from '../sim/garageLeadershipEngine';
 import { Layout } from '../components/Layout';
 import { MainMenu } from '../screens/MainMenu';
 import { NewCareer } from '../screens/NewCareer';
-import { getCareerPhase } from '../game/careerPhaseEngine';
+import { getCareerPhase, needsCareerLaunch } from '../game/careerPhaseEngine';
 import { getRouteRestrictionInfo } from '../game/modeRestrictions';
 
 // Code-split in-game screens — each screen loads on demand to reduce the
@@ -47,6 +47,7 @@ const PostRaceReview = lazy(() => import('../screens/PostRaceReview').then((m) =
 const PaddockWeek = lazy(() => import('../screens/PaddockWeek').then((m) => ({ default: m.PaddockWeek })));
 const PreRaceBriefing = lazy(() => import('../screens/PreRaceBriefing').then((m) => ({ default: m.PreRaceBriefing })));
 const PreSeasonSetup = lazy(() => import('../screens/PreSeasonSetup').then((m) => ({ default: m.PreSeasonSetup })));
+const CareerLaunch = lazy(() => import('../screens/CareerLaunch').then((m) => ({ default: m.CareerLaunch })));
 const NewsCenter = lazy(() => import('../screens/NewsCenter').then((m) => ({ default: m.NewsCenter })));
 const Inbox = lazy(() => import('../screens/Inbox').then((m) => ({ default: m.Inbox })));
 const Scouting = lazy(() => import('../screens/Scouting').then((m) => ({ default: m.Scouting })));
@@ -57,6 +58,7 @@ const TeamPlanner = lazy(() => import('../screens/TeamPlanner').then((m) => ({ d
 function InGame({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
+  if (needsCareerLaunch(state)) return <Navigate to="/career-launch" replace />;
   return <Layout>{children}</Layout>;
 }
 
@@ -140,6 +142,16 @@ function LiveRaceGuard({ children }: { children: ReactNode }) {
 function PhaseRedirect({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
+  if (needsCareerLaunch(state)) return <Navigate to="/career-launch" replace />;
+  return <Layout>{children}</Layout>;
+}
+
+function CareerLaunchGuard({ children }: { children: ReactNode }) {
+  const { state } = useGame();
+  if (!state) return <Navigate to="/" replace />;
+  if (!needsCareerLaunch(state)) {
+    return <Navigate to={getCareerPhase(state) === 'pre_season_setup' ? '/preseason' : '/hq'} replace />;
+  }
   return <Layout>{children}</Layout>;
 }
 
@@ -211,6 +223,7 @@ function PreRaceBriefingGuard({ children }: { children: ReactNode }) {
 function PreseasonGuard({ children }: { children: ReactNode }) {
   const { state } = useGame();
   if (!state) return <Navigate to="/" replace />;
+  if (needsCareerLaunch(state)) return <Navigate to="/career-launch" replace />;
   const phase = getCareerPhase(state);
   if (phase !== 'pre_season_setup') {
     if (phase === 'paddock_week') return <Navigate to="/paddock" replace />;
@@ -262,6 +275,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
 
           <Route path="/hq" element={<PhaseRedirect><TeamHQ /></PhaseRedirect>} />
+          <Route path="/career-launch" element={<CareerLaunchGuard><CareerLaunch /></CareerLaunchGuard>} />
           <Route path="/preseason" element={<PreseasonGuard><PreSeasonSetup /></PreseasonGuard>} />
           <Route path="/paddock" element={<PaddockWeekGuard><PaddockWeek /></PaddockWeekGuard>} />
           <Route path="/briefing" element={<PreRaceBriefingGuard><PreRaceBriefing /></PreRaceBriefingGuard>} />

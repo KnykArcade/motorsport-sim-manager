@@ -230,10 +230,13 @@ import { ARCHETYPE_SPECS } from '../sim/aiTeamEngine';
 import { effectiveCarRatings } from '../sim/trackFitEngine';
 import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import {
+  acknowledgePreseasonWelcomePack,
+  advanceCareerLaunch,
   enterPostRaceReview,
   enterPaddockWeek,
   enterPreRaceBriefing,
   enterRaceWeekend,
+  completeCareerLaunch,
   enterPreSeasonSetup,
   enterPreRaceBriefingFromPreseason,
   generateAndStorePaddockEvents,
@@ -421,6 +424,9 @@ export type GameAction =
   | { type: 'RESOLVE_PADDOCK_EVENT'; eventId: string; optionId: string }
   | { type: 'TOGGLE_PRESEASON_CHECKLIST_ITEM'; itemId: string }
   | { type: 'APPROVE_PRESEASON_TAB'; tabId: 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview' }
+  | { type: 'ADVANCE_CAREER_LAUNCH' }
+  | { type: 'COMPLETE_CAREER_LAUNCH' }
+  | { type: 'ACKNOWLEDGE_PRESEASON_WELCOME_PACK' }
   | { type: 'SET_CAREER_MOBILITY'; mode: 'StandardCareer' | 'TeamLock' | 'Sandbox' }
   | { type: 'ALLOCATE_SKILL_POINT'; attribute: 'mediaImage' | 'boardConfidence' | 'financialDiscipline' | 'driverManagement' | 'development' | 'strategy'; points?: number }
   | { type: 'MAKE_PROMISE'; driverId: string; promiseType: PromiseType; dueSeason?: number; dueRound?: number }
@@ -753,7 +759,7 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
   }
   switch (action.type) {
     case 'NEW_GAME':
-      return enterPreSeasonSetup(createNewGame(action.options));
+      return enterPreSeasonSetup(createNewGame(action.options), true);
 
     case 'LOAD_GAME':
       return action.state;
@@ -1488,6 +1494,21 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       if (!state) return state;
       if (getCareerPhase(state) !== 'pre_season_setup') return state;
       return approvePreseasonTab(state, action.tabId);
+    }
+
+    case 'ADVANCE_CAREER_LAUNCH': {
+      if (!state) return state;
+      return advanceCareerLaunch(state);
+    }
+
+    case 'COMPLETE_CAREER_LAUNCH': {
+      if (!state) return state;
+      return completeCareerLaunch(state);
+    }
+
+    case 'ACKNOWLEDGE_PRESEASON_WELCOME_PACK': {
+      if (!state) return state;
+      return acknowledgePreseasonWelcomePack(state);
     }
 
     case 'SET_CAREER_MOBILITY': {

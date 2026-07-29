@@ -16,6 +16,8 @@ import {
 import type {
   CareerPhase,
   CareerPhaseState,
+  CareerLaunchState,
+  CareerLaunchStep,
   PaddockEvent,
   PaddockEventCategory,
   PaddockEventOption,
@@ -116,6 +118,72 @@ export function getCareerPhase(state: GameState): CareerPhase {
   return state.careerPhase?.currentPhase ?? 'pre_season_setup';
 }
 
+const CAREER_LAUNCH_STEPS: readonly CareerLaunchStep[] = [
+  'appointment',
+  'teamHandover',
+  'ownerIntroduction',
+  'firstWeekPlan',
+];
+
+export function needsCareerLaunch(state: GameState): boolean {
+  return state.careerPhase?.careerLaunch?.required === true;
+}
+
+export function careerLaunchState(state: GameState): CareerLaunchState | undefined {
+  return state.careerPhase?.careerLaunch;
+}
+
+export function advanceCareerLaunch(state: GameState): GameState {
+  const phaseState = getOrCreatePhaseState(state);
+  const launch = phaseState.careerLaunch;
+  if (
+    phaseState.currentPhase !== 'pre_season_setup'
+    || !launch?.required
+    || launch.currentStep === 'firstWeekPlan'
+  ) {
+    return state;
+  }
+  const currentIndex = CAREER_LAUNCH_STEPS.indexOf(launch.currentStep);
+  const currentStep = CAREER_LAUNCH_STEPS[currentIndex + 1] ?? 'firstWeekPlan';
+  return {
+    ...state,
+    careerPhase: {
+      ...phaseState,
+      careerLaunch: { ...launch, currentStep },
+    },
+  };
+}
+
+export function acknowledgePreseasonWelcomePack(state: GameState): GameState {
+  if (getCareerPhase(state) !== 'pre_season_setup') return state;
+  return (['teamOverview', 'budget', 'sponsorsEngine', 'roundOnePreview'] as const)
+    .reduce((next, tabId) => approvePreseasonTab(next, tabId), state);
+}
+
+export function completeCareerLaunch(state: GameState): GameState {
+  const phaseState = getOrCreatePhaseState(state);
+  const launch = phaseState.careerLaunch;
+  if (
+    phaseState.currentPhase !== 'pre_season_setup'
+    || !launch?.required
+    || launch.currentStep !== 'firstWeekPlan'
+  ) {
+    return state;
+  }
+  const acknowledged = acknowledgePreseasonWelcomePack(state);
+  return {
+    ...acknowledged,
+    careerPhase: {
+      ...acknowledged.careerPhase!,
+      careerLaunch: {
+        required: false,
+        currentStep: 'firstWeekPlan',
+        welcomePackAcknowledged: true,
+      },
+    },
+  };
+}
+
 export function getOrCreatePhaseState(state: GameState): CareerPhaseState {
   const phase = state.careerPhase ?? defaultCareerPhaseState();
   // Backward-compat: old saves may not have budgetFocusBonusApplied.
@@ -206,8 +274,18 @@ export function enterRaceWeekend(state: GameState): GameState {
 }
 
 // Called when a new game is created — starts in pre_season_setup.
-export function enterPreSeasonSetup(state: GameState): GameState {
+export function enterPreSeasonSetup(
+  state: GameState,
+  requireCareerLaunch = false,
+): GameState {
   const phaseState = defaultCareerPhaseState();
+  if (requireCareerLaunch) {
+    phaseState.careerLaunch = {
+      required: true,
+      currentStep: 'appointment',
+      welcomePackAcknowledged: false,
+    };
+  }
   return { ...state, careerPhase: phaseState };
 }
 

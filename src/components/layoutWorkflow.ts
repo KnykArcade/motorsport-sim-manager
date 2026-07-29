@@ -1,6 +1,7 @@
 import { currentRace, type GameState } from '../game/careerState';
-import { getCareerPhase } from '../game/careerPhaseEngine';
+import { careerLaunchState, getCareerPhase, needsCareerLaunch } from '../game/careerPhaseEngine';
 import type { CareerPhase } from '../types/careerPhaseTypes';
+import { inboxMessages } from '../screens/inboxViewModel';
 import { paddockEventDestination } from '../screens/paddockAgendaViewModel';
 
 export type WorkflowDestination = {
@@ -18,6 +19,25 @@ export type WorkflowDestination = {
  * exact unresolved item. Phase changes remain owned by their workflow screens.
  */
 export function workflowDestination(state: GameState): WorkflowDestination {
+  if (needsCareerLaunch(state)) {
+    const launch = careerLaunchState(state);
+    const labels = {
+      appointment: 'Review Appointment',
+      teamHandover: 'Review Team Handover',
+      ownerIntroduction: 'Meet the Owner',
+      firstWeekPlan: 'Start First Week',
+    } as const;
+    return {
+      to: '/career-launch',
+      label: launch ? labels[launch.currentStep] : 'Open First Day',
+      context: 'First day',
+      phase: 'pre_season_setup',
+      blocked: false,
+      blockerCount: 0,
+      reason: 'Complete the appointment and team handover before beginning preseason work.',
+    };
+  }
+
   if (state.seasonComplete) {
     return {
       to: '/season-review',
@@ -149,6 +169,7 @@ export function workflowDestination(state: GameState): WorkflowDestination {
 
 const RESUMABLE_WORKSPACE_PREFIXES = [
   '/hq',
+  '/career-launch',
   '/inbox',
   '/preseason',
   '/paddock',
@@ -182,6 +203,18 @@ export function isResumableWorkspace(workspace: string): boolean {
 }
 
 export function resumeDestination(state: GameState): string {
+  if (needsCareerLaunch(state)) return '/career-launch';
+  if (
+    Array.isArray(state.teams)
+    && Array.isArray(state.drivers)
+    && Array.isArray(state.news)
+    && Array.isArray(state.calendar)
+  ) {
+    const blockingMessage = inboxMessages(state).find((message) => message.blocking);
+    if (blockingMessage) {
+      return `/inbox?section=must_respond&message=${encodeURIComponent(blockingMessage.id)}`;
+    }
+  }
   return state.lastWorkspace && isResumableWorkspace(state.lastWorkspace)
     ? state.lastWorkspace
     : workflowDestination(state).to;

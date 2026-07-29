@@ -106,6 +106,18 @@ export type PreseasonApprovals = {
   roundOnePreview: boolean;
 };
 
+export type CareerLaunchStep =
+  | 'appointment'
+  | 'teamHandover'
+  | 'ownerIntroduction'
+  | 'firstWeekPlan';
+
+export type CareerLaunchState = {
+  required: boolean;
+  currentStep: CareerLaunchStep;
+  welcomePackAcknowledged: boolean;
+};
+
 export type CareerPhaseState = {
   currentPhase: CareerPhase;
   currentRound: number;
@@ -132,4 +144,8 @@ export type CareerPhaseState = {
   preseasonChecklist?: PreseasonChecklistItem[];
   // New tab-based approval state.
   preseasonApprovals?: PreseasonApprovals;
+  // Only present for careers created after the first-day launch flow shipped.
+  // Older saves intentionally omit it and continue directly to their current
+  // workspace without being forced through onboarding.
+  careerLaunch?: CareerLaunchState;
 };
