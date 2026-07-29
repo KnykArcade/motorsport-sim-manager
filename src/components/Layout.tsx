@@ -30,19 +30,19 @@ export function Layout({ children }: { children: ReactNode }) {
   const team = state ? teamById(state, state.selectedTeamId) : undefined;
   const race = state ? currentRace(state) : undefined;
   const hiddenRoutes = getHiddenNavRoutes(state?.gameMode);
-  const navigationGroups = visibleNavigationGroups(hiddenRoutes);
-  const contextualNavigation = contextualNavigationForRoute(location.pathname, hiddenRoutes);
+  const navigationGroups = visibleNavigationGroups(hiddenRoutes, state ?? undefined);
+  const contextualNavigation = contextualNavigationForRoute(
+    location.pathname,
+    hiddenRoutes,
+    state ?? undefined,
+    location.search,
+  );
   const pageIdentity = pageIdentityForRoute(location.pathname, location.search);
   const era = getEraTheme(state?.series, state?.seasonYear);
   const eraConfig = getEraThemeConfig(era);
   const workflow = state ? workflowDestination(state) : undefined;
   const inboxUnread = useMemo(() => (state ? unreadInboxCount(state) : 0), [state]);
   const mustRespond = useMemo(() => (state ? mustRespondInboxCount(state) : 0), [state]);
-  const blockingMessages = useMemo(
-    () => state ? inboxMessages(state).filter((message) => message.blocking) : [],
-    [state],
-  );
-  const firstBlockingMessage = blockingMessages[0];
   const contextualAttention = useMemo(() => {
     const counts = new Map<string, number>();
     for (const message of state ? inboxMessages(state) : []) {
@@ -129,7 +129,7 @@ export function Layout({ children }: { children: ReactNode }) {
                         aria-current={active ? 'page' : undefined}
                         className={`era-nav-link flex items-center gap-2 px-2.5 py-1.5 text-[11px] transition-colors ${active ? 'is-active font-semibold' : ''}`}
                       >
-                        <NavIcon to={routePath(navItem.to)} className="era-nav-icon h-3.5 w-3.5 shrink-0" />
+                        <NavIcon to={navItem.iconRoute} className="era-nav-icon h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{navItem.label}</span>
                         {navItem.to === '/inbox' && (mustRespond > 0 || inboxUnread > 0) && (
                           <span className={`ml-auto min-w-5 px-1 py-0.5 text-center text-[8px] font-black leading-none ${mustRespond > 0 ? 'ui-nav-urgent' : 'ui-nav-unread'}`}>
@@ -232,17 +232,13 @@ export function Layout({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 className="ui-continue-button min-w-32 shrink-0"
-                onClick={() => goTo(firstBlockingMessage
-                  ? `/inbox?section=must_respond&message=${encodeURIComponent(firstBlockingMessage.id)}`
-                  : workflow.to)}
-                title={firstBlockingMessage
-                  ? `${firstBlockingMessage.title} must be resolved before advancement.`
-                  : workflow.reason}
+                onClick={() => goTo(workflow.to)}
+                title={workflow.reason}
               >
                 <span className="text-[8px] font-semibold uppercase tracking-wide opacity-70">
-                  {firstBlockingMessage ? `${blockingMessages.length} required` : workflow.blocked ? `${workflow.blockerCount} required` : workflow.context}
+                  {workflow.blocked ? `${workflow.blockerCount} required` : workflow.context}
                 </span>
-                <span>{firstBlockingMessage ? 'Respond in Inbox' : workflow.label} →</span>
+                <span>{workflow.label} →</span>
               </button>
             )}
           </header>

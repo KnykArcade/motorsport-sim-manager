@@ -1,4 +1,5 @@
 import type { GameMode } from '../types/gameTypes';
+import { ROUTE_CATALOG, routeDefinitionForPath } from '../app/routeCatalog';
 
 // ---------------------------------------------------------------------------
 // Mode restriction helpers — centralized so every screen, route guard, and
@@ -20,24 +21,14 @@ export type RestrictedFeature =
 
 // Routes that are restricted in Single Season mode (long-term career systems
 // and screens that assume multi-year planning or negotiation).
-const SINGLE_SEASON_RESTRICTED_ROUTES = new Set([
-  '/scouting',
-  '/curves',
-  '/politics',
-  '/offseason',
-  '/engine',
-  '/planner',
-]);
+const SINGLE_SEASON_RESTRICTED_ROUTES = new Set(
+  ROUTE_CATALOG
+    .filter((route) => route.restrictedModes?.includes('SingleSeason'))
+    .map((route) => route.path),
+);
 
 // Nav items hidden from the sidebar in Single Season mode.
-export const SINGLE_SEASON_HIDDEN_NAV = new Set([
-  '/scouting',
-  '/curves',
-  '/politics',
-  '/offseason',
-  '/engine',
-  '/planner',
-]);
+export const SINGLE_SEASON_HIDDEN_NAV = new Set(SINGLE_SEASON_RESTRICTED_ROUTES);
 
 // Nav items hidden from the sidebar in Career mode (none — full access).
 export const CAREER_HIDDEN_NAV = new Set<string>();
@@ -150,43 +141,10 @@ export function isActionBlocked(actionType: string, mode: GameMode | undefined):
 // Per-route restriction explanations for Single Season mode. Each gives the
 // player a clear, specific reason for the lock and what they should focus on
 // instead.
-const SINGLE_SEASON_ROUTE_REASONS: Record<string, { title: string; reason: string; focus: string }> = {
-  '/scouting': {
-    title: 'Scouting Locked',
-    reason: 'Scouting and Youth Academy are long-term development systems that span multiple seasons. In Single Season Mode, driver lineups are set to historical data.',
-    focus: 'Focus on race strategy, in-season development, and driver morale management.',
-  },
-  '/curves': {
-    title: 'Development Curves Locked',
-    reason: 'Driver development curves track multi-year progression. In Single Season Mode, drivers only develop within the single historical season.',
-    focus: 'Use the Development screen for in-season car upgrades that affect this season.',
-  },
-  '/politics': {
-    title: 'Regulation Voting Locked',
-    reason: 'Regulation voting shapes next season\'s rules. Single Season Mode replays one historical year with fixed regulations.',
-    focus: 'View the current season\'s regulations in the Pre-Season Setup or Team HQ.',
-  },
-  '/offseason': {
-    title: 'Offseason Locked',
-    reason: 'The offseason is a multi-year transition system (budget allocation, driver contracts, development carryover). Single Season Mode covers one year only.',
-    focus: 'When the season ends, visit Season Review to see final results or replay.',
-  },
-  '/engine': {
-    title: 'Engine Supplier Locked',
-    reason: 'Engine supplier deals are locked to historical data in Single Season Mode. Each team uses the engine they historically ran that year.',
-    focus: 'Engine performance is still reflected in your car stats and development.',
-  },
-  '/planner': {
-    title: 'Team Planner Locked',
-    reason: 'The Team Planner compares contracts, seats, staff, suppliers, sponsors, and technical commitments across multiple future seasons. Single Season Mode covers one historical year only.',
-    focus: 'Use Drivers, Team, Finance, and Technical to review the current historical season.',
-  },
-};
-
 // Human-readable explanation for why a route is restricted.
 export function getRouteRestrictionReason(route: string, mode: GameMode | undefined): string | undefined {
   if (!isRouteRestricted(route, mode)) return undefined;
-  const info = SINGLE_SEASON_ROUTE_REASONS[route];
+  const info = routeDefinitionForPath(route)?.restriction;
   if (info) return `${info.reason} ${info.focus}`;
   return 'Single Season Mode is a historical replay of the selected year. Long-term systems like Youth Academy, future contracts, and next-year development are disabled.';
 }
@@ -194,7 +152,7 @@ export function getRouteRestrictionReason(route: string, mode: GameMode | undefi
 // Structured restriction info for a route (title, reason, focus suggestion).
 export function getRouteRestrictionInfo(route: string, mode: GameMode | undefined): { title: string; reason: string; focus: string } | undefined {
   if (!isRouteRestricted(route, mode)) return undefined;
-  return SINGLE_SEASON_ROUTE_REASONS[route] ?? {
+  return routeDefinitionForPath(route)?.restriction ?? {
     title: 'Screen Locked',
     reason: 'Single Season Mode is a historical replay of the selected year. Long-term systems are disabled.',
     focus: 'Focus on race strategy, in-season development, and driver management.',
