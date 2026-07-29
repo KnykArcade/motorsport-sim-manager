@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useGame } from '../game/GameContext';
 import {
@@ -26,6 +26,8 @@ import { isPromotionEligible } from '../sim/youthAcademyEngine';
 import { loadSeasonBundle, preloadMarketBundle } from '../data';
 import type { FirstOptionDecision } from '../types/marketTypes';
 import type { MasterDriverEntry } from '../types/registryTypes';
+import { validateSeasonBundle } from '../game/careerJourney';
+import { createCareerCreationCoordinator } from './newCareerCreation';
 
 type OffseasonTab = 'overview' | 'lineup' | 'academy' | 'market' | 'advance';
 
@@ -34,6 +36,8 @@ export function Offseason() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [advancing, setAdvancing] = useState(false);
+  const [advanceError, setAdvanceError] = useState<string>();
+  const advanceCoordinator = useRef(createCareerCreationCoordinator());
   const requestedTab = searchParams.get('tab');
   const [tab, setTab] = useState<OffseasonTab>(
     requestedTab && ['overview', 'lineup', 'academy', 'market', 'advance'].includes(requestedTab)
@@ -97,20 +101,26 @@ export function Offseason() {
       || item.id === 'advance' && !canAdvance,
   }));
 
-  const advance = () => {
+  const advance = async () => {
+    if (!state.seasonComplete || !advanceCoordinator.current.tryAcquire()) return;
+    setAdvanceError(undefined);
     setAdvancing(true);
-    Promise.all([
-      loadSeasonBundle(nextYear, state.series),
-      preloadMarketBundle(nextYear, state.series),
-    ])
-      .then(([nextBundle]) => {
-        dispatch({ type: 'ADVANCE_SEASON', nextBundle });
-        navigate('/hq');
-      })
-      .catch(() => {
-        dispatch({ type: 'ADVANCE_SEASON' });
-        navigate('/hq');
-      });
+    try {
+      const [nextBundle] = await Promise.all([
+        loadSeasonBundle(nextYear, state.series),
+        preloadMarketBundle(nextYear, state.series),
+      ]);
+      const validation = validateSeasonBundle(nextBundle, nextYear, state.series);
+      if (!validation.valid) throw new Error(validation.reason);
+      dispatch({ type: 'ADVANCE_SEASON', nextBundle: validation.bundle });
+      navigate('/preseason');
+    } catch (error) {
+      advanceCoordinator.current.release();
+      setAdvancing(false);
+      setAdvanceError(error instanceof Error
+        ? error.message
+        : `${nextYear} ${state.series} could not be loaded.`);
+    }
   };
 
   return (
@@ -122,7 +132,7 @@ export function Offseason() {
         actions={<>
           <Button variant="ghost" onClick={() => navigate('/')}>Main Menu</Button>
           <Button variant="primary" onClick={advance} disabled={!canAdvance} title={advanceBlockedReason}>
-            {advancing ? 'Loading…' : `Advance to ${nextYear} →`}
+            {advancing ? 'Loading…' : advanceError ? `Retry ${nextYear} →` : `Advance to ${nextYear} →`}
           </Button>
         </>}
       />
@@ -135,8 +145,21 @@ export function Offseason() {
       <SeasonWorkflowRail
         active="offseason"
         context={`${state.seasonYear} → ${nextYear} transition`}
-        blocker={!state.seasonComplete ? 'Current season is not complete' : advancing ? 'Loading next season data' : undefined}
+        blocker={!state.seasonComplete
+          ? 'Current season is not complete'
+          : advancing
+            ? 'Loading next season data'
+            : advanceError}
       />
+      {advanceError && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded border border-red-800/70 bg-red-950/30 px-3 py-2" role="alert">
+          <div>
+            <strong className="text-sm text-red-200">Season advancement stopped safely.</strong>
+            <p className="mt-0.5 text-xs text-red-300/80">{advanceError} The completed {state.seasonYear} save and calendar are unchanged.</p>
+          </div>
+          <Button variant="secondary" onClick={advance} disabled={advancing}>Retry next-season load</Button>
+        </div>
+      )}
       <div className="ui-decision-strip flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <span className="ui-decision-strip-pulse" aria-hidden="true" />
@@ -190,9 +213,10 @@ export function Offseason() {
             </CoreWorkspaceContextGroup>
             <CoreWorkspaceContextGroup title="Primary action">
               <Button className="w-full" variant="primary" onClick={advance} disabled={!canAdvance} title={advanceBlockedReason}>
-                {advancing ? 'Loading…' : `Advance to ${nextYear} Season →`}
+                {advancing ? 'Loading…' : advanceError ? `Retry ${nextYear} Season →` : `Advance to ${nextYear} Season →`}
               </Button>
               {!state.seasonComplete && <p className="mt-2 text-xs text-neutral-500">Finish the current championship before the rollover can begin.</p>}
+              {advanceError && <p className="mt-2 text-xs text-red-300">No rollover was applied. Retry after the requested season data becomes available.</p>}
             </CoreWorkspaceContextGroup>
           </>
         )}
