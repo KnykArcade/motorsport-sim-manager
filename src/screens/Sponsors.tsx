@@ -91,15 +91,11 @@ export function Sponsors() {
   const { state, dispatch } = useGame();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  const initialTab = SPONSORS_WORKSPACE_TABS.some((item) => item.id === requestedTab)
+  const tab: SponsorsWorkspaceTab = SPONSORS_WORKSPACE_TABS.some((item) => item.id === requestedTab)
     ? requestedTab as SponsorsWorkspaceTab
     : 'portfolio';
-  const [tab, setTab] = useState<SponsorsWorkspaceTab>(initialTab);
   const [sponsorListPage, setSponsorListPage] = useState(0);
   const focusedId = searchParams.get('focus');
-  const [selectedSponsorId, setSelectedSponsorId] = useState<string | null>(focusedId);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(focusedId);
-  const [selectedNegotiationId, setSelectedNegotiationId] = useState<string | null>(focusedId);
   const [ownerReviewPage, setOwnerReviewPage] = useState(0);
   const [offerSort, setOfferSort] = useState<SponsorSort<SponsorOfferSortKey>>({ key: 'annualValue', direction: 'desc' });
   const [negotiationSort, setNegotiationSort] = useState<SponsorSort<SponsorNegotiationSortKey>>({ key: 'deadlineRound', direction: 'asc' });
@@ -128,14 +124,14 @@ export function Sponsors() {
   const activeNegotiations = negotiations.filter((item) => item.status === 'Draft' || item.status === 'Countered');
   const orderedOffers = sortSponsorOffers(offers, offerSort);
   const orderedNegotiations = sortSponsorNegotiations(negotiations, negotiationSort);
-  const selectedOffer = selectedTechnicalRecord(orderedOffers, selectedOfferId);
-  const selectedNegotiation = selectedTechnicalRecord(orderedNegotiations, selectedNegotiationId);
+  const selectedOffer = selectedTechnicalRecord(orderedOffers, focusedId);
+  const selectedNegotiation = selectedTechnicalRecord(orderedNegotiations, focusedId);
   const slotsFull = used >= capacity;
   const objectiveSummary = sponsorObjectiveSummary(sponsors);
   const sponsorListPageCount = sponsorPageCount(sponsors.length);
   const safeSponsorListPage = Math.min(sponsorListPage, sponsorListPageCount - 1);
   const visibleSponsors = sponsorPage(sponsors, safeSponsorListPage);
-  const selectedSponsor = sponsors.find((sponsor) => sponsor.id === selectedSponsorId) ?? sponsors[0];
+  const selectedSponsor = sponsors.find((sponsor) => sponsor.id === focusedId) ?? sponsors[0];
   const ownerReviews = [...(state.expectationReviews ?? [])]
     .filter((review) => review.teamId === state.selectedTeamId)
     .reverse();
@@ -144,12 +140,20 @@ export function Sponsors() {
   const visibleOwnerReviews = ownerReviews.slice(safeOwnerReviewPage * 4, safeOwnerReviewPage * 4 + 4);
 
   function selectTab(nextTab: SponsorsWorkspaceTab) {
-    setTab(nextTab);
     const next = new URLSearchParams(searchParams);
     if (nextTab === 'portfolio') next.delete('tab');
     else next.set('tab', nextTab);
-    setSearchParams(next, { replace: true });
+    next.delete('focus');
+    setSearchParams(next);
     if (nextTab === 'portfolio' || nextTab === 'objectives') setSponsorListPage(0);
+  }
+
+  function selectFocusedRecord(id: string, nextTab: SponsorsWorkspaceTab) {
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === 'portfolio') next.delete('tab');
+    else next.set('tab', nextTab);
+    next.set('focus', id);
+    setSearchParams(next);
   }
 
   return (
@@ -219,7 +223,9 @@ export function Sponsors() {
                       key={sponsor.id}
                       active={selectedSponsor?.id === sponsor.id}
                       urgent={sponsor.confidence <= 40}
-                      onClick={() => setSelectedSponsorId(sponsor.id)}
+                      onClick={() => {
+                        selectFocusedRecord(sponsor.id, tab);
+                      }}
                     >
                       <span>{TYPE_LABEL[sponsor.type]}</span>
                       <strong>{sponsor.name}</strong>
@@ -274,7 +280,13 @@ export function Sponsors() {
                 />
                 <FmPaneBody className="overflow-auto">
                   {orderedOffers.map((offer) => (
-                    <FmListButton key={offer.id} active={selectedOffer?.id === offer.id} onClick={() => setSelectedOfferId(offer.id)}>
+                    <FmListButton
+                      key={offer.id}
+                      active={selectedOffer?.id === offer.id}
+                      onClick={() => {
+                        selectFocusedRecord(offer.id, 'opportunities');
+                      }}
+                    >
                       <span>{TYPE_LABEL[offer.type]}</span>
                       <strong>{offer.name}</strong>
                       <small>${offer.annualValue}M · {offer.contractYearsRemaining} years · confidence {offer.confidence}</small>
@@ -349,7 +361,9 @@ export function Sponsors() {
                       key={negotiation.id}
                       active={selectedNegotiation?.id === negotiation.id}
                       urgent={negotiation.status === 'Countered' || negotiation.patience <= 25}
-                      onClick={() => setSelectedNegotiationId(negotiation.id)}
+                      onClick={() => {
+                        selectFocusedRecord(negotiation.id, 'negotiations');
+                      }}
                     >
                       <span>{negotiation.status} · deadline R{negotiation.deadlineRound}</span>
                       <strong>{negotiation.sponsorName}</strong>

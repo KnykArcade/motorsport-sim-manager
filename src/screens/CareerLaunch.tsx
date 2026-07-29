@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/Button';
 import { Panel } from '../components/Panel';
@@ -49,6 +50,7 @@ const NEXT_LABEL: Record<CareerLaunchStep, string> = {
 export function CareerLaunch() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
+  const [reviewedStep, setReviewedStep] = useState<CareerLaunchStep>();
   if (!state) return null;
 
   const launch = careerLaunchState(state);
@@ -64,6 +66,8 @@ export function CareerLaunch() {
   const race = currentRace(state);
   const ratings = car ? effectiveCarRatings(car) : undefined;
   const stepIndex = LAUNCH_STEPS.findIndex((step) => step.id === launch.currentStep);
+  const displayStep = reviewedStep ?? launch.currentStep;
+  const reviewingCompletedStep = displayStep !== launch.currentStep;
 
   const departments = [
     { label: 'Technical research', value: organisation?.research ?? 0 },
@@ -75,6 +79,7 @@ export function CareerLaunch() {
   ].sort((a, b) => a.value - b.value);
 
   const advance = () => {
+    setReviewedStep(undefined);
     if (launch.currentStep === 'firstWeekPlan') {
       dispatch({ type: 'COMPLETE_CAREER_LAUNCH' });
       navigate('/preseason?task=driverLineup');
@@ -87,11 +92,20 @@ export function CareerLaunch() {
     <WorkspaceScreen className="era-feature-screen ui-career-launch-screen">
       <WorkspaceHeader
         eyebrow="First day"
-        title={launch.currentStep === 'appointment'
+        title={displayStep === 'appointment'
           ? `Welcome to ${team?.name ?? 'your new team'}`
           : `${team?.name ?? 'Team'} · First-Day Briefing`}
         subtitle={`${state.seasonYear} ${state.series} · ${getGameModeLabel(state.gameMode)}`}
-        actions={<Button variant="primary" onClick={advance}>{NEXT_LABEL[launch.currentStep]}</Button>}
+        actions={(
+          <Button
+            variant="primary"
+            onClick={reviewingCompletedStep ? () => setReviewedStep(undefined) : advance}
+          >
+            {reviewingCompletedStep
+              ? `Return to ${LAUNCH_STEPS[stepIndex]?.label ?? 'Current Step'} →`
+              : NEXT_LABEL[launch.currentStep]}
+          </Button>
+        )}
       />
       <MetricStrip>
         <WorkspaceMetric label="Team Principal" value={state.principal?.name ?? state.teamPrincipal?.name ?? 'You'} detail={`Reputation ${Math.round(state.principal?.reputation ?? 0)}`} />
@@ -106,13 +120,20 @@ export function CareerLaunch() {
           {LAUNCH_STEPS.map((step, index) => {
             const status = index < stepIndex ? 'is-complete' : index === stepIndex ? 'is-active' : 'is-upcoming';
             return (
-              <div key={step.id} className={`ui-career-launch-step ${status}`}>
+              <button
+                key={step.id}
+                type="button"
+                className={`ui-career-launch-step ${status} ${displayStep === step.id ? 'is-viewing' : ''}`}
+                disabled={index > stepIndex}
+                aria-current={displayStep === step.id ? 'step' : undefined}
+                onClick={() => setReviewedStep(index === stepIndex ? undefined : step.id)}
+              >
                 <span>{index < stepIndex ? '✓' : index + 1}</span>
                 <div>
                   <strong>{step.label}</strong>
                   <small>{step.detail}</small>
                 </div>
-              </div>
+              </button>
             );
           })}
           <div className="ui-career-launch-rail-note">
@@ -121,7 +142,7 @@ export function CareerLaunch() {
         </aside>
 
         <main className="ui-career-launch-content">
-          {launch.currentStep === 'appointment' && (
+          {displayStep === 'appointment' && (
             <Panel title="Your appointment" actions={<StatusTag label="Contract confirmed" tone="green" />}>
               <div className="ui-career-launch-hero">
                 <div>
@@ -151,7 +172,7 @@ export function CareerLaunch() {
             </Panel>
           )}
 
-          {launch.currentStep === 'teamHandover' && (
+          {displayStep === 'teamHandover' && (
             <div className="ui-career-launch-panel-grid">
               <Panel title="Team handover" actions={<StatusTag label={`${drivers.length}/${minimumDrivers} race seats`} tone={drivers.length >= minimumDrivers ? 'green' : 'amber'} />}>
                 <div className="ui-career-launch-driver-list">
@@ -191,7 +212,7 @@ export function CareerLaunch() {
             </div>
           )}
 
-          {launch.currentStep === 'ownerIntroduction' && (
+          {displayStep === 'ownerIntroduction' && (
             <div className="ui-career-launch-panel-grid">
               <Panel title="Owner introduction" actions={<StatusTag label={reputation?.ownerPersonality ? OWNER_PERSONALITY_LABELS[reputation.ownerPersonality] : 'Ownership'} tone="neutral" />}>
                 <div className="ui-career-launch-owner">
@@ -221,7 +242,7 @@ export function CareerLaunch() {
             </div>
           )}
 
-          {launch.currentStep === 'firstWeekPlan' && (
+          {displayStep === 'firstWeekPlan' && (
             <div className="ui-career-launch-panel-grid">
               <Panel title="Your first management week" actions={<StatusTag label="3 decisions" tone="amber" />}>
                 <p className="ui-career-launch-intro">

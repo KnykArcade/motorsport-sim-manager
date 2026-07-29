@@ -39,11 +39,11 @@ export function Offseason() {
   const [advanceError, setAdvanceError] = useState<string>();
   const advanceCoordinator = useRef(createCareerCreationCoordinator());
   const requestedTab = searchParams.get('tab');
-  const [tab, setTab] = useState<OffseasonTab>(
+  const focusedId = searchParams.get('focus');
+  const tab: OffseasonTab =
     requestedTab && ['overview', 'lineup', 'academy', 'market', 'advance'].includes(requestedTab)
       ? requestedTab as OffseasonTab
-      : 'overview',
-  );
+      : 'overview';
   if (!state) return null;
 
   const nextYear = state.seasonYear + 1;
@@ -187,10 +187,10 @@ export function Offseason() {
         items={workspaceItems}
         active={tab}
         onChange={(nextTab) => {
-          setTab(nextTab);
           const next = new URLSearchParams(searchParams);
           if (nextTab === 'overview') next.delete('tab');
           else next.set('tab', nextTab);
+          next.delete('focus');
           setSearchParams(next);
         }}
         ariaLabel="Offseason management sections"
@@ -254,7 +254,11 @@ export function Offseason() {
         ) : (
           <ul className="space-y-1.5 text-sm">
             {signings.map((s) => (
-              <li key={s.seatDriverId} className="flex items-center justify-between">
+              <li
+                key={s.seatDriverId}
+                aria-current={focusedId === s.sourceId ? 'true' : undefined}
+                className={`flex items-center justify-between ${focusedId === s.sourceId ? 'bg-amber-500/10 ring-1 ring-amber-500/60' : ''}`}
+              >
                 <span className="text-neutral-200">
                   <span className="font-semibold">{s.name}</span>{' '}
                   <span className="text-neutral-500">replaces {driverName(s.seatDriverId)}</span>

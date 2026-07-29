@@ -82,7 +82,7 @@ describe('Phase 25 core workspace conversion contract', () => {
     const source = screenSource('TechnicalCenter.tsx');
 
     expect(source).toContain('<UnifiedDevelopmentBody />');
-    expect(source).toContain('<PartsInventoryPanel />');
+    expect(source).toContain('<PartsInventoryPanel focusedPartId={focusedId} />');
     expect(source).toContain('<FacilitiesBody />');
     expect(source).toContain('<EngineSupplierBody />');
     expect(source).toContain('Open Race & Car Setup →');

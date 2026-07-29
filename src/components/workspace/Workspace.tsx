@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 
 export function WorkspaceScreen({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`ui-workspace-screen flex min-h-full flex-col gap-3 ${className}`}>{children}</div>;
@@ -38,6 +38,22 @@ export function WorkspaceTabs<T extends string>({
   onChange: (id: T) => void;
   ariaLabel: string;
 }) {
+  const moveFocus = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const buttons = Array.from(
+      event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? [],
+    ).filter((button) => button.getAttribute('aria-disabled') !== 'true');
+    if (!buttons.length) return;
+    const currentIndex = buttons.indexOf(event.currentTarget);
+    const nextIndex = event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? buttons.length - 1
+        : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+    event.preventDefault();
+    buttons[nextIndex]?.focus();
+  };
+
   return (
     <div className="ui-workspace-tabs flex shrink-0 items-center overflow-x-auto" role="tablist" aria-label={ariaLabel}>
       {items.map((item) => (
@@ -45,10 +61,16 @@ export function WorkspaceTabs<T extends string>({
           key={item.id}
           type="button"
           role="tab"
-          onClick={() => onChange(item.id)}
-          disabled={item.disabled}
+          onClick={() => {
+            if (!item.disabled) onChange(item.id);
+          }}
           title={item.disabled ? item.disabledReason : undefined}
           aria-selected={active === item.id}
+          aria-disabled={item.disabled || undefined}
+          aria-label={item.disabled && item.disabledReason
+            ? `${item.label}. Unavailable: ${item.disabledReason}`
+            : undefined}
+          onKeyDown={moveFocus}
           tabIndex={active === item.id ? 0 : -1}
           className={active === item.id ? 'is-active' : ''}
         >

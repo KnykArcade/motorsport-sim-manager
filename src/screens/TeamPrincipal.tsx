@@ -27,7 +27,6 @@ import {
   principalRelationshipRows,
   principalTabFromQuery,
   selectedPrincipalJobOffer,
-  type PrincipalCommandTab,
 } from './teamPrincipalViewModel';
 import {
   WorkspaceBody,
@@ -46,10 +45,10 @@ import {
 export function TeamPrincipal() {
   const { state, dispatch } = useGame();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<PrincipalCommandTab>(() => principalTabFromQuery(searchParams.get('tab')));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = principalTabFromQuery(searchParams.get('tab'));
   const [offerPage, setOfferPage] = useState(0);
-  const [selectedOfferId, setSelectedOfferId] = useState<string | undefined>(searchParams.get('focus') ?? undefined);
+  const selectedOfferId = searchParams.get('focus') ?? undefined;
   if (!state) return null;
 
   const principal = state.principal;
@@ -121,7 +120,13 @@ export function TeamPrincipal() {
       <CoreWorkspaceFrame
         items={workspaceItems}
         active={activeTab}
-        onChange={setActiveTab}
+        onChange={(nextTab) => {
+          const next = new URLSearchParams(searchParams);
+          if (nextTab === 'standing') next.delete('tab');
+          else next.set('tab', nextTab);
+          next.delete('focus');
+          setSearchParams(next);
+        }}
         ariaLabel="Team Principal command center sections"
         listTitle="Principal agenda"
         listMeta={`${commitments.length} active commitment${commitments.length === 1 ? '' : 's'}`}
@@ -378,7 +383,17 @@ export function TeamPrincipal() {
                 <FmPaneHeader title="Job Market" meta={`${offers.length} approaches`} />
                 <FmPaneBody className="overflow-auto">
                   {visibleOffers.map((offer) => (
-                    <FmListButton key={offer.id} active={selectedOffer?.id === offer.id} urgent={offer.kind === 'Offer'} onClick={() => setSelectedOfferId(offer.id)}>
+                    <FmListButton
+                      key={offer.id}
+                      active={selectedOffer?.id === offer.id}
+                      urgent={offer.kind === 'Offer'}
+                      onClick={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.set('tab', 'career');
+                        next.set('focus', offer.id);
+                        setSearchParams(next);
+                      }}
+                    >
                       <span className="ui-news-list-source">{offer.kind === 'Offer' ? 'Firm offer' : 'Rumor'} · {offer.contractYears} years</span>
                       <strong>{teamById(state, offer.teamId)?.name ?? offer.teamId}</strong>
                       <span>{offer.objective}</span>
@@ -389,9 +404,9 @@ export function TeamPrincipal() {
                 </FmPaneBody>
                 {offerPageCount > 1 && (
                   <div className="ui-team-list-pagination">
-                    <button type="button" onClick={() => { setOfferPage(Math.max(0, safeOfferPage - 1)); setSelectedOfferId(undefined); }} disabled={safeOfferPage === 0}>Previous</button>
+                    <button type="button" onClick={() => { setOfferPage(Math.max(0, safeOfferPage - 1)); }} disabled={safeOfferPage === 0}>Previous</button>
                     <span>{safeOfferPage + 1} / {offerPageCount}</span>
-                    <button type="button" onClick={() => { setOfferPage(Math.min(offerPageCount - 1, safeOfferPage + 1)); setSelectedOfferId(undefined); }} disabled={safeOfferPage >= offerPageCount - 1}>Next</button>
+                    <button type="button" onClick={() => { setOfferPage(Math.min(offerPageCount - 1, safeOfferPage + 1)); }} disabled={safeOfferPage >= offerPageCount - 1}>Next</button>
                   </div>
                 )}
               </FmPane>

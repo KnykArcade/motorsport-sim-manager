@@ -66,11 +66,11 @@ export function Finance() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [season, setSeason] = useState<number | null>(null);
   const requestedTab = searchParams.get('tab');
-  const [tab, setTab] = useState<FinanceWorkspaceTab>(
+  const focusedId = searchParams.get('focus');
+  const tab: FinanceWorkspaceTab =
     requestedTab && FINANCE_WORKSPACE_TABS.some((item) => item.id === requestedTab)
       ? requestedTab as FinanceWorkspaceTab
-      : 'overview',
-  );
+      : 'overview';
   const [transactionFilter, setTransactionFilter] = useState<FinanceTransactionFilter>('all');
   const [transactionPage, setTransactionPage] = useState(0);
 
@@ -124,7 +124,10 @@ export function Finance() {
         actions={(
           <div className="ui-finance-header-actions">
             <div className="ui-technical-header-readout">
-              <span><strong>{formatMoney(team?.budget ?? 0)}</strong> balance</span>
+              <span
+                aria-current={focusedId === 'available-balance' ? 'true' : undefined}
+                className={focusedId === 'available-balance' ? 'ring-1 ring-amber-500/70' : undefined}
+              ><strong>{formatMoney(team?.budget ?? 0)}</strong> balance</span>
               <span><strong>{formatMoney(summary.net)}</strong> {activeSeason} net</span>
               <span><strong>{financeCoverageLabel(annualCoverage)}</strong> coverage</span>
             </div>
@@ -156,10 +159,10 @@ export function Finance() {
         }))}
         active={tab}
         onChange={(nextTab) => {
-          setTab(nextTab);
           const next = new URLSearchParams(searchParams);
           if (nextTab === 'overview') next.delete('tab');
           else next.set('tab', nextTab);
+          next.delete('focus');
           setSearchParams(next);
         }}
         ariaLabel="Finance workspaces"

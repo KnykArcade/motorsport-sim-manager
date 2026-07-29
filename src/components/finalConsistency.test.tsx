@@ -28,6 +28,8 @@ describe('final UI consistency', () => {
     expect(html).toContain('role="tab"');
     expect(html).toContain('aria-selected="true"');
     expect(html).toContain('title="Complete the review first."');
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('aria-label="Locked. Unavailable: Complete the review first."');
   });
 
   it('gives the timing tower keyboard-focusable driver selection and tab semantics', () => {
