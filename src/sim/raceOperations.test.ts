@@ -33,8 +33,8 @@ describe('race operations wiring — variance-centered', () => {
       const variance = vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
       return { mean, std: Math.sqrt(variance) };
     };
-    const strong = sample(9); // top team
-    const weak = sample(3); // backmarker
+    const strong = sample(90); // top team
+    const weak = sample(30); // backmarker
     // Zero-mean (both), within sampling tolerance.
     expect(Math.abs(strong.mean)).toBeLessThan(0.03);
     expect(Math.abs(weak.mean)).toBeLessThan(0.03);

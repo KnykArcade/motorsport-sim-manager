@@ -9,7 +9,7 @@ import { raceStrategiesById } from '../data/decisions/raceStrategies';
 import { driverInstructionsById } from '../data/decisions/driverInstructions';
 import type { Car, Driver } from '../types/gameTypes';
 import type { CarSetup, DriverComfort, ObjectiveSetupQuality } from '../types/setupTypes';
-import { adjustedSetupTolerance, idealSetup, objectiveSetupQuality } from './setupFitEngine';
+import { idealSetup, objectiveSetupQuality, setupToleranceForCar } from './setupFitEngine';
 import {
   driverSetupComfort,
   inferSetupPreferences,
@@ -185,10 +185,10 @@ describe('Practice knowledge controls certainty', () => {
     expect(setupQualityEstimate(80, 0.99).exact).toBe(80);
   });
 
-  it('makes setup tolerance harder with poor prep and easier with stronger ops/practice', () => {
-    const poorPrep = adjustedSetupTolerance(2.2, 3, 0, 0);
-    const strongPrep = adjustedSetupTolerance(2.2, 8, 6, 0.9);
-    expect(strongPrep).toBeGreaterThan(poorPrep);
+  it('derives objective tolerance from the car setup window rather than preparation', () => {
+    const narrowWindow = setupToleranceForCar({ setupWindow: 20 });
+    const wideWindow = setupToleranceForCar({ setupWindow: 80 });
+    expect(wideWindow).toBeGreaterThan(narrowWindow);
   });
 
   it('tyre knowledge tightens the predicted stint (pit) window', () => {
