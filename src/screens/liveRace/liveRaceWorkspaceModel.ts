@@ -28,6 +28,11 @@ export type LiveRaceAutoPauseSettings = {
   engineerMessages: boolean;
 };
 
+export type LiveRaceDnfAlert = {
+  lap: number;
+  entries: Array<{ driverId: string; cause: string; isPlayer?: boolean }>;
+};
+
 export type LiveRaceWorkspacePreferences = {
   version: 1;
   viewMode: LiveRaceViewMode;
@@ -223,10 +228,15 @@ export function liveRaceAutoPauseReason(
   next: LiveRaceState,
   settings: LiveRaceAutoPauseSettings,
 ): string | null {
-  if (settings.incidents && (
+  const incidentTransition = (
     next.lastIncident?.lap !== previous.lastIncident?.lap
     || next.events.slice(previous.events.length).some((event) => event.category === 'incident')
-  )) {
+  );
+  if (
+    settings.incidents
+    && incidentTransition
+    && !isAiOnlyDnfTransition(previous, next)
+  ) {
     return 'Paused for a new incident';
   }
   if (settings.weatherChanges && (
@@ -256,6 +266,34 @@ export function liveRaceAutoPauseReason(
     if (important) return `Paused for ${important.priority} priority engineer advice`;
   }
   return null;
+}
+
+export function liveRaceDnfAlertFromTransition(
+  previous: LiveRaceState,
+  next: LiveRaceState,
+): LiveRaceDnfAlert | null {
+  const previousRunning = new Map(previous.cars.map((car) => [car.driverId, car.running]));
+  const entries = next.cars
+    .filter((car) => previousRunning.get(car.driverId) && !car.running && car.status === 'DNF')
+    .map((car) => ({
+      driverId: car.driverId,
+      cause: car.lastIncident ?? 'Retired',
+      isPlayer: car.isPlayer,
+    }));
+  if (entries.length === 0) return null;
+  return { lap: next.currentLap, entries };
+}
+
+function isAiOnlyDnfTransition(
+  previous: LiveRaceState,
+  next: LiveRaceState,
+): boolean {
+  const alert = liveRaceDnfAlertFromTransition(previous, next);
+  if (!alert || alert.entries.some((entry) => entry.isPlayer)) return false;
+
+  const retiredIds = new Set(alert.entries.map((entry) => entry.driverId));
+  return !next.lastIncident?.driverIds.length
+    || next.lastIncident.driverIds.every((driverId) => retiredIds.has(driverId));
 }
 
 export type LiveRaceDelegationProfile = {
