@@ -237,14 +237,14 @@
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0073",
           "points": 4,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0073",
+          "entityId": "DRV_0219",
           "points": 3,
           "wins": 0,
           "podiums": 0,
@@ -394,9 +394,9 @@
       "constructorStandings": [
         {
           "entityId": "t-williams",
-          "points": 13,
+          "points": 14,
           "wins": 1,
-          "podiums": 1,
+          "podiums": 2,
           "dnfs": 0
         },
         {
@@ -408,9 +408,9 @@
         },
         {
           "entityId": "t-benetton",
-          "points": 4,
+          "points": 3,
           "wins": 0,
-          "podiums": 1,
+          "podiums": 0,
           "dnfs": 1
         },
         {
@@ -960,14 +960,14 @@
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0073",
           "points": 4,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0073",
+          "entityId": "DRV_0219",
           "points": 3,
           "wins": 0,
           "podiums": 0,
@@ -1117,9 +1117,9 @@
       "constructorStandings": [
         {
           "entityId": "t-williams",
-          "points": 13,
+          "points": 14,
           "wins": 1,
-          "podiums": 1,
+          "podiums": 2,
           "dnfs": 0
         },
         {
@@ -1131,9 +1131,9 @@
         },
         {
           "entityId": "t-benetton",
-          "points": 4,
+          "points": 3,
           "wins": 0,
-          "podiums": 1,
+          "podiums": 0,
           "dnfs": 1
         },
         {
@@ -1683,14 +1683,14 @@
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0219",
+          "entityId": "DRV_0073",
           "points": 4,
           "wins": 0,
           "podiums": 1,
           "dnfs": 0
         },
         {
-          "entityId": "DRV_0073",
+          "entityId": "DRV_0219",
           "points": 3,
           "wins": 0,
           "podiums": 0,
@@ -1840,9 +1840,9 @@
       "constructorStandings": [
         {
           "entityId": "t-williams",
-          "points": 13,
+          "points": 14,
           "wins": 1,
-          "podiums": 1,
+          "podiums": 2,
           "dnfs": 0
         },
         {
@@ -1854,9 +1854,9 @@
         },
         {
           "entityId": "t-benetton",
-          "points": 4,
+          "points": 3,
           "wins": 0,
-          "podiums": 1,
+          "podiums": 0,
           "dnfs": 1
         },
         {

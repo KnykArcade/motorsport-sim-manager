@@ -51,6 +51,7 @@ import type {
   ConfirmedWeekendPlan,
   GarageAddressRecord,
 } from '../types/weekendLeadershipTypes';
+import type { AIEngineeringWeekendPlans } from '../types/aiSetupTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -271,6 +272,9 @@ export type GameState = {
   garageAddresses?: GarageAddressRecord[];
   // AI team package selections for the current weekend, keyed by teamId.
   aiRaceWeekendPackages?: Record<string, RaceWeekendPackageSelection>;
+  // Rival engineering decisions for the active weekend. Optional so older
+  // saves can rebuild the same plans deterministically when qualifying/racing.
+  aiEngineeringPlans?: AIEngineeringWeekendPlans;
 
   // Career Phase system: tracks the between-race management flow.
   // Optional for save compatibility; defaults to pre_season_setup for new games.

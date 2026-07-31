@@ -1,11 +1,13 @@
-// Automatic, track-appropriate setup packages (professional team preparation).
+// Automatic, track-appropriate compatibility packages.
 //
-// The player no longer picks setup trim. Instead the team prepares one
+// The player no longer picks setup trim. This fallback prepares one
 // track-appropriate base aero/mechanical package, then derives two DISTINCT
 // trims from it: a low-fuel, aggressive QUALIFYING trim run on Saturday and a
 // long-run, consistency-focused RACE trim run on Sunday. The two trims share
 // the base downforce profile (so the car suits the circuit) but differ in
 // qualifying/race pace bias, tyre preservation, reliability protection and risk.
+// Rival teams no longer use these packages as their authoritative setup;
+// aiSetupEngineeringEngine supplies their physical weekend plans and profiles.
 
 import type { SetupOption, Track } from '../types/gameTypes';
 import { setupOptions } from '../data/setupOptions/setupOptions';
