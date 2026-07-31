@@ -2459,6 +2459,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
     entrants,
     decisions,
     setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
+    setupProfilesByDriver: tuned.profilesByDriver,
     runPlans: qualifyingRunPlansById,
     seed: `${state.randomSeed}-r${race.round}`,
     maxQualifiers: getMaxQualifiers(state.series),

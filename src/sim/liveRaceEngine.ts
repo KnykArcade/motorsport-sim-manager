@@ -34,6 +34,7 @@ import { getCircuitSegmentsForRace } from '../data/circuits/circuitLookup';
 import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { createInitialCarPositionState, DEFAULT_FIXED_STEP_SECONDS } from './segmentRaceEngine';
 import { initialRaceControlState } from './raceControlEngine';
+import { resolveSetupSimulationProfile } from './setupSimulationProfile';
 
 export type LiveRaceOptions = {
   raceId: string;
@@ -103,6 +104,13 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   const cars: LiveCarState[] = context.entrants.map((e) => {
     const decision = context.decisions[e.driver.id];
     const setup = context.setupOptions[decision.setupId];
+    const setupProfile = resolveSetupSimulationProfile(
+      context.setupProfilesByDriver?.[e.driver.id],
+      setup,
+      track,
+      e.car,
+    );
+    const setupEnvelope = setupProfile.sessions.raceStint;
     const strategy = context.strategies[decision.strategyId];
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
@@ -113,9 +121,20 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       (context.confidenceModifierByDriver?.[e.driver.id] ?? 0)
       + (context.garageAddressEffectsByDriver?.[e.driver.id]?.performanceModifier ?? 0);
     const teamPitIntensity = options.pitIntensityByTeam?.[e.driver.teamId] ?? 'Standard';
-    const { score: paceScore } = calculateRacePace(e.driver, e.car, track, setup, strategy, instruction, teamRating, confidenceModifier);
+    const { score: paceScore } = calculateRacePace(
+      e.driver,
+      e.car,
+      track,
+      setup,
+      strategy,
+      instruction,
+      teamRating,
+      confidenceModifier,
+      setupProfile,
+      'raceStint',
+    );
     // Per-team weekend form so the live race shares the quick race's variation.
-    const score = paceScore + weekendForm(context.seed, e.driver.teamId, teamRating);
+    const score = Math.max(0.1, paceScore + weekendForm(context.seed, e.driver.teamId, teamRating));
 
     // Apply Race Weekend Package pace modifier.
     const packagePaceBonus = pkgEffects?.paceModifier ?? 0;
@@ -141,10 +160,16 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const stress = Math.max(
       0,
       instruction.reliabilityStressModifier +
-        setup.riskModifier * 0.32 +
-        Math.max(0, 5 - setup.reliabilityProtection) * 0.14,
+        setupEnvelope.reliabilityRisk * 0.18 +
+        setupEnvelope.overheatingRisk * 0.14,
     );
-    let perRaceRel = calculateReliabilityRisk(e.car, track, setup, stress, opsForm);
+    let perRaceRel = calculateReliabilityRisk(
+      e.car,
+      track,
+      { ...setup, reliabilityProtection: 5, riskModifier: 0 },
+      stress,
+      opsForm,
+    );
     const qIncident = incidentByDriver[e.driver.id];
     if (qIncident === 'Crash') perRaceRel += 0.06;
     else if (qIncident === 'Mechanical Issue') perRaceRel += 0.04;
@@ -156,10 +181,9 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     // Crash/incident risk, kept separate from mechanical failure.
     // Package crash risk multiplier scales the base crash risk.
-    const setupRiskAggression = setup.riskModifier * 0.25;
-    const setupHandlingPressure =
-      Math.max(0, 5 - setup.brakingStability) * 0.12 +
-      Math.max(0, 5 - setup.tirePreservation) * 0.08;
+    const setupRiskAggression = setupEnvelope.mistakePressure * 0.1;
+    const setupHandlingPressure = setupEnvelope.mistakePressure
+      + setupEnvelope.consistencyLoss * 0.35;
     const perRaceCrash = calculateCrashRisk(e.driver, track, instruction.mistakeModifier + setupRiskAggression)
       * (pkgEffects?.crashRiskMultiplier ?? 1);
     const baseCrashRisk = perLapFailureRisk(perRaceCrash, totalLaps) * cal.crash;
@@ -177,7 +201,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
     const pitPlan = buildPitPlan(strategy, totalLaps);
     const pkgTyrePres = pkgEffects?.tyrePreservation ?? 0;
     const tireDegRate = computeDegRate(
-      setup.tirePreservation + pkgTyrePres * 5,
+      5 + pkgTyrePres * 5 - setupEnvelope.tyreWearDelta * 0.8,
       instruction.tireWearModifier,
       strategy.tireDegModifier,
       pitPlan.stintTarget,
@@ -218,6 +242,7 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       baseFailureRisk,
       baseCrashRisk,
       baseMistakeRisk,
+      setupProfile,
       tireDegRate,
       pitCrewOperations: e.car.ratings.pitCrewOperations,
       driverComposure: e.driver.ratings.composure,

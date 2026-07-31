@@ -182,6 +182,22 @@ export type SetupPerformanceSnapshot = {
   warnings: string[];
 };
 
+// Runtime-only simulation view of a setup. The physical snapshot remains the
+// source of truth; driver extraction is layered on separately and can only add
+// a loss. These profiles are rebuilt with each weekend context, so existing
+// save data does not need a migration.
+export type SetupSimulationEnvelope = Omit<SetupSessionEnvelope, 'paceDelta'> & {
+  physicalPaceDelta: number;
+  driverExtractionDelta: number;
+  paceDelta: number;
+};
+
+export type SetupSimulationProfile = {
+  source: 'tuned' | 'legacy';
+  snapshot: SetupPerformanceSnapshot;
+  sessions: Record<SetupSessionKey, SetupSimulationEnvelope>;
+};
+
 export type ObjectiveSetupQuality = {
   quality: number; // 0-100 engineering fit vs track + car
   components: ComponentFit[];

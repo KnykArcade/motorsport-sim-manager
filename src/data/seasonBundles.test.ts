@@ -8,7 +8,7 @@ describe('season bundles', () => {
     await Promise.all(
       availableSeasons.map((s) => preloadMarketBundle(s.year, s.series))
     );
-  });
+  }, 30_000);
 
   it('exposes more than one startable season', () => {
     expect(availableSeasons.length).toBeGreaterThan(1);

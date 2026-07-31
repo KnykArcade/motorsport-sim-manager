@@ -331,6 +331,10 @@ export type LivePaceInputs = {
   intervalAhead: number;
   formSwing: number; // zero-mean per-lap driver momentum
   mistakeThisLap: boolean;
+  // Difference from the race-stint setup envelope already included in base
+  // pace. This lets heavy fuel, late stints, traffic and rain evolve without
+  // counting the setup twice.
+  setupPaceDelta?: number;
 };
 
 // Recompute Current Live Race Pace (1-10) for a car this lap. Internally allowed
@@ -347,6 +351,7 @@ export function computeLivePace(inp: LivePaceInputs): number {
   pace += spec.paceDelta;
   pace += weatherPaceModifier(inp.gripLevel);
   pace += inp.formSwing;
+  pace += inp.setupPaceDelta ?? 0;
 
   const dirty = dirtyAirModifier(inp.intervalAhead, spec.overtakeMult);
   pace += dirty;

@@ -23,6 +23,12 @@ import { calculateSetupFit } from './setupEngine';
 import { calculateCrashRisk, calculateMistakeRisk } from './mistakeEngine';
 import { PACE_SPREAD, PACE_WEIGHTS, WEEKEND_FORM_SPREAD, FORM_OPS_FACTOR } from './raceEngine';
 import { toLegacyRating } from './ratingScale';
+import type { SetupSimulationProfile } from '../types/setupTypes';
+import {
+  qualifyingSetupEnvelope,
+  resolveSetupSimulationProfile,
+  simulationSetupPaceDelta,
+} from './setupSimulationProfile';
 
 function clamp10(n: number): number {
   return Math.max(1, Math.min(10, n));
@@ -38,9 +44,11 @@ export function calculateQualifyingSetupFit(
   _car: Car,
   track: Track,
   qualifyingSetup: SetupOption,
+  profile?: SetupSimulationProfile,
+  wetness = 0,
 ): number {
-  // Setup fit plus the setup's own qualifying boost.
-  return calculateSetupFit(qualifyingSetup, track) + qualifyingSetup.qualifyingBoost;
+  if (!profile) return calculateSetupFit(qualifyingSetup, track) + Math.min(0, qualifyingSetup.qualifyingBoost);
+  return simulationSetupPaceDelta(qualifyingSetupEnvelope(profile, wetness));
 }
 
 export function calculateQualifyingRisk(
@@ -49,16 +57,20 @@ export function calculateQualifyingRisk(
   track: Track,
   runPlan: QualifyingRunPlan,
   setup?: SetupOption,
+  profile?: SetupSimulationProfile,
+  wetness = 0,
 ): { crash: number; mistake: number } {
-  const setupRisk = setup?.riskModifier ?? 0;
-  const brakingPressure = setup ? Math.max(0, 5 - setup.brakingStability) * 0.15 : 0;
-  const aggression = runPlan.crashModifier + setupRisk * 0.25; // run plan + setup nervousness
+  const envelope = profile ? qualifyingSetupEnvelope(profile, wetness) : undefined;
+  const setupRisk = envelope?.mistakePressure ?? Math.max(0, setup?.riskModifier ?? 0);
+  const brakingPressure = envelope?.mistakePressure
+    ?? (setup ? Math.max(0, 5 - setup.brakingStability) * 0.15 : 0);
+  const aggression = runPlan.crashModifier + setupRisk * 0.12;
   return {
     crash: calculateCrashRisk(driver, track, aggression),
     mistake: calculateMistakeRisk(
       driver,
       track,
-      runPlan.mistakeModifier + setupRisk * 0.25,
+      runPlan.mistakeModifier + setupRisk * 0.12,
       0.5 + brakingPressure,
     ),
   };
@@ -72,6 +84,8 @@ export function calculateQualifyingPace(
   runPlan: QualifyingRunPlan,
   teamRating = 5,
   confidenceModifier = 0,
+  profile?: SetupSimulationProfile,
+  wetness = 0,
 ): { score: number; breakdown: ScoreBreakdown } {
   // Same 50/25/15/10 car/driver/team/other weighting as race pace, so the car
   // is the dominant factor in qualifying too.
@@ -80,7 +94,8 @@ export function calculateQualifyingPace(
     (toLegacyRating(driver.ratings.qualifying) + toLegacyRating(driver.ratings.overall)) / 2 + calculateDriverTrackFit(driver, track),
   );
   const teamComp = clamp10(toLegacyRating(teamRating));
-  const setupFit = calculateQualifyingSetupFit(driver, car, track, setup);
+  const resolvedProfile = resolveSetupSimulationProfile(profile, setup, track, car);
+  const setupFit = calculateQualifyingSetupFit(driver, car, track, setup, resolvedProfile, wetness);
   const confidenceFactor = (driver.confidence - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(5.5 + setupFit * 0.65 + runPlan.paceModifier + confidenceFactor);
 
@@ -144,6 +159,7 @@ type Entry = {
   driver: Driver;
   car: Car;
   setup: SetupOption;
+  profile: SetupSimulationProfile;
   runPlan: QualifyingRunPlan;
   runs: number;
   conserve: boolean;
@@ -179,7 +195,17 @@ function simulateLap(
   rng: Rng,
 ): LapOutcome {
   const { driver, car, setup, runPlan } = entry;
-  const { score, breakdown } = calculateQualifyingPace(driver, car, track, setup, runPlan, entry.teamRating, entry.confidenceModifier);
+  const { score, breakdown } = calculateQualifyingPace(
+    driver,
+    car,
+    track,
+    setup,
+    runPlan,
+    entry.teamRating,
+    entry.confidenceModifier,
+    entry.profile,
+    wetness,
+  );
 
   let base = score + evolution + entry.weekendForm + entry.packagePaceBonus + entry.prepQualifyingBonus;
 
@@ -199,7 +225,7 @@ function simulateLap(
   const variance = rng.variance(1.4 * (1 + wetness));
   let finalScore = base + variance;
 
-  const risk = calculateQualifyingRisk(driver, car, track, runPlan, setup);
+  const risk = calculateQualifyingRisk(driver, car, track, runPlan, setup, entry.profile, wetness);
   const riskMult =
     (1 + (entry.runs - 1) * 0.18) * (entry.conserve ? 0.82 : 1) * (1 + wetness * 0.6);
   let crash = risk.crash * riskMult * entry.packageCrashRiskMultiplier;
@@ -319,10 +345,18 @@ export function simulateQualifying(context: QualifyingContext): {
       + Math.max(0, 5 - legacyTeamRating) * FORM_OPS_FACTOR
     ) * 0.6;
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
+    const setup = context.setupOptions[decision.setupId];
+    const profile = resolveSetupSimulationProfile(
+      context.setupProfilesByDriver?.[e.driver.id],
+      setup,
+      context.track,
+      e.car,
+    );
     return {
       driver: e.driver,
       car: e.car,
-      setup: context.setupOptions[decision.setupId],
+      setup,
+      profile,
       runPlan: context.runPlans[decision.runPlanId],
       runs: clampRuns(decision.runs),
       conserve: decision.tyreApproach === 'Conserve',
