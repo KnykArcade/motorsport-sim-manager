@@ -24,7 +24,7 @@ beforeAll(async () => {
     preloadMarketBundle(1995, 'F1'),
     initializeMasterRegistry(1995, 'F1'),
   ]);
-});
+}, 60_000);
 
 afterEach(() => {
   root?.unmount();

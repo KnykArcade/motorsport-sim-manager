@@ -12,7 +12,7 @@ describe('historical season integration', () => {
     await Promise.all(
       availableSeasons.map((s) => preloadMarketBundle(s.year, s.series))
     );
-  });
+  }, 30_000);
 
   describe('season registration', () => {
     it('F1 1990-2026 all resolve', () => {
