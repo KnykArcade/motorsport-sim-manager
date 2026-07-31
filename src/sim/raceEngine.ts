@@ -18,12 +18,17 @@ import {
   calculateTrackFit,
   effectiveCarRatings,
 } from './trackFitEngine';
-import { calculateSetupFit } from './setupEngine';
 import { calculateReliabilityRisk } from './reliabilityEngine';
 import { calculateMistakeRisk, calculateCrashRisk } from './mistakeEngine';
 import { calculatePitStopPerformance } from './pitStopEngine';
 import { eraReliabilityScale, pickDnfCause, type DnfCauseContext } from './dnfModel';
 import { toLegacyRating } from './ratingScale';
+import type { SetupSimulationProfile } from '../types/setupTypes';
+import {
+  quickRaceSetupEnvelope,
+  resolveSetupSimulationProfile,
+  simulationSetupPaceDelta,
+} from './setupSimulationProfile';
 
 // Pace is a weighted blend of four components, each on a ~1-100 scale:
 //   50% car, 25% driver, 15% team, 10% form/morale/setup/strategy.
@@ -100,6 +105,8 @@ export function calculateRacePace(
   instruction: DriverInstruction,
   teamRating = 50,
   confidenceModifier = 0,
+  profile?: SetupSimulationProfile,
+  setupEnvelope: 'quick' | 'raceStint' = 'quick',
 ): { score: number; breakdown: ScoreBreakdown } {
   // Car component: raw car strength plus how well the car suits the circuit.
   const carComp = clamp10(toLegacyRating(avgCar(car)) + calculateCarTrackFit(car, track));
@@ -110,7 +117,11 @@ export function calculateRacePace(
   // Team component: organisation strength (reputation/10).
   const teamComp = clamp10(toLegacyRating(teamRating));
   // Everything else: setup, strategy, driver instruction and morale.
-  const setupFit = calculateSetupFit(setup, track) + setup.racePaceBoost;
+  const resolvedProfile = resolveSetupSimulationProfile(profile, setup, track, car);
+  const activeSetup = setupEnvelope === 'raceStint'
+    ? resolvedProfile.sessions.raceStint
+    : quickRaceSetupEnvelope(resolvedProfile);
+  const setupFit = simulationSetupPaceDelta(activeSetup);
   const moraleFactor = (driver.morale - 65) / 15 + confidenceModifier;
   const otherComp = clamp10(
     5.5 + setupFit * 0.65 + strategy.paceModifier + instruction.paceModifier + moraleFactor,
@@ -186,6 +197,13 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
   const rows: Row[] = context.entrants.map((e) => {
     const decision = context.decisions[e.driver.id];
     const setup = context.setupOptions[decision.setupId];
+    const setupProfile = resolveSetupSimulationProfile(
+      context.setupProfilesByDriver?.[e.driver.id],
+      setup,
+      context.track,
+      e.car,
+    );
+    const setupEnvelope = quickRaceSetupEnvelope(setupProfile);
     const strategy = context.strategies[decision.strategyId];
     const instruction = context.instructions[decision.instructionId];
     const grid = gridByDriver[e.driver.id] ?? context.entrants.length;
@@ -202,6 +220,7 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       teamRating,
       (context.confidenceModifierByDriver?.[e.driver.id] ?? 0)
         + (context.garageAddressEffectsByDriver?.[e.driver.id]?.performanceModifier ?? 0),
+      setupProfile,
     );
 
     // Apply Race Weekend Package pace modifier.
@@ -239,20 +258,24 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const stress = Math.max(
       0,
       instruction.reliabilityStressModifier +
-        setup.riskModifier * 0.32 +
-        Math.max(0, 5 - setup.reliabilityProtection) * 0.14,
+        setupEnvelope.reliabilityRisk * 0.18 +
+        setupEnvelope.overheatingRisk * 0.14,
     );
     // Mechanical-failure risk, era-scaled down to cut reliability retirements.
     // Package reliability prep is already folded into opsForm above.
     const relRisk =
-      (calculateReliabilityRisk(e.car, context.track, setup, stress, opsForm) - prepReliabilityMod) *
+      (calculateReliabilityRisk(
+        e.car,
+        context.track,
+        { ...setup, reliabilityProtection: 5, riskModifier: 0 },
+        stress,
+        opsForm,
+      ) - prepReliabilityMod) *
       eraReliabilityScale(context.year);
     // Crash/incident risk, separate from mechanical failure. Package can reduce
     // crash risk (Conservative) or increase it (Budget).
-    const setupRiskAggression = setup.riskModifier * 0.25;
-    const setupHandlingPressure =
-      Math.max(0, 5 - setup.brakingStability) * 0.12 +
-      Math.max(0, 5 - setup.tirePreservation) * 0.08;
+    const setupRiskAggression = setupEnvelope.mistakePressure * 0.1;
+    const setupHandlingPressure = setupEnvelope.mistakePressure + setupEnvelope.consistencyLoss * 0.35;
     const crashRiskBase = calculateCrashRisk(
       e.driver,
       context.track,
@@ -270,7 +293,10 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
     const incidents: string[] = [];
     let status: RaceResult['status'] = 'Finished';
     let lapsCompleted = totalLaps;
-    let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus + prepPaceBonus;
+    const longRunPenalty = setupEnvelope.tyreWearDelta * 0.18
+      + setupEnvelope.consistencyLoss * 0.12
+      + setupEnvelope.balanceMigration * 0.08;
+    let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus + prepPaceBonus - longRunPenalty;
 
     // Total retirement probability, then the *cause* is drawn from the era
     // profile (nudged by car/driver/track), so the season-wide DNF cause split

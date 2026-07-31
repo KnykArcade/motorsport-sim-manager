@@ -42,6 +42,8 @@ import { applyFailureRiskModifier } from '../sim/phase18FailureInvestigationEngi
 import type { LiveRaceMeta, LiveRaceOptions } from '../sim/liveRaceEngine';
 import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhaseEngine';
 import { garageAddressRaceEffects } from '../sim/garageLeadershipEngine';
+import { buildTunedSetupSimulationProfile } from '../sim/setupSimulationProfile';
+import type { SetupSimulationProfile } from '../types/setupTypes';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. Cars
@@ -51,9 +53,14 @@ export function playerTunedSetups(
   state: GameState,
   track: Track,
   trim: SetupTrim,
-): { overlay: Record<string, SetupOption>; setupIdByDriver: Record<string, string> } {
+): {
+  overlay: Record<string, SetupOption>;
+  setupIdByDriver: Record<string, string>;
+  profilesByDriver: Record<string, SetupSimulationProfile>;
+} {
   const overlay: Record<string, SetupOption> = {};
   const setupIdByDriver: Record<string, string> = {};
+  const profilesByDriver: Record<string, SetupSimulationProfile> = {};
   const carSetups = state.carSetups ?? {};
   const staffBonus = setupConfidenceBonus(state.staff ?? []) + facilitySetupFeedbackBonus(state.facilities);
   const race = currentRace(state);
@@ -63,6 +70,7 @@ export function playerTunedSetups(
       : undefined;
   const knowledge = wp?.knowledge;
   const car = carForTeam(state, state.selectedTeamId);
+  if (!car) return { overlay, setupIdByDriver, profilesByDriver };
   const raceWet =
     race != null ? weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet : false;
 
@@ -96,8 +104,13 @@ export function playerTunedSetups(
     });
     overlay[option.id] = option;
     setupIdByDriver[driver.id] = option.id;
+    profilesByDriver[driver.id] = buildTunedSetupSimulationProfile(tuned, track, car, {
+      ...(quality.snapshot ? { snapshot: quality.snapshot } : {}),
+      comfort,
+      confidenceBonus,
+    });
   }
-  return { overlay, setupIdByDriver };
+  return { overlay, setupIdByDriver, profilesByDriver };
 }
 
 export type BuiltRaceContext = {
@@ -179,6 +192,7 @@ export function buildRaceContext(
     qualifyingResults: qualifying,
     decisions,
     setupOptions: { ...setupOptionsById, ...autoSetupOptionsForTrack(track), ...tuned.overlay },
+    setupProfilesByDriver: tuned.profilesByDriver,
     strategies: raceStrategiesById,
     instructions: driverInstructionsById,
     pointsByPosition: pointsSystem.pointsByPosition,

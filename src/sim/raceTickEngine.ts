@@ -64,6 +64,11 @@ import { findPitTransitRecord } from '../data/pit/pitDataLookup';
 import { applyRaceControlFreePass, applyRaceControlQueueCatchUp, initialRaceControlState, openPitLaneWhenQueueFormed, stepRaceControlState } from './raceControlEngine';
 import { generateRaceEventPool, resolveRaceEventTrigger } from './raceEventEngine';
 import { rollReliabilityIssue } from './reliabilityEngine';
+import {
+  liveSetupEnvelope,
+  simulationSetupPaceDelta,
+  setupSectorLossWeights,
+} from './setupSimulationProfile';
 import { curateRaceEvents } from './raceEventJournal';
 import { updateLiveTimingGaps } from './liveTimingGapEngine';
 import { findOption, applyDecisionEffects } from './raceDecisionEngine';
@@ -543,11 +548,25 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     const intervalBehind = intervalBehindByDriver[c.driverId] ?? 0;
     const fighting =
       (intervalAhead > 0 && intervalAhead < 1.5) || (intervalBehind > 0 && intervalBehind < 1.5);
+    const wetness = clamp(1 - weather.gripLevel, 0, 1);
+    const inTraffic = intervalAhead > 0 && intervalAhead < DIRTY_AIR_GAP;
+    const setupEnvelope = c.setupProfile
+      ? liveSetupEnvelope(c.setupProfile, {
+        lap: nextLap,
+        totalLaps: state.totalLaps,
+        wetness,
+        inTraffic,
+      })
+      : undefined;
+    const baseSetupEnvelope = c.setupProfile?.sessions.raceStint;
 
     c.mistakeThisLap = false;
     // --- Tyre wear (applied before pace so this lap reflects current rubber) ---
     if (!wantsPit && !activeJourney) {
-      const wearAdd = c.tireDegRate * spec.wearMult * (weather.wet ? 0.6 : 1);
+      const dynamicSetupWear = setupEnvelope && baseSetupEnvelope
+        ? clamp(1 + (setupEnvelope.tyreWearDelta - baseSetupEnvelope.tyreWearDelta) * 0.08, 0.75, 1.35)
+        : 1;
+      const wearAdd = c.tireDegRate * spec.wearMult * dynamicSetupWear * (weather.wet ? 0.6 : 1);
       c.tire = { ...c.tire, age: c.tire.age + 1, wear: clamp(c.tire.wear + wearAdd, 0, 100) };
     }
 
@@ -557,7 +576,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- Reliability issue onset (warning) ---
     if (!c.reliabilityIssue) {
-      const issue = rollReliabilityIssue(rng, c.baseFailureRisk, nextLap, pushing);
+      const setupThermalMult = setupEnvelope
+        ? 1 + setupEnvelope.overheatingRisk * 0.08 + setupEnvelope.reliabilityRisk * 0.05
+        : 1;
+      const issue = rollReliabilityIssue(rng, c.baseFailureRisk * setupThermalMult, nextLap, pushing);
       if (issue) {
         c.reliabilityIssue = issue;
         lapEvents.push({ lap: nextLap, text: `${name(c.driverId)} reports ${issue.label.toLowerCase()}.` });
@@ -578,6 +600,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // 1. Mechanical: car/engine reliability, mode, and any active warning.
     let mechRisk = c.baseFailureRisk * spec.reliabilityMult;
+    if (setupEnvelope && baseSetupEnvelope) {
+      const currentExposure = setupEnvelope.reliabilityRisk + setupEnvelope.overheatingRisk;
+      const baseExposure = baseSetupEnvelope.reliabilityRisk + baseSetupEnvelope.overheatingRisk;
+      mechRisk *= clamp(1 + (currentExposure - baseExposure) * 0.12, 0.7, 1.6);
+    }
     const damageRisk = damageRiskContribution(damageComponents);
     mechRisk += Math.min(damageRisk.failureRisk, DAMAGE_FAILURE_FEEDBACK_CAP) * 0.6;
     if (weather.wet) mechRisk *= WET_MECH_RISK_MULT;
@@ -633,7 +660,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
 
     // --- Non-terminal mistake (costs time, may cause damage) ---
     let mistakeThisLap = false;
-    const mistakeRisk = (c.baseMistakeRisk + tyreRiskAdd) * spec.crashMult * trustRiskMult;
+    const setupMistakeDelta = setupEnvelope && baseSetupEnvelope
+      ? Math.max(0, setupEnvelope.mistakePressure - baseSetupEnvelope.mistakePressure) * 0.0008
+      : 0;
+    const mistakeRisk = (c.baseMistakeRisk + tyreRiskAdd + setupMistakeDelta) * spec.crashMult * trustRiskMult;
     if (rng.chance(mistakeRisk)) {
       mistakeThisLap = true;
       if (!c.damaged && rng.chance(0.25)) {
@@ -655,6 +685,9 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
         intervalAhead,
         formSwing,
         mistakeThisLap,
+        setupPaceDelta: setupEnvelope && baseSetupEnvelope
+          ? (simulationSetupPaceDelta(setupEnvelope) - simulationSetupPaceDelta(baseSetupEnvelope)) * 0.23
+          : 0,
       }) - trustHesitation,
       1,
       10,
@@ -675,7 +708,11 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
     lapTime += pitLoss;
 
     c.lastSectors = state.circuit
-      ? splitLapIntoCircuitSectorTimes(round1(lapTime), state.circuit)
+      ? splitLapIntoCircuitSectorTimes(
+        round1(lapTime),
+        state.circuit,
+        c.setupProfile ? setupSectorLossWeights(c.setupProfile, state.circuit, wetness) : undefined,
+      )
       : splitSectors(round1(lapTime), rng);
     }
 
@@ -694,6 +731,10 @@ export function stepLiveSector(state: LiveRaceState, meta: LiveRaceMeta): LiveRa
         rng,
         lapEvents,
         name(c.driverId),
+        c.setupProfile
+          ? c.setupProfile.sessions.raceStint.reliabilityRisk
+            + c.setupProfile.sessions.raceStint.overheatingRisk
+          : 0,
       );
     }
 
@@ -1415,6 +1456,7 @@ function updateFuelAndComponents(
   rng: Rng,
   lapEvents: RaceEvent[],
   driverName: string,
+  setupExposure: number,
 ): void {
   c.fuel = clamp(100 * (1 - lap / Math.max(1, totalLaps)), 0, 100);
 
@@ -1423,9 +1465,10 @@ function updateFuelAndComponents(
   const paceRelief = c.paceMode === 'Conservative' ? 0.82 : c.paceMode === 'ProtectEngine' ? 0.68 : c.paceMode === 'Push' ? 1.1 : c.paceMode === 'Attack' ? 1.15 : c.paceMode === 'Defend' ? 0.94 : 1;
   const strictness = damageSettings.reliabilityStrictness;
   const damageRelief = c.paceMode === 'Conservative' || c.paceMode === 'ProtectEngine' ? 0.8 : 1.1;
-  let eng = base * modeMult * (0.85 + track.attributes.straights * 0.03);
+  const setupWearMult = clamp(1 + setupExposure * 0.035, 1, 1.28);
+  let eng = base * modeMult * (0.85 + track.attributes.straights * 0.03) * setupWearMult;
   let gear = base * modeMult * 0.85;
-  let brake = base * (0.6 + track.attributes.braking * 0.05);
+  let brake = base * (0.6 + track.attributes.braking * 0.05) * setupWearMult;
 
   const issue = c.reliabilityIssue;
   if (issue) {

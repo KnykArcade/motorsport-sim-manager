@@ -18,6 +18,7 @@ import {
 import { deriveSetupOption } from './setupDerive';
 import { calculateQualifyingPace } from './qualifyingEngine';
 import { calculateRacePace } from './raceEngine';
+import { buildTunedSetupSimulationProfile } from './setupSimulationProfile';
 import {
   canRevealComponentFit,
   reliabilityWarningConfidence,
@@ -263,31 +264,53 @@ describe('Performance formula — quality + comfort, bounded', () => {
   });
 
   it('a nailed setup creates a meaningful qualifying pace gap against a missed setup', () => {
-    const good = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(92), comfort: cm(88) });
-    const poor = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(35), comfort: cm(35) });
+    const nailedSetup = idealSetup(track, undefined, car);
+    const missedSetup = { ...nailedSetup, frontWing: 1, rearWing: 10, suspensionStiffness: 10, rideHeight: 1, differential: 10 };
+    const goodQuality = objectiveSetupQuality(nailedSetup, track, car);
+    const poorQuality = objectiveSetupQuality(missedSetup, track, car);
+    const goodComfort = cm(88);
+    const poorComfort = cm(35);
+    const good = deriveSetupOption(nailedSetup, track, baseDriver, 'qualifying', { quality: goodQuality, comfort: goodComfort });
+    const poor = deriveSetupOption(missedSetup, track, baseDriver, 'qualifying', { quality: poorQuality, comfort: poorComfort });
+    const goodProfile = buildTunedSetupSimulationProfile(nailedSetup, track, car, { snapshot: goodQuality.snapshot!, comfort: goodComfort });
+    const poorProfile = buildTunedSetupSimulationProfile(missedSetup, track, car, { snapshot: poorQuality.snapshot!, comfort: poorComfort });
     const plan = qualifyingRunPlansById['StandardPush'];
-    const goodPace = calculateQualifyingPace(baseDriver, car, track, good, plan, 70).score;
-    const poorPace = calculateQualifyingPace(baseDriver, car, track, poor, plan, 70).score;
+    const goodPace = calculateQualifyingPace(baseDriver, car, track, good, plan, 70, 0, goodProfile).score;
+    const poorPace = calculateQualifyingPace(baseDriver, car, track, poor, plan, 70, 0, poorProfile).score;
     expect(goodPace - poorPace).toBeGreaterThan(7);
   });
 
   it('a nailed setup creates a meaningful race pace gap against a missed setup', () => {
-    const good = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'race', { quality: q(92), comfort: cm(88) });
-    const poor = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'race', { quality: q(35), comfort: cm(35) });
+    const nailedSetup = idealSetup(track, undefined, car);
+    const missedSetup = { ...nailedSetup, frontWing: 1, rearWing: 10, suspensionStiffness: 10, rideHeight: 1, differential: 10, tyreUsage: 10 };
+    const goodQuality = objectiveSetupQuality(nailedSetup, track, car);
+    const poorQuality = objectiveSetupQuality(missedSetup, track, car);
+    const goodComfort = cm(88);
+    const poorComfort = cm(35);
+    const good = deriveSetupOption(nailedSetup, track, baseDriver, 'race', { quality: goodQuality, comfort: goodComfort });
+    const poor = deriveSetupOption(missedSetup, track, baseDriver, 'race', { quality: poorQuality, comfort: poorComfort });
+    const goodProfile = buildTunedSetupSimulationProfile(nailedSetup, track, car, { snapshot: goodQuality.snapshot!, comfort: goodComfort });
+    const poorProfile = buildTunedSetupSimulationProfile(missedSetup, track, car, { snapshot: poorQuality.snapshot!, comfort: poorComfort });
     const strategy = raceStrategiesById['BalancedOneStop'];
     const instruction = driverInstructionsById['Balanced'];
-    const goodPace = calculateRacePace(baseDriver, car, track, good, strategy, instruction, 70).score;
-    const poorPace = calculateRacePace(baseDriver, car, track, poor, strategy, instruction, 70).score;
+    const goodPace = calculateRacePace(baseDriver, car, track, good, strategy, instruction, 70, 0, goodProfile).score;
+    const poorPace = calculateRacePace(baseDriver, car, track, poor, strategy, instruction, 70, 0, poorProfile).score;
     expect(goodPace - poorPace).toBeGreaterThan(6);
   });
 
   it('setup is a major tactic layer without completely replacing car ratings', () => {
     const plan = qualifyingRunPlansById['StandardPush'];
-    const great = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(95), comfort: cm(95) });
-    const awful = deriveSetupOption(BALANCED_SETUP, track, baseDriver, 'qualifying', { quality: q(25), comfort: cm(25) });
+    const greatSetup = idealSetup(track, undefined, car);
+    const awfulSetup = { ...greatSetup, frontWing: 1, rearWing: 10, suspensionStiffness: 10, rideHeight: 1, differential: 10 };
+    const greatQuality = objectiveSetupQuality(greatSetup, track, car);
+    const awfulQuality = objectiveSetupQuality(awfulSetup, track, car);
+    const great = deriveSetupOption(greatSetup, track, baseDriver, 'qualifying', { quality: greatQuality, comfort: cm(95) });
+    const awful = deriveSetupOption(awfulSetup, track, baseDriver, 'qualifying', { quality: awfulQuality, comfort: cm(25) });
+    const greatProfile = buildTunedSetupSimulationProfile(greatSetup, track, car, { snapshot: greatQuality.snapshot!, comfort: cm(95) });
+    const awfulProfile = buildTunedSetupSimulationProfile(awfulSetup, track, car, { snapshot: awfulQuality.snapshot!, comfort: cm(25) });
     const setupSwing =
-      calculateQualifyingPace(baseDriver, car, track, great, plan).score -
-      calculateQualifyingPace(baseDriver, car, track, awful, plan).score;
+      calculateQualifyingPace(baseDriver, car, track, great, plan, 50, 0, greatProfile).score -
+      calculateQualifyingPace(baseDriver, car, track, awful, plan, 50, 0, awfulProfile).score;
     // A +3 across-the-board car upgrade with a fixed (great) setup.
     const strongCar = carWith({
       enginePower: Math.min(100, car.ratings.enginePower + 30),
@@ -300,8 +323,8 @@ describe('Performance formula — quality + comfort, bounded', () => {
       mechanicalGrip: Math.max(1, car.ratings.mechanicalGrip - 30),
     });
     const carSwing =
-      calculateQualifyingPace(baseDriver, strongCar, track, great, plan).score -
-      calculateQualifyingPace(baseDriver, weakCar, track, great, plan).score;
+      calculateQualifyingPace(baseDriver, strongCar, track, great, plan, 50, 0, greatProfile).score -
+      calculateQualifyingPace(baseDriver, weakCar, track, great, plan, 50, 0, greatProfile).score;
     expect(setupSwing).toBeGreaterThan(8);
     expect(carSwing).toBeGreaterThan(2);
   });

@@ -12,6 +12,7 @@ import type { RaceRuleProfile } from './raceRulesTypes';
 import type { PitJourneyState, PitVisitBreakdown } from './pitTypes';
 import type { CarPositionState } from './positionTypes';
 import type { RaceEvent } from './simTypes';
+import type { SetupSimulationProfile } from './setupTypes';
 import type { LiveRaceControlState } from './raceControlTypes';
 
 // ---------------------------------------------------------------------------
@@ -431,6 +432,10 @@ export type LiveCarState = {
   baseFailureRisk: number; // per-lap mechanical-failure probability baseline
   baseCrashRisk: number; // per-lap crash/incident probability baseline
   baseMistakeRisk: number; // per-lap (non-terminal) mistake probability baseline
+  // Runtime-only authoritative setup profile. Optional keeps in-progress races
+  // and older serialized fixtures safe; missing profiles resolve to neutral
+  // legacy behavior.
+  setupProfile?: SetupSimulationProfile;
   tireDegRate: number; // tyre wear points per lap at balanced pace
   pitLossBase: number; // green-flag pit-stop time loss (s)
   damageSettings?: DamageBalanceSettings;

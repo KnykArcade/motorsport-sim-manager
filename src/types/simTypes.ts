@@ -12,6 +12,7 @@ import type {
 } from './gameTypes';
 import type { WeatherState } from './liveTypes';
 import type { RaceWeekendPackageEffects } from './raceWeekendPackageTypes';
+import type { SetupSimulationProfile } from './setupTypes';
 
 // How a driver manages tyres across their qualifying runs.
 export type QualifyingTyreApproach = 'Standard' | 'Conserve';
@@ -49,6 +50,7 @@ export type QualifyingContext = {
   entrants: Entrant[];
   decisions: Record<string, QualifyingDecision>;
   setupOptions: Record<string, SetupOption>;
+  setupProfilesByDriver?: Record<string, SetupSimulationProfile>;
   runPlans: Record<string, QualifyingRunPlan>;
   seed: string;
   // Maximum number of cars allowed to start the race. Cars slower than this in
@@ -87,6 +89,7 @@ export type RaceContext = {
   qualifyingResults: QualifyingResult[];
   decisions: Record<string, RaceDecision>;
   setupOptions: Record<string, SetupOption>;
+  setupProfilesByDriver?: Record<string, SetupSimulationProfile>;
   strategies: Record<string, RaceStrategy>;
   instructions: Record<string, DriverInstruction>;
   pointsByPosition: Record<number, number>;
