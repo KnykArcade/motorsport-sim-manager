@@ -9,6 +9,7 @@
 import type { Car, Driver, Track } from '../types/gameTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { WeatherState } from '../types/liveTypes';
+import type { RaceEngineerProfile } from '../types/staffTypes';
 import type {
   FeedbackSentiment,
   FeedbackTopic,
@@ -23,6 +24,7 @@ import type {
 } from '../types/practiceTypes';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { calculateSetupFit, evaluateSetupAgainstTrackAndCar } from './setupFitEngine';
+import { engineeringKnowledgeExtraction } from './raceEngineerEngine';
 
 // How much each program contributes to each knowledge axis / confidence per run.
 type ProgramEmphasis = {
@@ -255,6 +257,8 @@ export type DriverProgramContext = {
   priorReliabilityKnowledge: number;
   // Whether the race is forecast to be wet; makes Wet-Weather Preparation pay off.
   raceWet?: boolean;
+  engineerProfile?: RaceEngineerProfile;
+  engineerChemistry?: number;
 };
 
 // Run one driver's assigned program. Pure + deterministic given the rng.
@@ -279,7 +283,15 @@ export function runDriverProgram(
   const lapFactor = incident ? lapFactorBase * (lapsCompleted / lapsPlanned) : lapFactorBase;
 
   const gain = (prior: number, emphasis: number): number => {
-    const delta = (1 - prior) * 0.35 * emphasis * lapFactor;
+    const extraction = ctx.engineerProfile
+      ? engineeringKnowledgeExtraction(
+        ctx.engineerProfile,
+        ctx.driver.ratings.technical,
+        ctx.engineerChemistry,
+        program === 'WetWeatherPreparation',
+      )
+      : 1;
+    const delta = (1 - prior) * 0.35 * emphasis * lapFactor * extraction;
     return r1(clamp(delta, 0, 1 - prior));
   };
 
@@ -355,6 +367,8 @@ export type SessionContext = {
   knowledge: WeekendKnowledge;
   // Whether the race is forecast wet (rewards Wet-Weather Preparation).
   raceWet?: boolean;
+  engineerProfile?: RaceEngineerProfile;
+  engineerChemistryByDriverId?: Record<string, number>;
 };
 
 // Run a full session: every assignment is simulated against the current
@@ -383,6 +397,8 @@ export function runPracticeSession(
           priorTireKnowledge: ctx.knowledge.tireKnowledge[a.driverId] ?? 0,
           priorReliabilityKnowledge: ctx.knowledge.reliabilityKnowledge[a.driverId] ?? 0,
           raceWet: ctx.raceWet,
+          engineerProfile: ctx.engineerProfile,
+          engineerChemistry: ctx.engineerChemistryByDriverId?.[a.driverId],
         },
         a.program,
         a.lapsPlanned,
@@ -515,6 +531,7 @@ export function recommendedPracticeProgram(
   track: Track,
   weather: WeatherState | undefined,
   gaps: KnowledgeGaps,
+  engineerProfile?: RaceEngineerProfile,
 ): ProgramRecommendation {
   if (weatherIsWet(weather)) {
     return { program: 'WetWeatherPreparation', reason: 'Rain forecast — bank wet-weather running while you can.' };
@@ -530,9 +547,12 @@ export function recommendedPracticeProgram(
   // demands (high-deg tracks prize tyre data; endurance tracks prize reliability).
   const highDeg = track.attributes.enduranceConsistency >= 70 || track.attributes.tractionAcceleration >= 80;
   const enduranceRisk = track.attributes.enduranceConsistency >= 70 || track.attributes.riskWallProximity >= 70;
-  const setupNeed = (1 - gaps.setup) * 1.1;
-  const tireNeed = (1 - gaps.tire) * (highDeg ? 1.35 : 1);
-  const relNeed = (1 - gaps.reliability) * (enduranceRisk ? 1.3 : 0.85);
+  const dynamicsRead = engineerProfile ? 0.9 + engineerProfile.vehicleDynamics / 500 : 1;
+  const feedbackRead = engineerProfile ? 0.9 + engineerProfile.feedbackInterpretation / 500 : 1;
+  const experienceRead = engineerProfile ? 0.9 + engineerProfile.experience / 500 : 1;
+  const setupNeed = (1 - gaps.setup) * 1.1 * dynamicsRead;
+  const tireNeed = (1 - gaps.tire) * (highDeg ? 1.35 : 1) * feedbackRead;
+  const relNeed = (1 - gaps.reliability) * (enduranceRisk ? 1.3 : 0.85) * experienceRead;
 
   if (tireNeed >= setupNeed && tireNeed >= relNeed) {
     return {

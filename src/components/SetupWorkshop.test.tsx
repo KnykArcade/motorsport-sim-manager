@@ -4,6 +4,18 @@ import { BALANCED_SETUP } from '../data/setup/setupComponents';
 import { drivers1995 } from '../data/drivers/drivers1995';
 import { tracks1995 } from '../data/tracks/tracks1995';
 import { SetupWorkshop } from './SetupWorkshop';
+import type { StaffMember } from '../types/staffTypes';
+
+const raceEngineer: StaffMember = {
+  id: 'workshop-engineer',
+  name: 'Alex Morgan',
+  role: 'Race Engineer',
+  nationality: 'GB',
+  rating: 78,
+  salary: 2,
+  signingFee: 0.5,
+  bio: 'Setup specialist.',
+};
 
 describe('SetupWorkshop', () => {
   it('renders a single full-height adjustment workspace with visible setup deltas', () => {
@@ -19,6 +31,7 @@ describe('SetupWorkshop', () => {
         drivers={drivers}
         setups={setups}
         baselineSetups={baselineSetups}
+        engineer={raceEngineer}
         onChangeParam={() => undefined}
         onApplySetup={() => undefined}
         onCopy={() => undefined}
@@ -32,6 +45,9 @@ describe('SetupWorkshop', () => {
     expect(html).toContain('1 changed');
     expect(html).toContain('Revert component');
     expect(html).toContain('Revert driver');
+    expect(html).toContain('Alex Morgan');
+    expect(html).toContain('Engineer confidence');
+    expect(html).toContain('Evidence quality');
     expect(html.match(/Confirm setup/g)).toHaveLength(1);
     expect(html).not.toContain('max-h-[28rem]');
   });
@@ -44,6 +60,7 @@ describe('SetupWorkshop', () => {
         drivers={[driver]}
         setups={{ [driver.id]: BALANCED_SETUP }}
         baselineSetups={{ [driver.id]: BALANCED_SETUP }}
+        engineer={raceEngineer}
         stage="PostQualifying"
         setupLock={{
           active: true,

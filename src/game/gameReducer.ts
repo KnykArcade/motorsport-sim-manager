@@ -208,6 +208,11 @@ import type {
 } from '../types/practiceTypes';
 import { initialBaselineSetup } from '../sim/setupFitEngine';
 import {
+  deriveRaceEngineerProfile,
+  improveRaceEngineerProfile,
+  raceEngineerForRoster,
+} from '../sim/raceEngineerEngine';
+import {
   accumulateKnowledge,
   emptyKnowledge,
   practiceLapBudget,
@@ -499,6 +504,12 @@ function runPracticeSessionAction(
   };
 
   const raceWet = weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet;
+  const raceEngineer = raceEngineerForRoster(state.staff);
+  const engineerProfile = raceEngineer ? deriveRaceEngineerProfile(raceEngineer) : undefined;
+  const engineerChemistryByDriverId = Object.fromEntries(players.map((driver) => [
+    driver.id,
+    state.driverRelationships?.[driver.id]?.engineerChemistry ?? 50,
+  ]));
   const results = runPracticeSession(session, {
     raceId,
     track,
@@ -508,6 +519,8 @@ function runPracticeSessionAction(
     carsByDriverId,
     knowledge: wp.knowledge,
     raceWet,
+    engineerProfile,
+    engineerChemistryByDriverId,
   });
   session.results = results;
 
@@ -1874,7 +1887,13 @@ function upgradeStaffDepartment(state: GameState, role: StaffRole): GameState {
     },
   };
   const nextStaff = current
-    ? roster.map((member) => member.id === current.id ? { ...member, rating: nextRating } : member)
+    ? roster.map((member) => member.id === current.id ? {
+      ...member,
+      rating: nextRating,
+      engineeringProfile: role === 'Race Engineer'
+        ? improveRaceEngineerProfile(deriveRaceEngineerProfile(member))
+        : member.engineeringProfile,
+    } : member)
     : [
       ...roster,
       {

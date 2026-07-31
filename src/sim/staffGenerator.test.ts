@@ -35,4 +35,11 @@ describe('staff generator', () => {
     const b = generateStaffPool(1997, 'F1').map((s) => s.name).join();
     expect(a).not.toEqual(b);
   });
+
+  it('stores all eight specialist attributes on generated Race Engineers', () => {
+    const engineers = generateStaffPool(1995, 'F1', 8)
+      .filter((member) => member.role === 'Race Engineer');
+    expect(engineers).toHaveLength(8);
+    expect(engineers.every((member) => Object.keys(member.engineeringProfile ?? {}).length === 8)).toBe(true);
+  });
 });

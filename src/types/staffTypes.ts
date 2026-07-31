@@ -24,6 +24,18 @@ export type StaffResponsibilityPolicy =
 
 export type StaffResponsibilityPolicies = Partial<Record<StaffResponsibilityId, StaffResponsibilityPolicy>>;
 
+export type RaceEngineerAttribute =
+  | 'vehicleDynamics'
+  | 'ovalKnowledge'
+  | 'roadCourseKnowledge'
+  | 'aerodynamics'
+  | 'communication'
+  | 'feedbackInterpretation'
+  | 'adaptability'
+  | 'experience';
+
+export type RaceEngineerProfile = Record<RaceEngineerAttribute, number>;
+
 export type StaffMember = {
   id: string;
   name: string;
@@ -36,6 +48,20 @@ export type StaffMember = {
   // deal; older saves are migrated to the same default.
   contractYearsRemaining?: number;
   bio: string;
+  // Optional for save compatibility. Legacy Race Engineers receive the same
+  // deterministic specialist profile whenever their record is loaded.
+  engineeringProfile?: RaceEngineerProfile;
+};
+
+export const RACE_ENGINEER_ATTRIBUTE_LABELS: Record<RaceEngineerAttribute, string> = {
+  vehicleDynamics: 'Vehicle Dynamics',
+  ovalKnowledge: 'Oval Knowledge',
+  roadCourseKnowledge: 'Road Course Knowledge',
+  aerodynamics: 'Aerodynamics',
+  communication: 'Communication',
+  feedbackInterpretation: 'Feedback Interpretation',
+  adaptability: 'Adaptability',
+  experience: 'Experience',
 };
 
 export const STAFF_ROLES: StaffRole[] = [
