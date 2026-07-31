@@ -58,7 +58,11 @@ import {
   type GameState,
   type DriverContractRole,
 } from './careerState';
-import { buildRaceContext, playerTunedSetups } from './raceSetup';
+import {
+  buildRaceContext,
+  resolveAIEngineeringPlans,
+  weekendSessionSetups,
+} from './raceSetup';
 import { createNewGame, type NewGameOptions } from './initialCareer';
 import { advanceSeason } from './seasonRollover';
 import {
@@ -1371,7 +1375,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'ADVANCE_RACE': {
       if (!state) return state;
       // Clear the weekend package when advancing to the next race.
-      return { ...state, raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+      return {
+        ...state,
+        raceWeekendPackage: undefined,
+        aiRaceWeekendPackages: undefined,
+        aiEngineeringPlans: undefined,
+      };
     }
 
     case 'SIGN_RACE_DRIVER': {
@@ -1389,7 +1398,12 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'ADVANCE_TO_PADDOCK_WEEK': {
       if (!state) return state;
       if (getCareerPhase(state) !== 'post_race_review') return state;
-      return { ...enterPaddockWeek(state), raceWeekendPackage: undefined, aiRaceWeekendPackages: undefined };
+      return {
+        ...enterPaddockWeek(state),
+        raceWeekendPackage: undefined,
+        aiRaceWeekendPackages: undefined,
+        aiEngineeringPlans: undefined,
+      };
     }
 
     case 'ADVANCE_TO_PRE_RACE_BRIEFING': {
@@ -2416,7 +2430,8 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   if (!track) return state;
 
   const entrants = buildEntrants(state);
-  const tuned = playerTunedSetups(state, track, 'qualifying');
+  const aiEngineeringPlans = resolveAIEngineeringPlans(state, track);
+  const tuned = weekendSessionSetups(state, track, 'qualifying', aiEngineeringPlans);
   const decisions: Record<string, QualifyingDecision> = {};
   const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
   for (const e of entrants) {
@@ -2428,10 +2443,19 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   // Qualifying picks up the weekend forecast for its own session, the era's
   // format (knockout vs single), and which drivers banked wet running in practice.
   const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
-  const wetPreparedDriverIds =
+  const playerWetPreparedDriverIds =
     state.weekendPractice && state.weekendPractice.raceId === race.id
       ? wetPreparedDrivers(state.weekendPractice)
       : [];
+  const wetPreparedDriverIds = [
+    ...new Set([
+      ...playerWetPreparedDriverIds,
+      ...Object.values(aiEngineeringPlans).flatMap((plan) =>
+        Object.values(plan.drivers)
+          .filter((driverPlan) => driverPlan.ranWetPreparation)
+          .map((driverPlan) => driverPlan.driverId)),
+    ]),
+  ];
 
   const teamReputation: Record<string, number> = {};
   const teamRaceOps: Record<string, number> = {};
@@ -2503,6 +2527,7 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   const qualifiedState: GameState = {
     ...state,
     cars,
+    aiEngineeringPlans,
     qualifyingResults: { ...state.qualifyingResults, [race.id]: results },
     news: [...dedupedQualNews, ...state.news].slice(0, 80),
   };

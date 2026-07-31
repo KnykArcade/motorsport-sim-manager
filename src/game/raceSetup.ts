@@ -44,11 +44,16 @@ import { computeRacePrepFocusEffect, getOrCreatePhaseState } from './careerPhase
 import { garageAddressRaceEffects } from '../sim/garageLeadershipEngine';
 import { buildTunedSetupSimulationProfile } from '../sim/setupSimulationProfile';
 import type { SetupSimulationProfile } from '../types/setupTypes';
+import type { AIEngineeringWeekendPlans } from '../types/aiSetupTypes';
+import {
+  buildAIEngineeringRuntime,
+  buildAIEngineeringWeekendPlan,
+} from '../sim/aiSetupEngineeringEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
-// lookup from driverId to the setup id to use for the given session trim. Cars
-// without a tuned setup (AI teams, or before the workshop runs) fall back to the
-// automatic track-appropriate trim.
+// lookup from driverId to the setup id to use for the given session trim. The
+// AI field is layered in separately by weekendSessionSetups; an untuned player
+// car retains the bounded automatic compatibility fallback.
 export function playerTunedSetups(
   state: GameState,
   track: Track,
@@ -113,6 +118,120 @@ export function playerTunedSetups(
   return { overlay, setupIdByDriver, profilesByDriver };
 }
 
+export function resolveAIEngineeringPlans(
+  state: GameState,
+  track: Track,
+): AIEngineeringWeekendPlans {
+  const race = currentRace(state);
+  if (!race) return {};
+  const plans: AIEngineeringWeekendPlans = {};
+  for (const team of state.teams) {
+    if (team.id === state.selectedTeamId) continue;
+    const drivers = activeDriversForTeam(state, team.id);
+    const existing = state.aiEngineeringPlans?.[team.id];
+    if (
+      existing?.raceId === race.id
+      && drivers.every((driver) => existing.drivers[driver.id] != null)
+    ) {
+      plans[team.id] = existing;
+      continue;
+    }
+    const car = carForTeam(state, team.id);
+    if (!car || drivers.length === 0) continue;
+    const constructorPosition = state.constructorStandings.findIndex(
+      (entry) => entry.entityId === team.id,
+    ) + 1;
+    const aiState = state.aiTeamStates?.[team.id];
+    plans[team.id] = buildAIEngineeringWeekendPlan({
+      seed: state.randomSeed,
+      raceId: race.id,
+      raceRound: race.round,
+      seasonYear: state.seasonYear,
+      series: state.series,
+      track,
+      team,
+      car,
+      drivers,
+      organization: state.teamOrgRatings?.[team.id],
+      packageSelection:
+        state.aiRaceWeekendPackages?.[team.id]?.raceId === race.id
+          ? state.aiRaceWeekendPackages[team.id]
+          : undefined,
+      financialDistress: state.financialDistress?.[team.id],
+      archetype: aiState?.archetype,
+      philosophyTraits: aiState?.philosophy?.traits,
+      championshipPosition: constructorPosition > 0 ? constructorPosition : state.teams.length,
+      teamCount: state.teams.length,
+      totalRounds: state.calendar.length,
+    });
+  }
+  return plans;
+}
+
+export function aiEngineeredSetups(
+  state: GameState,
+  track: Track,
+  trim: SetupTrim,
+  plans: AIEngineeringWeekendPlans = resolveAIEngineeringPlans(state, track),
+): {
+  overlay: Record<string, SetupOption>;
+  setupIdByDriver: Record<string, string>;
+  profilesByDriver: Record<string, SetupSimulationProfile>;
+} {
+  const overlay: Record<string, SetupOption> = {};
+  const setupIdByDriver: Record<string, string> = {};
+  const profilesByDriver: Record<string, SetupSimulationProfile> = {};
+  const race = currentRace(state);
+  const raceWet = race
+    ? weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet
+    : false;
+  for (const team of state.teams) {
+    if (team.id === state.selectedTeamId) continue;
+    const car = carForTeam(state, team.id);
+    const plan = plans[team.id];
+    if (!car || !plan) continue;
+    for (const driver of activeDriversForTeam(state, team.id)) {
+      const runtime = buildAIEngineeringRuntime(plan, driver, car, track, trim, raceWet);
+      if (!runtime) continue;
+      const derived = deriveSetupOption(runtime.setup, track, driver, trim, {
+        car,
+        quality: runtime.quality,
+        comfort: runtime.comfort,
+        confidenceBonus: runtime.confidenceBonus,
+      });
+      const option: SetupOption = {
+        ...derived,
+        id: `ai-engineered-${trim}-${driver.id}`,
+        name: `${team.shortName} Engineered ${trim === 'qualifying' ? 'Qualifying' : 'Race'} Setup`,
+        description: `${plan.philosophy} plan developed with imperfect weekend knowledge.`,
+      };
+      overlay[option.id] = option;
+      setupIdByDriver[driver.id] = option.id;
+      profilesByDriver[driver.id] = runtime.profile;
+    }
+  }
+  return { overlay, setupIdByDriver, profilesByDriver };
+}
+
+export function weekendSessionSetups(
+  state: GameState,
+  track: Track,
+  trim: SetupTrim,
+  plans: AIEngineeringWeekendPlans = resolveAIEngineeringPlans(state, track),
+): {
+  overlay: Record<string, SetupOption>;
+  setupIdByDriver: Record<string, string>;
+  profilesByDriver: Record<string, SetupSimulationProfile>;
+} {
+  const player = playerTunedSetups(state, track, trim);
+  const ai = aiEngineeredSetups(state, track, trim, plans);
+  return {
+    overlay: { ...ai.overlay, ...player.overlay },
+    setupIdByDriver: { ...ai.setupIdByDriver, ...player.setupIdByDriver },
+    profilesByDriver: { ...ai.profilesByDriver, ...player.profilesByDriver },
+  };
+}
+
 export type BuiltRaceContext = {
   context: RaceContext;
   track: Track;
@@ -149,7 +268,7 @@ export function buildRaceContext(
     }
   }
 
-  const tuned = playerTunedSetups(state, track, 'race');
+  const tuned = weekendSessionSetups(state, track, 'race');
 
   const decisions: Record<string, RaceDecision> = {};
   const playerById = new Map(playerDecisions.map((d) => [d.driverId, d]));
