@@ -9,6 +9,7 @@ import { globalTracksPhase0 } from './generated/globalTracks';
 import { historicalWeatherRaceMeta } from '../weather/generated/raceMeta';
 import { historicalWeatherTrackCoordinates } from '../weather/generated/trackCoordinates';
 import { seedReleasedMarketDrivers } from '../market';
+import { assertRating100, historicalRatingToGameRating } from '../../sim/ratingScale';
 
 type Phase0TrackSource = {
   name?: string;
@@ -75,6 +76,7 @@ type Phase0TeamSource = {
   budget?: number;
   reputation?: number;
   raceOperations?: number;
+  pitCrewOperations?: number;
   financeHealth?: number;
 };
 
@@ -256,16 +258,16 @@ function getSeasonRuleIds(year: number, series: Series): { pointsSystemId: strin
 
 function mapAttributes(source: Phase0TrackSource): Track['attributes'] {
   return {
-    corners: source.attributes.corners,
-    braking: source.attributes.braking,
-    straights: source.attributes.straights,
-    tractionAcceleration: source.attributes.tractionAcceleration,
-    elevationBlindCorners: source.attributes.elevationBlindCorners,
-    technical: source.attributes.technical,
-    overtakingRacecraft: source.attributes.overtakingRacecraft,
-    surfaceGripBumpiness: source.attributes.surfaceGripBumpiness,
-    riskWallProximity: source.attributes.riskWallProximity,
-    enduranceConsistency: source.attributes.enduranceConsistency,
+    corners: assertRating100(source.attributes.corners, 'Track corner demand'),
+    braking: assertRating100(source.attributes.braking, 'Track braking demand'),
+    straights: assertRating100(source.attributes.straights, 'Track straight-line demand'),
+    tractionAcceleration: assertRating100(source.attributes.tractionAcceleration, 'Track traction demand'),
+    elevationBlindCorners: assertRating100(source.attributes.elevationBlindCorners, 'Track elevation demand'),
+    technical: assertRating100(source.attributes.technical, 'Track technical demand'),
+    overtakingRacecraft: assertRating100(source.attributes.overtakingRacecraft, 'Track overtaking demand'),
+    surfaceGripBumpiness: assertRating100(source.attributes.surfaceGripBumpiness, 'Track surface demand'),
+    riskWallProximity: assertRating100(source.attributes.riskWallProximity, 'Track risk demand'),
+    enduranceConsistency: assertRating100(source.attributes.enduranceConsistency, 'Track endurance demand'),
   };
 }
 
@@ -273,15 +275,15 @@ function mapSetupProfile(source: Phase0TrackSource): Track['setupProfile'] {
   return {
     primarySetupProfile: source.subcategory,
     downforceLevel: source.category,
-    topSpeedEmphasis: source.demandProfile.powerDemand,
-    mechanicalGripEmphasis: source.demandProfile.mechanicalDemand,
-    brakeDemand: source.demandProfile.brakeDemand,
-    reliabilityRiskFocus: source.demandProfile.riskDemand,
+    topSpeedEmphasis: assertRating100(source.demandProfile.powerDemand, 'Track power emphasis'),
+    mechanicalGripEmphasis: assertRating100(source.demandProfile.mechanicalDemand, 'Track mechanical emphasis'),
+    brakeDemand: assertRating100(source.demandProfile.brakeDemand, 'Track brake setup demand'),
+    reliabilityRiskFocus: assertRating100(source.demandProfile.riskDemand, 'Track reliability demand'),
     strategyNotes: source.configNote || source.locationDisplay || source.name || 'Imported track',
-    aeroDemand: source.demandProfile.downforceDemand,
-    powerDemand: source.demandProfile.powerDemand,
-    mechanicalDemand: source.demandProfile.mechanicalDemand,
-    riskDemand: source.demandProfile.riskDemand,
+    aeroDemand: assertRating100(source.demandProfile.downforceDemand, 'Track aero setup demand'),
+    powerDemand: assertRating100(source.demandProfile.powerDemand, 'Track power setup demand'),
+    mechanicalDemand: assertRating100(source.demandProfile.mechanicalDemand, 'Track mechanical setup demand'),
+    riskDemand: assertRating100(source.demandProfile.riskDemand, 'Track risk setup demand'),
   };
 }
 
@@ -651,7 +653,9 @@ function buildRosterPlan(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonCont
       driverIds,
       budget: source?.budget ?? legacyTeam.budget ?? 0,
       reputation: source?.reputation ?? legacyTeam.reputation ?? 50,
-      raceOperations: source?.raceOperations ?? legacyTeam.raceOperations ?? 50,
+      raceOperations: source?.raceOperations != null
+        ? assertRating100(source.raceOperations, `${name} Race Operations`)
+        : historicalRatingToGameRating(legacyTeam.raceOperations ?? 5, `${name} historical Race Operations`),
       morale: source?.financeHealth ?? legacyTeam.morale ?? 65,
       expectedStanding: legacyTeam.expectedStanding ?? idx + 1,
       difficulty: legacyTeam.difficulty ?? deriveTeamDifficulty(idx + 1, ctx.legacyTeams.length),
@@ -670,30 +674,43 @@ function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, t
   const sourceCars = allGlobalCars.filter(
     (car) => car.seasonYear === phase0Season.season && car.series === phase0Season.series,
   );
+  const sourceTeams = allGlobalTeams;
   const sourceByTeamId = new Map<string, Phase0CarSource>();
   for (const car of sourceCars) {
     if (!sourceByTeamId.has(car.teamId)) sourceByTeamId.set(car.teamId, car);
   }
+  const sourceTeamFor = (teamId: string, sourceTeamId: string): Phase0TeamSource | undefined => {
+    const legacyTeam = ctx.legacyTeams.find((team) => team.id === teamId);
+    return legacyTeam
+      ? matchTeamSource(sourceTeams, legacyTeam, phase0Season.season)
+      : sourceTeams.find((team) => team.teamLineageId === sourceTeamId);
+  };
 
   const normalizeLegacyRatings = (legacyCar?: LegacyCarSource): Car['ratings'] | undefined =>
     legacyCar?.ratings
       ? {
-          enginePower: legacyCar.ratings.enginePower <= 10 ? legacyCar.ratings.enginePower * 10 : legacyCar.ratings.enginePower,
-          aeroEfficiency: legacyCar.ratings.aeroEfficiency <= 10 ? legacyCar.ratings.aeroEfficiency * 10 : legacyCar.ratings.aeroEfficiency,
-          mechanicalGrip: legacyCar.ratings.mechanicalGrip <= 10 ? legacyCar.ratings.mechanicalGrip * 10 : legacyCar.ratings.mechanicalGrip,
-          reliability: legacyCar.ratings.reliability <= 10 ? legacyCar.ratings.reliability * 10 : legacyCar.ratings.reliability,
-          pitCrewOperations:
-            legacyCar.ratings.pitCrewOperations <= 10
-              ? legacyCar.ratings.pitCrewOperations * 10
-              : legacyCar.ratings.pitCrewOperations,
+          enginePower: historicalRatingToGameRating(legacyCar.ratings.enginePower, 'Historical engine power'),
+          aeroEfficiency: historicalRatingToGameRating(legacyCar.ratings.aeroEfficiency, 'Historical aero efficiency'),
+          mechanicalGrip: historicalRatingToGameRating(legacyCar.ratings.mechanicalGrip, 'Historical mechanical grip'),
+          reliability: historicalRatingToGameRating(legacyCar.ratings.reliability, 'Historical reliability'),
+          pitCrewOperations: historicalRatingToGameRating(
+            legacyCar.ratings.pitCrewOperations,
+            'Historical pit-crew operations',
+          ),
         }
       : undefined;
-  const sourceRatings = (source: Phase0CarSource): Car['ratings'] => ({
-    enginePower: source.enginePower,
-    aeroEfficiency: source.downforce,
-    mechanicalGrip: source.mechanicalGrip,
-    reliability: source.reliability,
-    pitCrewOperations: source.setupWindow,
+  const sourceRatings = (
+    source: Phase0CarSource,
+    sourceTeam: Phase0TeamSource | undefined,
+  ): Car['ratings'] => ({
+    enginePower: assertRating100(source.enginePower, 'Production engine power'),
+    aeroEfficiency: assertRating100(source.downforce, 'Production aero efficiency'),
+    mechanicalGrip: assertRating100(source.mechanicalGrip, 'Production mechanical grip'),
+    reliability: assertRating100(source.reliability, 'Production reliability'),
+    pitCrewOperations: assertRating100(
+      sourceTeam?.pitCrewOperations ?? 50,
+      'Production pit-crew operations',
+    ),
   });
   const averageRating = (ratings: Car['ratings']) =>
     Object.values(ratings).reduce((sum, value) => sum + value, 0) / Object.values(ratings).length;
@@ -703,9 +720,10 @@ function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, t
   const useCuratedGridRatings = teamIds.some((teamId) => {
     const sourceTeamId = ctx.legacyTeamToSourceTeamId.get(teamId) ?? teamId;
     const source = sourceByTeamId.get(sourceTeamId);
+    const sourceTeam = sourceTeamFor(teamId, sourceTeamId);
     const legacyRatings = normalizeLegacyRatings(ctx.legacyCars.find((car) => car.teamId === teamId));
     return source && legacyRatings
-      ? averageRating(legacyRatings) - averageRating(sourceRatings(source)) >= 25
+      ? averageRating(legacyRatings) - averageRating(sourceRatings(source, sourceTeam)) >= 25
       : false;
   });
 
@@ -725,17 +743,22 @@ function buildCars(phase0Season: Phase0SeasonBundle, ctx: LegacySeasonContext, t
           reliability: 50,
           pitCrewOperations: 50,
         },
+        setupWindow: 50,
         condition: 100,
         developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
       };
     }
+    const sourceTeam = sourceTeamFor(teamId, sourceTeamId);
     const legacyRatings = normalizeLegacyRatings(legacyCar);
-    const ratings = useCuratedGridRatings && legacyRatings ? legacyRatings : sourceRatings(source);
+    const ratings = useCuratedGridRatings && legacyRatings
+      ? legacyRatings
+      : sourceRatings(source, sourceTeam);
     return {
       id: legacyCar?.id ?? source.carId ?? `car-${phase0Season.season}-${teamId.toLowerCase()}`,
       teamId,
       seasonYear: source.seasonYear,
       ratings,
+      setupWindow: assertRating100(source.setupWindow, 'Production car setup window'),
       condition: 100,
       developmentLevel: { enginePower: 0, aeroEfficiency: 0, mechanicalGrip: 0, reliability: 0, pitCrewOperations: 0 },
     };

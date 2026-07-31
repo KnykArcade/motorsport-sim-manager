@@ -19,10 +19,28 @@ import type {
 } from '../types/setupTypes';
 import { BALANCED_SETUP, SETUP_COMPONENTS } from '../data/setup/setupComponents';
 import { effectiveCarRatings } from './trackFitEngine';
-import { toLegacyRating } from './ratingScale';
+import { assertLegacyRating, assertRating100, toLegacyRating } from './ratingScale';
 
 function clamp(v: number, lo = 1, hi = 10): number {
   return Math.max(lo, Math.min(hi, v));
+}
+
+function trackRatingToLegacy(track: Track, value: number, label: string): number {
+  const profile = track.setupProfile;
+  const attributes = track.attributes;
+  const values = [
+    profile.aeroDemand,
+    profile.powerDemand,
+    profile.mechanicalDemand,
+    profile.brakeDemand,
+    attributes.corners,
+    attributes.braking,
+    attributes.straights,
+  ];
+  const legacyTrack = values.every((rating) => rating <= 10);
+  return legacyTrack
+    ? assertLegacyRating(value, label)
+    : toLegacyRating(value, label);
 }
 
 // The engineer's initial baseline setup at the start of a weekend: a coarse,
@@ -52,16 +70,34 @@ export function idealSetup(track: Track, driver?: Driver, car?: Car): CarSetup {
   const lowComposure = driver ? Math.max(0, (5 - toLegacyRating(driver.ratings.composure)) / 5) : 0;
 
   const base: CarSetup = {
-    frontWing: clamp(toLegacyRating(p.aeroDemand)),
-    rearWing: clamp(toLegacyRating(p.aeroDemand) - (toLegacyRating(a.straights) >= 8 ? 1 : 0)),
-    suspensionStiffness: clamp(11 - toLegacyRating(a.surfaceGripBumpiness) + aggro * 0.8),
-    rideHeight: clamp(2 + toLegacyRating(a.surfaceGripBumpiness) * 0.6),
-    gearing: clamp((toLegacyRating(p.powerDemand) + toLegacyRating(a.straights)) / 2),
+    frontWing: clamp(trackRatingToLegacy(track, p.aeroDemand, 'Track aero demand')),
+    rearWing: clamp(
+      trackRatingToLegacy(track, p.aeroDemand, 'Track aero demand')
+      - (trackRatingToLegacy(track, a.straights, 'Track straight-line demand') >= 8 ? 1 : 0),
+    ),
+    suspensionStiffness: clamp(
+      11 - trackRatingToLegacy(track, a.surfaceGripBumpiness, 'Track surface demand') + aggro * 0.8,
+    ),
+    rideHeight: clamp(
+      2 + trackRatingToLegacy(track, a.surfaceGripBumpiness, 'Track surface demand') * 0.6,
+    ),
+    gearing: clamp((
+      trackRatingToLegacy(track, p.powerDemand, 'Track power demand')
+      + trackRatingToLegacy(track, a.straights, 'Track straight-line demand')
+    ) / 2),
     brakeBias: 5,
-    brakeCooling: clamp(toLegacyRating(p.brakeDemand)),
-    differential: clamp((toLegacyRating(a.tractionAcceleration) + toLegacyRating(a.technical)) / 2 + aggro * 1.2 - lowComposure),
-    engineCooling: clamp((toLegacyRating(p.reliabilityRiskFocus) + toLegacyRating(p.powerDemand)) / 2),
-    tyreUsage: clamp(11 - toLegacyRating(a.enduranceConsistency) + aggro * 0.6),
+    brakeCooling: clamp(trackRatingToLegacy(track, p.brakeDemand, 'Track brake demand')),
+    differential: clamp((
+      trackRatingToLegacy(track, a.tractionAcceleration, 'Track traction demand')
+      + trackRatingToLegacy(track, a.technical, 'Track technical demand')
+    ) / 2 + aggro * 1.2 - lowComposure),
+    engineCooling: clamp((
+      trackRatingToLegacy(track, p.reliabilityRiskFocus, 'Track reliability demand')
+      + trackRatingToLegacy(track, p.powerDemand, 'Track power demand')
+    ) / 2),
+    tyreUsage: clamp(
+      11 - trackRatingToLegacy(track, a.enduranceConsistency, 'Track endurance demand') + aggro * 0.6,
+    ),
   };
   if (!car) return base;
   return applyCarShaping(base, track, car);
@@ -75,7 +111,9 @@ function applyCarShaping(base: CarSetup, track: Track, car: Car): CarSetup {
   const power = (toLegacyRating(c.enginePower) - 5) / 5;
   const mech = (toLegacyRating(c.mechanicalGrip) - 5) / 5;
   const reli = (toLegacyRating(c.reliability) - 5) / 5;
-  const powerCircuit = track.attributes.straights >= 70 || track.setupProfile.powerDemand >= 70;
+  const powerCircuit =
+    trackRatingToLegacy(track, track.attributes.straights, 'Track straight-line demand') >= 7
+    || trackRatingToLegacy(track, track.setupProfile.powerDemand, 'Track power demand') >= 7;
   // A low-power car on a power circuit especially wants to shed drag.
   const lowPowerTrim = powerCircuit ? Math.max(0, -power) : 0;
 
@@ -144,12 +182,18 @@ function componentWeights(track: Track): Record<SetupComponentKey, number> {
   const p = track.setupProfile;
   return {
     aero: 1.0,
-    mechanical: 0.6 + toLegacyRating(a.surfaceGripBumpiness) / 2 + toLegacyRating(a.corners) / 2,
-    gearing: 0.4 + toLegacyRating(p.powerDemand) / 1.5,
-    brakes: 0.4 + toLegacyRating(p.brakeDemand) / 1.5,
-    differential: 0.4 + toLegacyRating(a.tractionAcceleration) / 2,
-    cooling: 0.4 + toLegacyRating(p.reliabilityRiskFocus) / 1.5,
-    tyres: 0.5 + toLegacyRating(a.enduranceConsistency) / 2,
+    mechanical:
+      0.6
+      + trackRatingToLegacy(track, a.surfaceGripBumpiness, 'Track surface demand') / 2
+      + trackRatingToLegacy(track, a.corners, 'Track corner demand') / 2,
+    gearing: 0.4 + trackRatingToLegacy(track, p.powerDemand, 'Track power demand') / 1.5,
+    brakes: 0.4 + trackRatingToLegacy(track, p.brakeDemand, 'Track brake demand') / 1.5,
+    differential:
+      0.4 + trackRatingToLegacy(track, a.tractionAcceleration, 'Track traction demand') / 2,
+    cooling:
+      0.4 + trackRatingToLegacy(track, p.reliabilityRiskFocus, 'Track reliability demand') / 1.5,
+    tyres:
+      0.5 + trackRatingToLegacy(track, a.enduranceConsistency, 'Track endurance demand') / 2,
   };
 }
 
@@ -206,7 +250,10 @@ function buildWarnings(setup: CarSetup, track: Track, components: ComponentFit[]
   }
   if (setup.tyreUsage >= 8) warnings.push('Very aggressive tyre usage — expect high degradation and possible blistering.');
   if (setup.engineCooling <= 2) warnings.push('Tight cooling risks the engine overheating over a stint.');
-  if (setup.rideHeight <= 2 && track.attributes.surfaceGripBumpiness >= 70) {
+  if (
+    setup.rideHeight <= 2
+    && trackRatingToLegacy(track, track.attributes.surfaceGripBumpiness, 'Track surface demand') >= 7
+  ) {
     warnings.push('Very low ride height on a bumpy track risks bottoming out.');
   }
   if (Math.abs(setup.brakeBias - 5) >= 4) warnings.push('Extreme brake bias risks locking a wheel under braking.');
@@ -240,26 +287,21 @@ export function calculateSetupFit(setup: CarSetup, track: Track, driver?: Driver
 // feel for the setup is a separate axis (see driverComfortEngine).
 // ---------------------------------------------------------------------------
 
-// A fixed engineering tolerance: the objective quality does not widen with a
-// driver's adaptability (that is a comfort concern), so use a neutral window.
-const OBJECTIVE_TOLERANCE = 1.55;
+const DEFAULT_SETUP_WINDOW = 50;
+const MIN_OBJECTIVE_TOLERANCE = 1.05;
+const MAX_OBJECTIVE_TOLERANCE = 1.75;
 
-// Compute an adjusted tolerance based on team capability, staff, and practice.
-// Better teams/staff and more practice tighten the window (easier to nail the
-// setup). Worse teams or no practice widen it (harder to get close to ideal).
-export function adjustedSetupTolerance(
-  baseTolerance: number,
-  teamRaceOps: number,
-  staffSetupBonus: number,
-  practiceSetupKnowledge: number,
-): number {
-  // Wider tolerance means the team can land inside the useful setup window more
-  // easily. Better race ops, better engineers, and more practice should help;
-  // weak preparation should make the window unforgiving.
-  const opsFactor = (teamRaceOps - 5) * 0.12;
-  const staffFactor = staffSetupBonus * 0.035;
-  const practiceFactor = (practiceSetupKnowledge - 0.5) * 0.9;
-  return Math.max(0.95, Math.min(2.6, baseTolerance + opsFactor + staffFactor + practiceFactor));
+// Objective tolerance is a physical characteristic of the car, not a reward
+// supplied by Race Operations, staff, facilities, or practice knowledge. Those
+// resources help the team find and understand the window; they do not widen it.
+export function setupToleranceForCar(car?: Pick<Car, 'setupWindow'>): number {
+  const setupWindow = assertRating100(
+    car?.setupWindow ?? DEFAULT_SETUP_WINDOW,
+    'Car setup-window rating',
+  );
+  const normalized = (setupWindow - 1) / 99;
+  return MIN_OBJECTIVE_TOLERANCE
+    + normalized * (MAX_OBJECTIVE_TOLERANCE - MIN_OBJECTIVE_TOLERANCE);
 }
 
 export function objectiveSetupQuality(
@@ -269,7 +311,7 @@ export function objectiveSetupQuality(
   tolerance?: number,
 ): ObjectiveSetupQuality {
   const ideal = idealSetup(track, undefined, car);
-  const tol = tolerance ?? OBJECTIVE_TOLERANCE;
+  const tol = tolerance ?? setupToleranceForCar(car);
   const weights = componentWeights(track);
   const components: ComponentFit[] = SETUP_COMPONENTS.map((c) => ({
     component: c.key,
@@ -300,7 +342,11 @@ function objectiveEffects(
   // tight cooling than a bulletproof one.
   const reli = car ? (toLegacyRating(effectiveCarRatings(car).reliability) - 5) / 5 : 0; // -1..1
   const coolingShort = Math.max(0, 5 - setup.engineCooling); // how tight cooling is
-  const brakeShort = Math.max(0, track.setupProfile.brakeDemand - setup.brakeCooling);
+  const brakeShort = Math.max(
+    0,
+    trackRatingToLegacy(track, track.setupProfile.brakeDemand, 'Track brake demand')
+      - setup.brakeCooling,
+  );
   return {
     qualifyingPaceCeiling: round1((quality - 62) / 12),
     racePaceCeiling: round1((quality - 62) / 14),
@@ -309,7 +355,13 @@ function objectiveEffects(
     overheatingRisk: round1(
       coolingShort * 0.07 * (1 - reli * 0.5) +
         brakeShort * 0.05 +
-        (track.setupProfile.reliabilityRiskFocus - 5) * 0.03,
+        (
+          trackRatingToLegacy(
+            track,
+            track.setupProfile.reliabilityRiskFocus,
+            'Track reliability demand',
+          ) - 5
+        ) * 0.03,
     ),
   };
 }
@@ -408,7 +460,13 @@ export function generateSetupFeedback(
     driverFeedback.push('Bogging down on the exit of the slow corners.');
   }
 
-  if (a.surfaceGripBumpiness >= 60 && (setup.suspensionStiffness > ideal.suspensionStiffness + 1.5 || setup.rideHeight < ideal.rideHeight - 1.5)) {
+  if (
+    trackRatingToLegacy(track, a.surfaceGripBumpiness, 'Track surface demand') >= 6
+    && (
+      setup.suspensionStiffness > ideal.suspensionStiffness + 1.5
+      || setup.rideHeight < ideal.rideHeight - 1.5
+    )
+  ) {
     driverFeedback.push('The car is bottoming out and skittish over the bumps.');
   }
 

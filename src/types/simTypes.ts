@@ -66,7 +66,7 @@ export type QualifyingContext = {
   // Team reputation (0-100) by team id. Used for AI personality / engine-deal
   // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
-  // Race Operations Rating (1-10) by team id. Drives the team component of
+  // Race Operations Rating (1-100) by team id. Drives the team component of
   // qualifying pace and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
   // Race Weekend Package effects by team id. Applies pace, reliability, and
@@ -97,7 +97,7 @@ export type RaceContext = {
   // Team reputation (0-100) by team id. Used for AI personality / engine-deal
   // context — NOT for pace (that now uses teamRaceOps).
   teamReputation?: Record<string, number>;
-  // Race Operations Rating (1-10) by team id. Drives the team component of race
+  // Race Operations Rating (1-100) by team id. Drives the team component of race
   // pace and the per-weekend operations variance.
   teamRaceOps: Record<string, number>;
   // Race Weekend Package effects by team id. Applies pace, reliability, and

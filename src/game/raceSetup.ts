@@ -15,7 +15,7 @@ import {
   driverPracticeSummary,
   practiceSetupConfidenceBonus,
 } from '../sim/practiceProgramEngine';
-import { objectiveSetupQuality, adjustedSetupTolerance } from '../sim/setupFitEngine';
+import { objectiveSetupQuality } from '../sim/setupFitEngine';
 import { driverSetupComfort } from '../sim/driverComfortEngine';
 import { weekendForecast } from '../sim/weatherEngine';
 import { raceStrategiesById } from '../data/decisions/raceStrategies';
@@ -71,20 +71,9 @@ export function playerTunedSetups(
     if (!tuned) continue;
     const confidenceBonus = staffBonus + practiceSetupConfidenceBonus(knowledge, driver.id);
 
-    // Compute setup tolerance adjusted by team capability, staff, and practice.
-    // Without practice, the tolerance widens significantly — harder to nail setup.
-    const team = state.teams.find((t) => t.id === state.selectedTeamId);
-    const practiceSetupKnowledge = knowledge?.setupKnowledge[driver.id] ?? 0;
-    const setupTolerance = adjustedSetupTolerance(
-      2.2,
-      team?.raceOperations ?? 5,
-      setupConfidenceBonus(state.staff ?? []),
-      practiceSetupKnowledge,
-    );
-
     // Objective quality (engineering fit vs track + this car) and the driver's
     // comfort with the tuned setup relative to what they ran in practice.
-    const quality = objectiveSetupQuality(tuned, track, car, setupTolerance);
+    const quality = objectiveSetupQuality(tuned, track, car);
     const summary = driverPracticeSummary(wp, driver.id);
     const comfort = driverSetupComfort({
       driver,

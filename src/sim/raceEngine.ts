@@ -45,7 +45,8 @@ export const FORM_OPS_FACTOR = 0.22;
 // Per-team weekend form for a race weekend, shared by both of the team's cars.
 export function weekendForm(seed: string, teamId: string, raceOps: number): number {
   const rng = createSeededRandom(deriveSeed(seed, 'weekendform', teamId));
-  const spread = WEEKEND_FORM_SPREAD + Math.max(0, 5 - raceOps) * FORM_OPS_FACTOR;
+  const legacyRaceOps = toLegacyRating(raceOps, 'Team Race Operations');
+  const spread = WEEKEND_FORM_SPREAD + Math.max(0, 5 - legacyRaceOps) * FORM_OPS_FACTOR;
   return rng.variance(spread);
 }
 
@@ -66,7 +67,8 @@ export function operationsForm(
   raceOps: number,
 ): number {
   const rng = createSeededRandom(deriveSeed(seed, 'opsform', teamId, driverId));
-  const spread = OPS_FORM_BASE + Math.max(0, 5 - raceOps) * OPS_FORM_WEAK;
+  const legacyRaceOps = toLegacyRating(raceOps, 'Team Race Operations');
+  const spread = OPS_FORM_BASE + Math.max(0, 5 - legacyRaceOps) * OPS_FORM_WEAK;
   return rng.variance(spread);
 }
 

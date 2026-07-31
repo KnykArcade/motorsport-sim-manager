@@ -105,6 +105,11 @@ export type Car = {
   teamId: string;
   seasonYear: number;
   ratings: CarRatings;
+  // Intrinsic breadth of the car's usable setup window (1-100). A high value
+  // means the car remains effective across a broader range of configurations.
+  // Optional only for backward-compatible save loading and legacy seed modules;
+  // production season bundles populate it explicitly.
+  setupWindow?: number;
   condition: number; // 0-100
   // Accumulated development applied on top of base ratings.
   developmentLevel: CarRatings;

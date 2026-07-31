@@ -313,7 +313,11 @@ export function simulateQualifying(context: QualifyingContext): {
     const decision = context.decisions[e.driver.id];
     const teamRating = context.teamRaceOps[e.driver.teamId];
     const formRng = createSeededRandom(deriveSeed(context.seed, 'qualiform', e.driver.teamId));
-    const formSpread = (WEEKEND_FORM_SPREAD + Math.max(0, 5 - teamRating) * FORM_OPS_FACTOR) * 0.6;
+    const legacyTeamRating = toLegacyRating(teamRating, 'Team Race Operations');
+    const formSpread = (
+      WEEKEND_FORM_SPREAD
+      + Math.max(0, 5 - legacyTeamRating) * FORM_OPS_FACTOR
+    ) * 0.6;
     const pkgEffects = context.packageEffectsByTeam?.[e.driver.teamId];
     return {
       driver: e.driver,
