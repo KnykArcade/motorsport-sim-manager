@@ -151,7 +151,9 @@ function setupSignals(setup: CarSetup, track: Track, driver: Driver, car?: Car):
     out.push({ topic: 'Tires', sentiment: 'Positive', message: 'Tyre temperatures are stable across a stint.' });
   }
 
-  if (e.racePaceCeiling >= 0.6) out.push({ topic: 'LongRunPace', sentiment: 'Positive', message: 'Long-run pace looks strong.' });
+  if (e.racePaceCeiling >= -0.6) {
+    out.push({ topic: 'LongRunPace', sentiment: 'Positive', message: 'Long-run pace looks strong.' });
+  }
   out.push({ topic: 'Fuel', sentiment: 'Neutral', message: 'Fuel consumption is in line with our race estimate.' });
 
   if (objective.quality >= 74) out.push({ topic: 'Confidence', sentiment: 'Positive', message: 'The setup is landing in a strong window.' });

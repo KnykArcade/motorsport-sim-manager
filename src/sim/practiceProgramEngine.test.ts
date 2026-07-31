@@ -26,6 +26,7 @@ import {
 } from './practiceProgramEngine';
 import { makeWeatherState } from './weatherEngine';
 import type { PracticeSession } from '../types/practiceTypes';
+import { objectiveSetupQuality } from './setupFitEngine';
 
 const track = tracks1995[0];
 const driver = drivers1995[0];
@@ -100,14 +101,17 @@ describe('car-aware practice feedback (P5)', () => {
     expect(strongEngine).not.toEqual(weakEngine);
   });
 
-  it('a weak car draws more concern/warning than a strong car (aligns with objective quality)', () => {
-    const rng = () => createSeededRandom('align');
-    const countNegative = (car: Car) =>
-      generatePracticeFeedback(driver, BALANCED_SETUP, track, 'SetupExploration', rng(), { car })
-        .filter((f) => f.sentiment === 'Concern' || f.sentiment === 'Warning').length;
-    const weak = countNegative(carWith({ mechanicalGrip: 20, aeroEfficiency: 20, reliability: 20 }));
-    const strong = countNegative(carWith({ mechanicalGrip: 90, aeroEfficiency: 90, reliability: 90 }));
-    expect(weak).toBeGreaterThan(strong);
+  it('reports car-potential weaknesses separately from non-positive setup losses', () => {
+    const weakCar = carWith({ mechanicalGrip: 20, aeroEfficiency: 20, reliability: 20 });
+    const strongCar = carWith({ mechanicalGrip: 90, aeroEfficiency: 90, reliability: 90 });
+    const weak = messages(weakCar);
+    const strong = messages(strongCar);
+    const setupOutcome = objectiveSetupQuality(BALANCED_SETUP, track, weakCar);
+
+    expect(weak).toMatch(/mechanical grip|aero load|fragile package/);
+    expect(strong).not.toMatch(/mechanical grip|aero load|fragile package/);
+    expect(setupOutcome.effects.qualifyingPaceCeiling).toBeLessThanOrEqual(0);
+    expect(setupOutcome.effects.racePaceCeiling).toBeLessThanOrEqual(0);
   });
 
   it('gives broad, hedged feedback at low knowledge and specific feedback at high knowledge', () => {

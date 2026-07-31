@@ -2,9 +2,8 @@
 //
 // The player no longer picks a single setup "package". Instead they tune the
 // engineering setup of the car across several components, each with tradeoffs.
-// Cars still automatically run a qualifying trim on Saturday and a race trim on
-// Sunday (professional preparation) — those trims are DERIVED from this tuned
-// base setup (see sim/setupDerive.ts). Setup is separate from the qualifying run
+// The same finalized setup is evaluated in qualifying and race operating
+// envelopes (see sim/setupDerive.ts). Setup is separate from the qualifying run
 // plan and the race strategy.
 
 // Every tunable parameter is on a 1-10 scale. The "low"/"high" meaning of each
@@ -109,11 +108,78 @@ export type SetupPreset = {
 
 // What Objective Setup Quality drives in the sim.
 export type ObjectiveSetupEffects = {
-  qualifyingPaceCeiling: number; // delta, higher = more one-lap pace on tap
-  racePaceCeiling: number; // delta, higher = more race pace on tap
+  qualifyingPaceCeiling: number; // non-positive loss from one-lap car potential
+  racePaceCeiling: number; // non-positive loss from race-pace car potential
   tyreWear: number; // positive = more wear
   reliabilityRisk: number; // positive = more risk
   overheatingRisk: number; // positive = more brake/engine overheating risk
+};
+
+export type SetupBehaviorAxis =
+  | 'lowSpeedCornering'
+  | 'mediumSpeedCornering'
+  | 'highSpeedCornering'
+  | 'brakingEntryStability'
+  | 'midCornerBalance'
+  | 'traction'
+  | 'straightLineEfficiency'
+  | 'aeroPlatformStability'
+  | 'bumpKerbCompliance'
+  | 'tyreWarmup'
+  | 'tyreControl'
+  | 'coolingCapacity'
+  | 'trafficStability'
+  | 'fuelLoadStability';
+
+export type SetupInteractionKey =
+  | 'aeroBalance'
+  | 'platformCompliance'
+  | 'gearingDragPower'
+  | 'differentialRearStiffness'
+  | 'brakeBalanceCooling'
+  | 'tyreMechanicalLoading'
+  | 'coolingPowerTraffic'
+  | 'fuelBalanceMigration';
+
+export type SetupSessionKey =
+  | 'qualifying'
+  | 'raceStart'
+  | 'raceStint'
+  | 'lateStint'
+  | 'traffic'
+  | 'wet';
+
+export type SetupSessionEnvelope = {
+  // Percentage of lap time left inaccessible by this setup. Zero is the
+  // physical ceiling; setup can never create a negative loss / pace bonus.
+  lapTimeLossPct: number;
+  paceDelta: number; // non-positive compatibility delta derived from the loss
+  tyreWearDelta: number; // positive = more degradation, negative = protection
+  reliabilityRisk: number; // 0..3 setup-related mechanical exposure
+  overheatingRisk: number; // 0..3 brake/engine thermal exposure
+  mistakePressure: number; // 0..3 physical nervousness / lockup pressure
+  consistencyLoss: number; // 0..3 loss of repeatability over the envelope
+  balanceMigration: number; // 0..3 balance movement through the envelope
+};
+
+export type SetupPerformanceSnapshot = {
+  // Setup-created behavior capability, normalized to 0..1. Car ratings remain
+  // the potential ceiling and are not added to these values.
+  behaviors: Record<SetupBehaviorAxis, number>;
+  // Positive percentage-point loss contributions. These are evaluated against
+  // circuit behavior requirements rather than ten independent slider targets.
+  behaviorLosses: Record<SetupBehaviorAxis, number>;
+  interactionLosses: Record<SetupInteractionKey, number>;
+  sessions: Record<SetupSessionKey, SetupSessionEnvelope>;
+  qualifyingLapTimeLossPct: number;
+  raceStartLapTimeLossPct: number;
+  longRunLapTimeLossPct: number;
+  lateStintLapTimeLossPct: number;
+  trafficLapTimeLossPct: number;
+  wetLapTimeLossPct: number;
+  objectiveQuality: number; // 0..100 compatibility summary, never a pace boost
+  components: ComponentFit[];
+  warnings: string[];
 };
 
 export type ObjectiveSetupQuality = {
@@ -121,6 +187,8 @@ export type ObjectiveSetupQuality = {
   components: ComponentFit[];
   effects: ObjectiveSetupEffects;
   warnings: string[];
+  // Calculated on demand, so existing saves need no schema migration.
+  snapshot?: SetupPerformanceSnapshot;
 };
 
 export type ComfortLabel = 'Unknown' | 'Uneasy' | 'Workable' | 'Comfortable' | 'Gelled';

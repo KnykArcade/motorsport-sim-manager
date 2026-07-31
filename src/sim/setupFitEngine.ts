@@ -10,7 +10,6 @@ import type { Car, Driver, Track } from '../types/gameTypes';
 import type {
   CarSetup,
   ComponentFit,
-  ObjectiveSetupEffects,
   ObjectiveSetupQuality,
   SetupComponentKey,
   SetupEffects,
@@ -20,6 +19,7 @@ import type {
 import { BALANCED_SETUP, SETUP_COMPONENTS } from '../data/setup/setupComponents';
 import { effectiveCarRatings } from './trackFitEngine';
 import { assertLegacyRating, assertRating100, toLegacyRating } from './ratingScale';
+import { calculateSetupPerformanceSnapshot } from './setupPerformanceSurface';
 
 function clamp(v: number, lo = 1, hi = 10): number {
   return Math.max(lo, Math.min(hi, v));
@@ -310,59 +310,33 @@ export function objectiveSetupQuality(
   car?: Car,
   tolerance?: number,
 ): ObjectiveSetupQuality {
-  const ideal = idealSetup(track, undefined, car);
-  const tol = tolerance ?? setupToleranceForCar(car);
-  const weights = componentWeights(track);
-  const components: ComponentFit[] = SETUP_COMPONENTS.map((c) => ({
-    component: c.key,
-    fit: Math.round(componentFit(c.key, setup, ideal, tol)),
-  }));
-  let weighted = 0;
-  let total = 0;
-  for (const f of components) {
-    weighted += f.fit * weights[f.component];
-    total += weights[f.component];
-  }
-  const quality = Math.round(total > 0 ? weighted / total : 0);
-  return {
-    quality,
-    components,
-    effects: objectiveEffects(setup, track, car, quality),
-    warnings: buildWarnings(setup, track, components),
-  };
-}
-
-function objectiveEffects(
-  setup: CarSetup,
-  track: Track,
-  car: Car | undefined,
-  quality: number,
-): ObjectiveSetupEffects {
-  // Reliability of the underlying car: a fragile car is punished far harder by
-  // tight cooling than a bulletproof one.
-  const reli = car ? (toLegacyRating(effectiveCarRatings(car).reliability) - 5) / 5 : 0; // -1..1
-  const coolingShort = Math.max(0, 5 - setup.engineCooling); // how tight cooling is
-  const brakeShort = Math.max(
-    0,
-    trackRatingToLegacy(track, track.setupProfile.brakeDemand, 'Track brake demand')
-      - setup.brakeCooling,
+  // The optional tolerance remains as a temporary Phase 1 compatibility seam
+  // for tests/callers that compare explicit car windows. It maps to the same
+  // sharpness range used by the surface; it never reintroduces staff/practice.
+  const toleranceSharpness = tolerance == null
+    ? undefined
+    : 1.38 - (
+      Math.max(0, Math.min(1, (tolerance - MIN_OBJECTIVE_TOLERANCE)
+        / (MAX_OBJECTIVE_TOLERANCE - MIN_OBJECTIVE_TOLERANCE)))
+    ) * 0.58;
+  const snapshot = calculateSetupPerformanceSnapshot(
+    setup,
+    track,
+    car,
+    toleranceSharpness,
   );
   return {
-    qualifyingPaceCeiling: round1((quality - 62) / 12),
-    racePaceCeiling: round1((quality - 62) / 14),
-    tyreWear: round1((62 - quality) / 40 + (setup.tyreUsage - 5) * 0.06),
-    reliabilityRisk: round1((62 - quality) / 55 + coolingShort * 0.06 * (1 - reli * 0.6)),
-    overheatingRisk: round1(
-      coolingShort * 0.07 * (1 - reli * 0.5) +
-        brakeShort * 0.05 +
-        (
-          trackRatingToLegacy(
-            track,
-            track.setupProfile.reliabilityRiskFocus,
-            'Track reliability demand',
-          ) - 5
-        ) * 0.03,
-    ),
+    quality: snapshot.objectiveQuality,
+    components: snapshot.components,
+    effects: {
+      qualifyingPaceCeiling: snapshot.sessions.qualifying.paceDelta,
+      racePaceCeiling: snapshot.sessions.raceStint.paceDelta,
+      tyreWear: snapshot.sessions.raceStint.tyreWearDelta,
+      reliabilityRisk: snapshot.sessions.raceStint.reliabilityRisk,
+      overheatingRisk: snapshot.sessions.raceStint.overheatingRisk,
+    },
+    warnings: snapshot.warnings,
+    snapshot,
   };
 }
 

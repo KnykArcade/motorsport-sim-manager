@@ -1,8 +1,6 @@
 // Derive the session SetupOption (the flat package the simulation consumes)
-// from a tuned CarSetup. Cars still automatically run a distinct qualifying trim
-// on Saturday and a race trim on Sunday — those trims are produced here from the
-// same player-tuned base, so good engineering setup is rewarded in both sessions
-// while the player never picks "trim" manually.
+// from a tuned CarSetup. The adapter selects the qualifying or race operating
+// envelope from one physical snapshot; it does not add a magical session bonus.
 //
 // Two separate inputs shape the result:
 //   * Objective Setup Quality (engineering fit vs track + car) drives the pace
@@ -22,8 +20,8 @@ export type DeriveOptions = {
   car?: Car;
   quality?: ObjectiveSetupQuality;
   comfort?: DriverComfort;
-  // A small confidence bonus (0-100 scale points) from staff / facilities /
-  // practice-setup knowledge, folded into the effective quality.
+  // Staff / facilities / practice knowledge improves confidence in extracting
+  // the setup. It never changes the physical performance snapshot.
   confidenceBonus?: number;
 };
 
@@ -55,50 +53,43 @@ export function deriveSetupOption(
     10,
   );
 
-  const qual = quality.quality;
-  // Objective quality sets the pace ceiling; driver comfort sets how much of it
-  // is actually extracted (execution / consistency) and the mistake risk. When
-  // the driver has no practice comfort data, an untested setup carries a small
-  // execution penalty and extra risk.
-  const effectiveQuality = clamp(qual + confidenceBonus, 0, 100);
-  const severeMissPenalty = Math.max(0, 50 - effectiveQuality) / 7;
-  const hookedUpBonus = Math.max(0, effectiveQuality - 82) / 18;
-  const qCeil = (effectiveQuality - 62) / 10 - severeMissPenalty + hookedUpBonus; // ~ -9 .. +5
-  const exec = comfort ? comfort.effects.execution : -0.4;
-  const consistency = comfort ? comfort.effects.consistency : -0.4;
+  // The authoritative surface produces only losses from car potential. Manual
+  // ObjectiveSetupQuality fixtures and older adapters fall back to the same
+  // non-positive loss convention until they carry a snapshot.
+  const fallbackPhysicalLoss = -Math.max(0, 100 - quality.quality) / 7.5;
+  const qualifyingPhysical = quality.snapshot
+    ? quality.snapshot.sessions.qualifying.paceDelta
+    : Math.min(quality.effects.qualifyingPaceCeiling, fallbackPhysicalLoss);
+  const racePhysical = quality.snapshot
+    ? quality.snapshot.sessions.raceStint.paceDelta
+    : Math.min(quality.effects.racePaceCeiling, fallbackPhysicalLoss);
+  const activeEnvelope = trim === 'qualifying'
+    ? quality.snapshot?.sessions.qualifying
+    : quality.snapshot?.sessions.raceStint;
+  const confidenceExtraction = clamp(confidenceBonus / 20, -1, 1);
+  const exec = (comfort ? comfort.effects.execution : -0.4) + confidenceExtraction * 0.25;
+  const consistency = (comfort ? comfort.effects.consistency : -0.4) + confidenceExtraction * 0.2;
   const mistake = comfort ? comfort.effects.mistakeRisk : 0.6;
   const tyreMgmt = comfort ? comfort.effects.tyreManagement : 0;
 
-  let qualifyingBoost = qCeil * 1.15 + exec * 1.2;
-  let racePaceBoost = qCeil + consistency * 1.15;
-  let tirePreservation =
-    (11 - setup.tyreUsage) * 0.75 + effectiveQuality / 26 + tyreMgmt * 1.2 - severeMissPenalty * 0.6;
-  let reliabilityProtection =
-    setup.engineCooling * 0.65 +
-    effectiveQuality / 28 -
-    quality.effects.reliabilityRisk -
-    quality.effects.overheatingRisk * 0.45;
-  let riskModifier =
-    (62 - effectiveQuality) / 12 +
-    severeMissPenalty * 1.2 +
+  // Comfort can help a driver get closer to the ceiling, but can never turn a
+  // physical setup loss into a positive setup boost.
+  const qualifyingBoost = Math.min(0, qualifyingPhysical + exec * 0.45);
+  const racePaceBoost = Math.min(0, racePhysical + consistency * 0.8);
+  const surfaceTyreWear = activeEnvelope?.tyreWearDelta ?? quality.effects.tyreWear;
+  const surfaceReliability = activeEnvelope?.reliabilityRisk ?? quality.effects.reliabilityRisk;
+  const surfaceHeat = activeEnvelope?.overheatingRisk ?? quality.effects.overheatingRisk;
+  const surfaceMistake = activeEnvelope?.mistakePressure ?? 0;
+  const tirePreservation =
+    (11 - setup.tyreUsage) * 0.72 + 2.2 + tyreMgmt * 1.2 - surfaceTyreWear * 1.35;
+  const reliabilityProtection =
+    setup.engineCooling * 0.55 + 3.1 - surfaceReliability * 1.1 - surfaceHeat * 0.7;
+  const riskModifier =
+    surfaceMistake * 1.25 +
     mistake * 3.4 +
     (setup.tyreUsage - 5) * 0.18 +
-    Math.max(0, 5 - setup.brakeCooling) * 0.18;
-
-  // Apply the automatic session trim bias on top of the tuned base.
-  if (trim === 'qualifying') {
-    tirePreservation -= 2;
-    reliabilityProtection -= 2;
-    qualifyingBoost += 3;
-    racePaceBoost -= 1;
-    riskModifier += 2;
-  } else {
-    tirePreservation += 2;
-    reliabilityProtection += 1;
-    qualifyingBoost -= 1;
-    racePaceBoost += 2;
-    riskModifier -= 1;
-  }
+    Math.max(0, 5 - setup.brakeCooling) * 0.18 -
+    confidenceExtraction * 0.35;
 
   const trimLabel = trim === 'qualifying' ? 'Qualifying Trim' : 'Race Trim';
   return {
@@ -114,8 +105,8 @@ export function deriveSetupOption(
     brakingStability,
     tirePreservation: clamp(round1(tirePreservation), 1, 10),
     reliabilityProtection: clamp(round1(reliabilityProtection), 1, 10),
-    qualifyingBoost: clamp(round1(qualifyingBoost), -7, 6),
-    racePaceBoost: clamp(round1(racePaceBoost), -7, 6),
+    qualifyingBoost: clamp(round1(qualifyingBoost), -10, 0),
+    racePaceBoost: clamp(round1(racePaceBoost), -10, 0),
     riskModifier: clamp(round1(riskModifier), -4, 7),
   };
 }

@@ -61,14 +61,15 @@ describe('setupFitEngine', () => {
 });
 
 describe('setupDerive', () => {
-  it('produces distinct qualifying and race trims from one base setup', () => {
+  it('selects distinct session envelopes without automatic positive boosts', () => {
     const ideal = idealSetup(track, driver);
     const quali = deriveSetupOption(ideal, track, driver, 'qualifying');
     const race = deriveSetupOption(ideal, track, driver, 'race');
 
-    expect(quali.qualifyingBoost).toBeGreaterThan(race.qualifyingBoost);
-    expect(race.tirePreservation).toBeGreaterThan(quali.tirePreservation);
+    expect(quali.qualifyingBoost).toBeLessThanOrEqual(0);
+    expect(race.racePaceBoost).toBeLessThanOrEqual(0);
     expect(quali.id).not.toEqual(race.id);
+    expect(quali).not.toEqual(race);
   });
 
   it('keeps all derived axes within the valid 1-10 / risk range', () => {

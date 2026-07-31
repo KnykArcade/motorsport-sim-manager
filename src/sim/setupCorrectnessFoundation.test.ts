@@ -124,15 +124,24 @@ describe('setup correctness foundation — production bundle calibration', () =>
     expect(foundIndependentRatings).toBe(true);
   });
 
-  it('keeps a production ideal at 100 and its supplied baseline below the ideal', async () => {
+  it('keeps production surface summaries finite and bounded after removing the single ideal', async () => {
     const bundle = await loadSeasonBundle(1995, 'F1');
     const track = getTrackById(bundle!.season.calendar[0].trackId)!;
     const car = bundle!.cars[0];
     const ideal = idealSetup(track, undefined, car);
     const baseline = initialBaselineSetup(track, car);
+    const outcomes = [
+      objectiveSetupQuality(ideal, track, car),
+      objectiveSetupQuality(baseline, track, car),
+      objectiveSetupQuality(BALANCED_SETUP, track, car),
+    ];
 
-    expect(objectiveSetupQuality(ideal, track, car).quality).toBe(100);
-    expect(objectiveSetupQuality(baseline, track, car).quality).toBeLessThan(100);
-    expect(objectiveSetupQuality(BALANCED_SETUP, track, car).quality).toBeLessThanOrEqual(100);
+    for (const outcome of outcomes) {
+      expect(Number.isFinite(outcome.quality)).toBe(true);
+      expect(outcome.quality).toBeGreaterThanOrEqual(0);
+      expect(outcome.quality).toBeLessThanOrEqual(100);
+      expect(outcome.effects.qualifyingPaceCeiling).toBeLessThanOrEqual(0);
+      expect(outcome.effects.racePaceCeiling).toBeLessThanOrEqual(0);
+    }
   });
 });
