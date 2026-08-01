@@ -173,17 +173,18 @@ describe('Practice knowledge controls certainty', () => {
   it('narrows the setup quality estimate range as knowledge rises', () => {
     const wide = setupQualityEstimate(80, 0);
     const medium = setupQualityEstimate(80, 0.6);
-    const exact = setupQualityEstimate(80, 0.99);
+    const high = setupQualityEstimate(80, 0.99);
     expect(rangeWidth(wide)).toBeGreaterThan(rangeWidth(medium));
-    expect(exact.exact).toBe(80);
+    expect(rangeWidth(medium)).toBeGreaterThan(rangeWidth(high));
+    expect(high).toEqual({ low: 79, high: 81 });
   });
 
-  it('hides exact setup fit at low knowledge and reveals it at high knowledge', () => {
+  it('unlocks detailed component analysis without revealing the exact physical score', () => {
     expect(canRevealComponentFit(0.2)).toBe(false);
     expect(canRevealComponentFit(0.9)).toBe(true);
     expect(setupQualityEstimate(80, 0.2).exact).toBeUndefined();
     expect(setupQualityEstimate(80, 0.95).exact).toBeUndefined();
-    expect(setupQualityEstimate(80, 0.99).exact).toBe(80);
+    expect(setupQualityEstimate(80, 1).exact).toBeUndefined();
   });
 
   it('derives objective tolerance from the car setup window rather than preparation', () => {
