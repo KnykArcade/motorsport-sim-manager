@@ -5,6 +5,7 @@
 
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { STAFF_ROLES, type StaffMember, type StaffRole } from '../types/staffTypes';
+import { deriveRaceEngineerProfile } from './raceEngineerEngine';
 
 // Enough candidates to staff even the largest historical grids while leaving
 // a genuine free-agent market. The largest NASCAR files exceed 90 entrants,
@@ -116,7 +117,7 @@ export function generateStaffPool(
       const salary = Math.round((0.4 + (rating / 10 - 1) * 0.5) * 10) / 10;
       const signingFee = Math.round(salary * 0.45 * 10) / 10;
 
-      pool.push({
+      const member: StaffMember = {
         id: `staff-${series}-${year}-${ROLE_ABBR[role]}-${i + 1}`,
         name: full,
         role,
@@ -125,7 +126,11 @@ export function generateStaffPool(
         salary,
         signingFee,
         bio: ROLE_BIOS[role][tierIndex(rating)],
-      });
+      };
+      if (role === 'Race Engineer') {
+        member.engineeringProfile = deriveRaceEngineerProfile(member);
+      }
+      pool.push(member);
     }
   }
 

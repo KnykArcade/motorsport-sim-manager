@@ -49,6 +49,7 @@ import {
   buildAIEngineeringRuntime,
   buildAIEngineeringWeekendPlan,
 } from '../sim/aiSetupEngineeringEngine';
+import { raceEngineerForRoster } from '../sim/raceEngineerEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. The
@@ -163,6 +164,7 @@ export function resolveAIEngineeringPlans(
       championshipPosition: constructorPosition > 0 ? constructorPosition : state.teams.length,
       teamCount: state.teams.length,
       totalRounds: state.calendar.length,
+      raceEngineer: raceEngineerForRoster(state.aiStaff?.[team.id]),
     });
   }
   return plans;

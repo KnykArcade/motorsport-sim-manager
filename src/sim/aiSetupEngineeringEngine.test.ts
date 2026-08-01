@@ -9,6 +9,7 @@ import type { AIEngineeringPlanInput } from './aiSetupEngineeringEngine';
 import type { RaceWeekendPackageType } from '../types/raceWeekendPackageTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
 import type { CarSetup } from '../types/setupTypes';
+import type { RaceEngineerProfile, StaffMember } from '../types/staffTypes';
 import { idealSetup, objectiveSetupQuality } from './setupFitEngine';
 import { validateSetupChange } from './setupLockEngine';
 import { weekendForecast } from './weatherEngine';
@@ -88,6 +89,33 @@ function distance(a: CarSetup, b: CarSetup): number {
   return keys.reduce((sum, key) => sum + Math.abs(a[key] - b[key]), 0) / keys.length;
 }
 
+function raceEngineer(id: string, engineeringProfile: RaceEngineerProfile): StaffMember {
+  return {
+    id,
+    name: id,
+    role: 'Race Engineer',
+    nationality: 'GB',
+    rating: 70,
+    salary: 1,
+    signingFee: 0,
+    bio: 'Test engineer.',
+    engineeringProfile,
+  };
+}
+
+function specialist(value: number, roadCourseKnowledge: number): RaceEngineerProfile {
+  return {
+    vehicleDynamics: value,
+    ovalKnowledge: value,
+    roadCourseKnowledge,
+    aerodynamics: value,
+    communication: value,
+    feedbackInterpretation: value,
+    adaptability: value,
+    experience: value,
+  };
+}
+
 describe('AI setup engineering', () => {
   it('is deterministic for a fixed team, weekend and seed', () => {
     expect(buildAIEngineeringWeekendPlan(input())).toEqual(buildAIEngineeringWeekendPlan(input()));
@@ -153,6 +181,17 @@ describe('AI setup engineering', () => {
     }
     expect(eliteQuality / 48).toBeGreaterThan(weakQuality / 48 + 0.6);
     expect(weakExcellentWeekends).toBeGreaterThan(0);
+  });
+
+  it('uses the rival team\'s actual Race Engineer specialty', () => {
+    const strong = buildAIEngineeringWeekendPlan(input('staff-specialty', {
+      raceEngineer: raceEngineer('road-specialist', specialist(82, 98)),
+    }));
+    const weak = buildAIEngineeringWeekendPlan(input('staff-specialty', {
+      raceEngineer: raceEngineer('oval-only', specialist(28, 18)),
+    }));
+    expect(strong.preparationScore).toBeGreaterThan(weak.preparationScore);
+    expect(strong.sharedKnowledge).toBeGreaterThan(weak.sharedKnowledge);
   });
 
   it('severely limits preparation for a mandatory-minimum package', () => {

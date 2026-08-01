@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Car, Driver, Track } from '../types/gameTypes';
+import type { Car, Driver, Series, Track } from '../types/gameTypes';
 import type { CarSetup, Estimate, SetupComponentKey, SetupParamKey } from '../types/setupTypes';
 import {
   SETUP_COMPONENTS,
@@ -10,6 +10,8 @@ import { generateSetupFeedback, objectiveSetupQuality } from '../sim/setupFitEng
 import { driverSetupComfort } from '../sim/driverComfortEngine';
 import { formatSetupRange, formatSetupScore, safeScore, sanitizeSetupProfile } from '../sim/setupSanitize';
 import type { DriverPracticeSummary } from '../sim/practiceProgramEngine';
+import type { StaffMember } from '../types/staffTypes';
+import { buildSetupEngineeringRecommendation } from '../sim/raceEngineerEngine';
 import {
   canRevealComponentFit,
   componentFitEstimate,
@@ -44,11 +46,19 @@ export type WorkshopPractice = {
 
 type Props = {
   track: Track;
+  series?: Series;
   drivers: Driver[];
   setups: Record<string, CarSetup>;
   baselineSetups?: Record<string, CarSetup>;
   car?: Car;
   practice?: WorkshopPractice;
+  engineer?: StaffMember;
+  engineerChemistryByDriver?: Record<string, number>;
+  engineeringSupport?: {
+    facilities?: number;
+    operations?: number;
+    packagePreparation?: number;
+  };
   onChangeParam: (driverId: string, key: SetupParamKey, value: number) => void;
   onApplySetup: (driverId: string, setup: CarSetup) => void;
   onCopy: (fromId: string, toId: string) => void;
@@ -124,11 +134,15 @@ function relevanceLabel(relevance: number): string {
 
 export function SetupWorkshop({
   track,
+  series,
   drivers,
   setups,
   baselineSetups,
   car,
   practice,
+  engineer,
+  engineerChemistryByDriver,
+  engineeringSupport,
   onChangeParam,
   onApplySetup,
   onCopy,
@@ -194,8 +208,60 @@ export function SetupWorkshop({
     () => (setup && driver ? generateSetupFeedback(setup, track, driver, car) : undefined),
     [setup, track, driver, car],
   );
+  const teammateDisagreement = useMemo(() => {
+    if (!driver || !other || !practice) return false;
+    const first = practice.practicedSetupByDriver[driver.id];
+    const second = practice.practicedSetupByDriver[other.id];
+    if (!first || !second) return false;
+    const keys = Object.keys(first) as SetupParamKey[];
+    return keys.reduce((sum, key) => sum + Math.abs(first[key] - second[key]), 0) / keys.length >= 1.1;
+  }, [driver, other, practice]);
+  const recommendation = useMemo(() => {
+    if (!setup || !driver) return undefined;
+    return buildSetupEngineeringRecommendation({
+      seed: `setup-workshop-${track.id}`,
+      engineer,
+      driver,
+      setup,
+      practicedSetup: practiced,
+      track,
+      series,
+      car,
+      evidence: {
+        setupKnowledge,
+        tyreKnowledge,
+        reliabilityKnowledge,
+        practiceLaps: practice?.practiceLapsByDriver[driver.id] ?? 0,
+        driverTechnical: driver.ratings.technical,
+        engineerChemistry: engineerChemistryByDriver?.[driver.id],
+        facilities: engineeringSupport?.facilities,
+        operations: engineeringSupport?.operations,
+        packagePreparation: engineeringSupport?.packagePreparation,
+        teammateDisagreement,
+      },
+      lockActive: setupLock?.active,
+      allowedParams: setupLock?.allowedParams,
+      lockDescription: setupLock?.description,
+    });
+  }, [
+    setup,
+    driver,
+    track,
+    series,
+    engineer,
+    practiced,
+    car,
+    setupKnowledge,
+    tyreKnowledge,
+    reliabilityKnowledge,
+    practice,
+    engineerChemistryByDriver,
+    engineeringSupport,
+    teammateDisagreement,
+    setupLock,
+  ]);
 
-  if (!driver || !setup || !baseline || !quality || !comfort || !feedback) return null;
+  if (!driver || !setup || !baseline || !quality || !comfort || !feedback || !recommendation) return null;
 
   const componentFit = (key: string) => quality.components.find((c) => c.component === key)?.fit ?? 0;
   const qualityEstimate = setupQualityEstimate(quality.quality, setupKnowledge);
@@ -554,11 +620,30 @@ export function SetupWorkshop({
             <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Driver and engineer</div>
             <ul className="mt-2 space-y-2 text-[11px] leading-4 text-neutral-300">
               {feedback.driverFeedback.map((item) => <li key={item}>&ldquo;{item}&rdquo;</li>)}
-              {feedback.engineerFeedback.map((item) => <li key={item} className="text-sky-200">{item}</li>)}
-              {feedback.engineerFeedback.length === 0 && (
-                <li className="text-neutral-500">No major setup concern from engineering.</li>
-              )}
             </ul>
+            <div className="mt-2 rounded border border-sky-500/25 bg-sky-500/5 p-2 text-[10px] leading-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <strong className="text-sky-200">{recommendation.engineerName}</strong>
+                <span className="text-neutral-500">{recommendation.specialty}</span>
+              </div>
+              <p className="mt-1 text-neutral-200">{recommendation.diagnosis}</p>
+              <p className="mt-1 text-neutral-400">Tradeoff: {recommendation.tradeoff}</p>
+              <dl className="mt-2 space-y-1 border-t border-sky-500/15 pt-2 text-neutral-400">
+                <SetupFact label="Relevant specialty" value={recommendation.relevantAttributeLabel} />
+                <SetupFact label="Engineer confidence" value={`${recommendation.confidenceLabel} · ${recommendation.confidence}%`} />
+                <SetupFact label="Evidence quality" value={`${recommendation.evidenceLabel} · ${recommendation.evidenceQuality}%`} />
+                <SetupFact label="Supporting driver" value={recommendation.sourceDriverName} />
+              </dl>
+              {recommendation.teammateDisagreement && (
+                <p className="mt-2 text-amber-200">The two drivers are supplying conflicting evidence; treat this direction cautiously.</p>
+              )}
+              {recommendation.invalidatesPracticeData && (
+                <p className="mt-2 text-amber-200">This change moves beyond the practised window and will reduce data relevance.</p>
+              )}
+              {recommendation.lockedReason && recommendation.direction === 'Unavailable' && (
+                <p className="mt-2 text-orange-200">{recommendation.lockedReason}</p>
+              )}
+            </div>
             {(comfort.stale || comfort.notes.length > 0) && (
               <ul className="mt-2 space-y-1 rounded border border-amber-500/30 bg-amber-500/10 p-2 text-[10px] text-amber-200">
                 {comfort.notes.map((note) => <li key={note}>{note}</li>)}

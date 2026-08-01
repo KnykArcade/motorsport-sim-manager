@@ -45,6 +45,10 @@ import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
 import { setupLockPhase, setupLockStatus } from '../sim/setupLockEngine';
 import {
+  deriveRaceEngineerProfile,
+  raceEngineerForRoster,
+} from '../sim/raceEngineerEngine';
+import {
   MetricStrip,
   WorkspaceBody,
   WorkspaceHeader,
@@ -102,6 +106,11 @@ export function RaceWeekend() {
     () => (state ? activeDriversForTeam(state, state.selectedTeamId) : []),
     [state],
   );
+  const raceEngineer = useMemo(() => raceEngineerForRoster(state?.staff), [state?.staff]);
+  const engineerChemistryByDriver = useMemo(() => Object.fromEntries(playerDrivers.map((driver) => [
+    driver.id,
+    state?.driverRelationships?.[driver.id]?.engineerChemistry ?? 50,
+  ])), [playerDrivers, state?.driverRelationships]);
   const qualifyingResults = state && race ? state.qualifyingResults[race.id] : undefined;
   const isMinPackage = state?.raceWeekendPackage?.packageType === 'MandatoryMinimum';
   const confirmedPlan = state && race
@@ -459,6 +468,7 @@ export function RaceWeekend() {
       {phase === 'setup' && !isMinPackage && (
         <SetupWorkshop
           track={track}
+          series={state.series}
           drivers={playerDrivers}
           setups={resolvedSetups}
           baselineSetups={Object.fromEntries(playerDrivers.map((driver) => [
@@ -467,6 +477,13 @@ export function RaceWeekend() {
           ]))}
           car={carForTeam(state, state.selectedTeamId)}
           practice={workshopPractice}
+          engineer={raceEngineer}
+          engineerChemistryByDriver={engineerChemistryByDriver}
+          engineeringSupport={{
+            facilities: state.teamOrgRatings?.[state.selectedTeamId]?.facilities,
+            operations: state.teamOrgRatings?.[state.selectedTeamId]?.operations,
+            packagePreparation: state.raceWeekendPackage?.packageModifier,
+          }}
           setupLock={setupLock}
           stage={qualifyingResults ? 'PostQualifying' : 'Initial'}
           onChangeParam={(driverId, key, value) =>
@@ -987,6 +1004,11 @@ function PracticePhase({
     () => teamKnowledgeGaps(wp?.knowledge, players.map((d) => d.id)),
     [wp, players],
   );
+  const raceEngineer = useMemo(() => raceEngineerForRoster(state.staff), [state.staff]);
+  const engineerProfile = useMemo(
+    () => raceEngineer ? deriveRaceEngineerProfile(raceEngineer) : undefined,
+    [raceEngineer],
+  );
 
   // The forecast session whose conditions are most relevant to a practice kind.
   const weatherForKind = (kind: PracticeSessionKind) => {
@@ -1001,7 +1023,7 @@ function PracticePhase({
     () => {
       const init: Record<string, Record<string, PracticeProgram>> = {};
       for (const k of kinds) {
-        const rec = recommendedPracticeProgram(k, track, weatherForKind(k), gaps);
+        const rec = recommendedPracticeProgram(k, track, weatherForKind(k), gaps, engineerProfile);
         init[k] = {};
         for (const d of players) init[k][d.id] = rec.program;
       }
@@ -1017,7 +1039,7 @@ function PracticePhase({
       const next = { ...prev };
       for (const kind of kinds) {
         if (completedByKind[kind]) continue;
-        const rec = recommendedPracticeProgram(kind, track, weatherForKind(kind), gaps);
+        const rec = recommendedPracticeProgram(kind, track, weatherForKind(kind), gaps, engineerProfile);
         next[kind] = { ...(next[kind] ?? {}) };
         for (const d of players) next[kind][d.id] = rec.program;
       }
@@ -1050,7 +1072,7 @@ function PracticePhase({
   const k = wp?.knowledge;
   const active = activeKind;
   const activeDone = completedByKind[active];
-  const activeRec = recommendedPracticeProgram(active, track, weatherForKind(active), gaps);
+  const activeRec = recommendedPracticeProgram(active, track, weatherForKind(active), gaps, engineerProfile);
   const activeSel = assignments[active] ?? {};
   const activeCost = sessionLapCost(
     players.map((d) => ({

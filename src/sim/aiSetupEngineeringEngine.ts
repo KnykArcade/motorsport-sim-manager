@@ -23,6 +23,7 @@ import type {
   RaceWeekendPackageType,
 } from '../types/raceWeekendPackageTypes';
 import type { TeamOrganizationRatings } from '../types/teamRatingsTypes';
+import type { RaceEngineerProfile, StaffMember } from '../types/staffTypes';
 import type { CarSetup, SetupParamKey } from '../types/setupTypes';
 import { driverSetupComfort } from './driverComfortEngine';
 import { effectiveCarRatings } from './trackFitEngine';
@@ -33,6 +34,11 @@ import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { practiceLapBudgetPerCar, weekendSessionKinds } from './practiceProgramEngine';
 import { toLegacyRating } from './ratingScale';
 import { weekendForecast } from './weatherEngine';
+import {
+  deriveRaceEngineerProfile,
+  engineeringKnowledgeExtraction,
+  raceEngineerTrackRating,
+} from './raceEngineerEngine';
 
 export type AIEngineeringPlanInput = {
   seed: string;
@@ -52,6 +58,7 @@ export type AIEngineeringPlanInput = {
   championshipPosition?: number;
   teamCount?: number;
   totalRounds?: number;
+  raceEngineer?: StaffMember;
 };
 
 export type AIEngineeringRuntime = {
@@ -131,13 +138,20 @@ function archetypeRisk(archetype: AITeamArchetype | undefined): number {
 
 function teamPreparation(input: AIEngineeringPlanInput, rng: Rng): number {
   const org = input.organization;
+  const engineerProfile = input.raceEngineer
+    ? deriveRaceEngineerProfile(input.raceEngineer)
+    : undefined;
+  const engineer = engineerProfile
+    ? raceEngineerTrackRating(engineerProfile, input.track, input.series) / 100
+    : rating01(org?.staffQuality);
   const organizational =
-    rating01(org?.staffQuality) * 0.24
-    + rating01(org?.operations) * 0.2
-    + rating01(org?.facilities) * 0.14
-    + rating01(org?.research) * 0.13
-    + rating01(org?.reliabilityDepartment) * 0.1
-    + rating01(input.team.raceOperations) * 0.19;
+    rating01(org?.staffQuality) * 0.12
+    + rating01(org?.operations) * 0.15
+    + rating01(org?.facilities) * 0.12
+    + rating01(org?.research) * 0.1
+    + rating01(org?.reliabilityDepartment) * 0.08
+    + rating01(input.team.raceOperations) * 0.17
+    + engineer * 0.26;
   const packageFactor = packagePreparation(input.packageSelection?.packageType);
   const packagePoints = (packageFactor - 1) * 40;
   const processTrait = input.philosophyTraits?.includes('DataDriven') ? 4
@@ -342,12 +356,16 @@ function driverSpecificEstimate(
   driver: Driver,
   uncertainty: number,
   rng: Rng,
+  engineerProfile?: RaceEngineerProfile,
 ): CarSetup {
   const technical = rating01(driver.ratings.technical);
   const adaptability = rating01(driver.ratings.adaptability);
   const confidence = rating01(driver.confidence);
   const aggression = (toLegacyRating(driver.ratings.aggression, 'Driver aggression') - 5.5) / 4.5;
-  const feedbackNoise = uncertainty * (1.15 - technical * 0.55 - adaptability * 0.2);
+  const interpretation = engineerProfile
+    ? engineeringKnowledgeExtraction(engineerProfile, driver.ratings.technical, 50)
+    : 1;
+  const feedbackNoise = uncertainty * (1.15 - technical * 0.55 - adaptability * 0.2) / interpretation;
   const next = { ...shared };
   for (const key of PARAMS) next[key] += rng.variance(feedbackNoise * 0.8);
   next.frontWing += aggression * 0.22;
@@ -416,10 +434,20 @@ export function buildAIEngineeringWeekendPlan(input: AIEngineeringPlanInput): AI
   const packageFactor = packagePreparation(input.packageSelection?.packageType);
   const sessionCount = weekendSessionKinds(input.seasonYear, input.series).length;
   const practiceOpportunity = practicePrograms.length / Math.max(1, sessionCount);
+  const engineerProfile = input.raceEngineer
+    ? deriveRaceEngineerProfile(input.raceEngineer)
+    : undefined;
+  const averageTechnical = input.drivers.length > 0
+    ? input.drivers.reduce((sum, driver) => sum + rating01(driver.ratings.technical) * 100, 0) / input.drivers.length
+    : 50;
+  const extraction = engineerProfile
+    ? engineeringKnowledgeExtraction(engineerProfile, averageTechnical, 50)
+    : 1;
   const sharedKnowledge = input.packageSelection?.packageType === 'MandatoryMinimum'
     ? round(clamp(0.05 + preparationScore / 500, 0.05, 0.1))
     : round(clamp(
-      0.12 + preparationScore / 145 + practiceOpportunity * 0.12 + (packageFactor - 1) * 0.18,
+      0.12 + preparationScore / 145 + practiceOpportunity * 0.12
+        + (packageFactor - 1) * 0.18 + (extraction - 1) * 0.16,
       0.08,
       0.9,
     ));
@@ -446,7 +474,7 @@ export function buildAIEngineeringWeekendPlan(input: AIEngineeringPlanInput): AI
       input.team.id,
       driver.id,
     ));
-    const driverBase = driverSpecificEstimate(sharedEstimate, driver, uncertainty, driverRng);
+    const driverBase = driverSpecificEstimate(sharedEstimate, driver, uncertainty, driverRng, engineerProfile);
     const requestedQualifying = applyPhilosophy(driverBase, philosophy, 'qualifying', driverRng);
     const requestedRace = applyPhilosophy(driverBase, philosophy, 'race', driverRng);
     const finalSetups = lockedWeekendCompromise(requestedQualifying, requestedRace, input);

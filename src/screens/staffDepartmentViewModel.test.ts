@@ -28,4 +28,18 @@ describe('staff department view model', () => {
     expect(selectedStaffDepartment(rows)?.role).toBe('Technical Director');
     expect(selectedStaffDepartment([], 'Strategist')).toBeUndefined();
   });
+
+  it('surfaces all specialist attributes for the Race Engineer department', () => {
+    const rows = staffDepartmentRows([{
+      id: 're-1',
+      name: 'Engineer One',
+      role: 'Race Engineer',
+      rating: 72,
+    }], 1);
+    const engineering = rows.find((row) => row.role === 'Race Engineer')?.engineering;
+    expect(engineering?.specialty).toContain('specialist');
+    expect(Object.keys(engineering?.profile ?? {})).toHaveLength(8);
+    expect(engineering?.strongest).toBeTruthy();
+    expect(engineering?.weakest).toBeTruthy();
+  });
 });

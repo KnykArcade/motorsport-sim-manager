@@ -33,6 +33,9 @@ import {
   type StaffResponsibility,
 } from './staffResponsibilitiesViewModel';
 import { EntityBrowseControls } from '../components/EntityBrowseControls';
+import { currentRace } from '../game/careerState';
+import { getTrackById } from '../data';
+import { RACE_ENGINEER_ATTRIBUTE_LABELS, type RaceEngineerAttribute } from '../types/staffTypes';
 
 export function Staff() {
   const { state, dispatch } = useGame();
@@ -235,7 +238,13 @@ function StaffDepartments({
   onSelect: (role: StaffRole) => void;
 }) {
   const principalPoints = state.principal?.skillPoints ?? 0;
-  const departments = staffDepartmentRows(state.staff, principalPoints);
+  const race = currentRace(state);
+  const departments = staffDepartmentRows(
+    state.staff,
+    principalPoints,
+    race ? getTrackById(race.trackId) : undefined,
+    state.series,
+  );
   const selected = selectedStaffDepartment(departments, selectedRole);
   const selectedIndex = selected
     ? departments.findIndex((department) => department.role === selected.role)
@@ -295,6 +304,24 @@ function StaffDepartments({
                     <h3>Simulation effect</h3>
                     <p>{selected.effect}</p>
                   </section>
+                  {selected.engineering && (
+                    <section>
+                      <h3>Race Engineer specialties</h3>
+                      <p>{selected.memberName ?? selected.role} · {selected.engineering.specialty}</p>
+                      <div className="mt-2 space-y-1">
+                        {(Object.entries(selected.engineering.profile) as Array<[RaceEngineerAttribute, number]>).map(([attribute, value]) => (
+                          <FmKeyValue key={attribute} label={RACE_ENGINEER_ATTRIBUTE_LABELS[attribute]} value={`${value}/100`} />
+                        ))}
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        <FmKeyValue label="Strongest area" value={selected.engineering.strongest} />
+                        <FmKeyValue label="Weakest area" value={selected.engineering.weakest} />
+                        {selected.engineering.currentRelevance != null && (
+                          <FmKeyValue label="Current weekend relevance" value={`${selected.engineering.currentRelevance}/100`} />
+                        )}
+                      </div>
+                    </section>
+                  )}
                   <section>
                     <h3>Improvement recommendation</h3>
                     <p>
