@@ -27,6 +27,7 @@ import {
 import { makeWeatherState } from './weatherEngine';
 import type { PracticeSession } from '../types/practiceTypes';
 import { objectiveSetupQuality } from './setupFitEngine';
+import { componentFitEstimate, setupQualityEstimate } from './setupUncertaintyEngine';
 
 const track = tracks1995[0];
 const driver = drivers1995[0];
@@ -144,6 +145,13 @@ describe('calculatePracticeFeedbackConfidence', () => {
     // A tyre program leans on tyre knowledge, not setup knowledge.
     expect(calculatePracticeFeedbackConfidence('TireWearAnalysis', { setup: 0.9, tire: 0, reliability: 0 })).toBe('Low');
     expect(calculatePracticeFeedbackConfidence('TireWearAnalysis', { setup: 0, tire: 0.9, reliability: 0 })).toBe('High');
+  });
+});
+
+describe('setup information boundaries', () => {
+  it('never exposes the hidden physical quality or component score exactly', () => {
+    expect(setupQualityEstimate(84, 1)).toEqual({ low: 83, high: 85 });
+    expect(componentFitEstimate(76, 1)).toEqual({ low: 75, high: 77 });
   });
 });
 
