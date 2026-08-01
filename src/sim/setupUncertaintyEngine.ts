@@ -45,10 +45,22 @@ export function estimateFromKnowledge(
   };
 }
 
-// The Objective Setup Quality range shown in the workshop. Setup knowledge from
-// practice narrows a ~±13 band (very wide) down toward the exact value.
+function keepEstimatedBand(estimate: Estimate, value: number, bounds: { lo: number; hi: number }): Estimate {
+  // The player can become highly confident without seeing the hidden physical
+  // score. Preserve a narrow two-point band even at maximum knowledge.
+  const low = Math.max(bounds.lo, Math.min(estimate.low, Math.round(value) - 1));
+  const high = Math.min(bounds.hi, Math.max(estimate.high, Math.round(value) + 1));
+  return { low, high };
+}
+
+// The Objective Setup Quality range shown in the workshop. Practice narrows a
+// wide band, but the hidden physical score is never exposed as perfect info.
 export function setupQualityEstimate(quality: number, setupKnowledge: number): Estimate {
-  return estimateFromKnowledge(quality, setupKnowledge, 20, { lo: 0, hi: 100 });
+  return keepEstimatedBand(
+    estimateFromKnowledge(quality, setupKnowledge, 20, { lo: 0, hi: 100 }),
+    quality,
+    { lo: 0, hi: 100 },
+  );
 }
 
 // Whether a per-component exact fit value may be shown. Below the reveal
@@ -58,7 +70,11 @@ export function canRevealComponentFit(setupKnowledge: number): boolean {
 }
 
 export function componentFitEstimate(fit: number, setupKnowledge: number): Estimate {
-  return estimateFromKnowledge(fit, setupKnowledge, 28, { lo: 0, hi: 100 });
+  return keepEstimatedBand(
+    estimateFromKnowledge(fit, setupKnowledge, 28, { lo: 0, hi: 100 }),
+    fit,
+    { lo: 0, hi: 100 },
+  );
 }
 
 // Predicted stint (pit) window. Tyre knowledge narrows the half-width from ~6
