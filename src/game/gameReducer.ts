@@ -208,6 +208,7 @@ import type {
   WeekendPractice,
 } from '../types/practiceTypes';
 import { initialBaselineSetup } from '../sim/setupFitEngine';
+import { archiveCompletedWeekend } from '../sim/setupArchiveEngine';
 import {
   deriveRaceEngineerProfile,
   improveRaceEngineerProfile,
@@ -3219,6 +3220,46 @@ function applyRaceResults(
   });
   const performanceAnalytics = recordRaceAnalytics(state.performanceAnalytics, analyticsSnapshot);
 
+  const completedTrack = getTrackById(race.trackId);
+  const archiveDrivers = activeDriversForTeam(state, state.selectedTeamId);
+  let setupArchive = completedTrack && playerCar
+    ? archiveCompletedWeekend({
+        archive: state.setupArchive,
+        teamId: state.selectedTeamId,
+        drivers: archiveDrivers,
+        raceId: race.id,
+        track: completedTrack,
+        seasonYear: state.seasonYear,
+        car: playerCar,
+        engineerId: raceEngineerForRoster(state.staff)?.id,
+        practice: state.weekendPractice?.raceId === race.id ? state.weekendPractice : undefined,
+        setups: state.carSetups ?? {},
+        wet: weekendForecast(completedTrack, `${state.randomSeed}-r${race.round}`).Race.wet,
+      })
+    : state.setupArchive;
+  if (completedTrack) {
+    for (const team of state.teams) {
+      if (team.id === state.selectedTeamId) continue;
+      const plan = state.aiEngineeringPlans?.[team.id];
+      const teamCar = carForTeam(state, team.id);
+      const teamDrivers = activeDriversForTeam(state, team.id);
+      if (!plan || plan.raceId !== race.id || !teamCar || teamDrivers.length === 0) continue;
+      setupArchive = archiveCompletedWeekend({
+        archive: setupArchive,
+        teamId: team.id,
+        drivers: teamDrivers,
+        raceId: race.id,
+        track: completedTrack,
+        seasonYear: state.seasonYear,
+        car: teamCar,
+        engineerId: raceEngineerForRoster(state.aiStaff?.[team.id])?.id,
+        setups: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, item.raceSetup])),
+        evidenceConfidenceByDriver: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, item.setupKnowledge])),
+        wet: weekendForecast(completedTrack, `${state.randomSeed}-r${race.round}`).Race.wet,
+      });
+    }
+  }
+
   // Advance the calendar.
   const calendar = state.calendar.map((r) => (r.id === race.id ? { ...r, completed: true } : r));
   const nextIndex = state.currentRaceIndex + 1;
@@ -3239,6 +3280,7 @@ function applyRaceResults(
     finance: [...(state.finance ?? []), ...financeTxns],
     raceArchive,
     performanceAnalytics,
+    setupArchive,
     commercial,
     driverRelationships,
     driverPromises,

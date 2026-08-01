@@ -28,6 +28,24 @@ export type PracticeSetupRevision = {
   evidenceRelevance: number;
 };
 
+export type SetupArchiveEntry = {
+  id: string;
+  teamId: string;
+  driverId: string;
+  raceId: string;
+  trackId: string;
+  trackName: string;
+  trackArchetype: string;
+  seasonYear: number;
+  carId: string;
+  carDevelopmentFingerprint: number;
+  engineerId?: string;
+  condition: PracticeCondition;
+  qualifyingSetup: CarSetup;
+  raceSetup: CarSetup;
+  evidenceConfidence: number;
+};
+
 // The kinds of practice sessions a weekend can contain. The exact set depends on
 // the era/series (e.g. modern F1 has FP1-FP3; older eras add a warmup).
 export type PracticeSessionKind =

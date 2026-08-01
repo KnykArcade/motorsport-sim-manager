@@ -59,6 +59,8 @@ export type AIEngineeringPlanInput = {
   teamCount?: number;
   totalRounds?: number;
   raceEngineer?: StaffMember;
+  archivedBaseline?: CarSetup;
+  archiveRelevance?: number;
 };
 
 export type AIEngineeringRuntime = {
@@ -333,7 +335,14 @@ function imperfectSharedEstimate(
   uncertainty: number,
   rng: Rng,
 ): CarSetup {
-  const baseline = initialBaselineSetup(input.track, input.car);
+  const genericBaseline = initialBaselineSetup(input.track, input.car);
+  const archiveWeight = clamp01(input.archiveRelevance ?? 0) * 0.78;
+  const baseline = input.archivedBaseline
+    ? sanitize(Object.fromEntries(PARAMS.map((key) => [
+        key,
+        genericBaseline[key] + (input.archivedBaseline![key] - genericBaseline[key]) * archiveWeight,
+      ])) as CarSetup)
+    : genericBaseline;
   const physicalTarget = idealSetup(input.track, undefined, input.car);
   const out = {} as CarSetup;
   const discovery = clamp(0.22 + knowledge * 0.7 + rng.variance(0.08), 0.16, 0.91);
