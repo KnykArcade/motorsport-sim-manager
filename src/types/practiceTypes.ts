@@ -7,6 +7,27 @@
 
 import type { CarSetup } from './setupTypes';
 
+export type PracticeCondition = {
+  label: string;
+  wet: boolean;
+  gripLevel: number;
+};
+
+export type PracticeEvidenceConfidence = 'Low' | 'Medium' | 'High';
+
+// Immutable snapshots of every distinct setup family actually tested on track.
+// Optional on WeekendPractice for compatibility with saves created before the
+// iterative practice workflow.
+export type PracticeSetupRevision = {
+  id: string;
+  driverId: string;
+  sequence: number;
+  setup: CarSetup;
+  firstTestedSessionId: string;
+  changeMagnitude: number;
+  evidenceRelevance: number;
+};
+
 // The kinds of practice sessions a weekend can contain. The exact set depends on
 // the era/series (e.g. modern F1 has FP1-FP3; older eras add a warmup).
 export type PracticeSessionKind =
@@ -76,6 +97,15 @@ export type PracticeRunResult = {
   tireKnowledgeGain: number;
   reliabilityKnowledgeGain: number;
   confidenceGain: number;
+  // The exact setup/conditions behind this evidence. Older saves can omit the
+  // fields; consumers fall back to the legacy practiced-setup snapshot.
+  setupRevisionId?: string;
+  condition?: PracticeCondition;
+  evidenceQuality?: number;
+  evidenceConfidence?: PracticeEvidenceConfidence;
+  previousRevisionId?: string;
+  setupEvidenceRelevance?: number;
+  conditionEvidenceRelevance?: number;
 };
 
 // One session within the weekend, with assignments and (once run) results.
@@ -86,6 +116,7 @@ export type PracticeSession = {
   assignments: PracticeAssignment[];
   results?: PracticeRunResult[];
   completed: boolean;
+  condition?: PracticeCondition;
 };
 
 // Accumulated, per-driver weekend knowledge built up across practice sessions.
@@ -115,4 +146,7 @@ export type WeekendPractice = {
   practicedSetupHistory?: Record<string, CarSetup[]>;
   // Practice laps banked per driver (for setup familiarity).
   practiceLapsByDriver?: Record<string, number>;
+  // Distinct, immutable tested revisions and the latest verified revision.
+  setupRevisionsByDriver?: Record<string, PracticeSetupRevision[]>;
+  activeRevisionIdByDriver?: Record<string, string>;
 };

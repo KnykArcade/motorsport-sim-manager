@@ -201,6 +201,7 @@ import type {
 } from '../types/simTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type {
+  PracticeCondition,
   PracticeAssignment,
   PracticeSession,
   PracticeSessionKind,
@@ -219,6 +220,12 @@ import {
   runPracticeSession,
   sessionLapCost,
 } from '../sim/practiceProgramEngine';
+import {
+  applyEvidenceRelevance,
+  conditionEvidenceRelevance,
+  evidenceConfidence,
+  resolvePracticeRevision,
+} from '../sim/practiceEvidenceEngine';
 import { weekendForecast } from '../sim/weatherEngine';
 import { setupLockPhase, validateSetupChange } from '../sim/setupLockEngine';
 import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
@@ -470,8 +477,6 @@ function runPracticeSessionAction(
   if (!wp || wp.raceId !== raceId) {
     wp = { raceId, sessions: [], knowledge: emptyKnowledge(raceId), lapsUsed: 0 };
   }
-  if (wp.sessions.some((s) => s.kind === kind && s.completed)) return state;
-
   const players = activeDriversForTeam(state, state.selectedTeamId);
   const car = carForTeam(state, state.selectedTeamId);
   // The engineer's baseline setup family for the weekend. Practice is run on
@@ -495,36 +500,117 @@ function runPracticeSessionAction(
   const cost = sessionLapCost(validAssignments);
   if (lapsUsed + cost > budget) return state;
 
+  const runNumber = wp.sessions.filter((item) => item.kind === kind).length + 1;
+  const sessionId = `${raceId}-${kind}-run-${runNumber}`;
+  const forecast = weekendForecast(track, `${state.randomSeed}-r${race.round}`);
+  const sessionWeather = kind === 'Practice3' || kind === 'QualifyingPrep'
+    ? forecast.Qualifying
+    : kind === 'Warmup' || kind === 'RaceSimulation'
+      ? forecast.Race
+      : forecast.Practice;
+  const condition: PracticeCondition = {
+    label: sessionWeather.label,
+    wet: sessionWeather.wet,
+    gripLevel: sessionWeather.gripLevel,
+  };
   const session: PracticeSession = {
-    id: `${raceId}-${kind}`,
+    id: sessionId,
     raceId,
     kind,
     assignments: validAssignments,
     completed: true,
+    condition,
   };
 
-  const raceWet = weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet;
+  const raceWet = forecast.Race.wet;
   const raceEngineer = raceEngineerForRoster(state.staff);
   const engineerProfile = raceEngineer ? deriveRaceEngineerProfile(raceEngineer) : undefined;
   const engineerChemistryByDriverId = Object.fromEntries(players.map((driver) => [
     driver.id,
     state.driverRelationships?.[driver.id]?.engineerChemistry ?? 50,
   ]));
-  const results = runPracticeSession(session, {
+  const setupRevisionsByDriver = Object.fromEntries(
+    Object.entries(wp.setupRevisionsByDriver ?? {}).map(([driverId, revisions]) => [driverId, [...revisions]]),
+  );
+  const activeRevisionIdByDriver = { ...(wp.activeRevisionIdByDriver ?? {}) };
+  let relevantKnowledge = wp.knowledge;
+  const evidenceByDriver: Record<string, {
+    revisionId: string;
+    previousRevisionId?: string;
+    setupRelevance: number;
+    conditionRelevance: number;
+  }> = {};
+
+  for (const assignment of validAssignments) {
+    const setup = setupsById[assignment.driverId];
+    if (!setup) continue;
+    const revisions = setupRevisionsByDriver[assignment.driverId] ?? [];
+    const resolved = resolvePracticeRevision({
+      driverId: assignment.driverId,
+      sessionId,
+      setup,
+      revisions,
+    });
+    if (resolved.created) setupRevisionsByDriver[assignment.driverId] = [...revisions, resolved.revision];
+    const previousSession = [...wp.sessions]
+      .reverse()
+      .find((item) => item.assignments.some((candidate) => candidate.driverId === assignment.driverId));
+    const setupRelevance = resolved.created ? resolved.revision.evidenceRelevance : 1;
+    const conditionRelevance = conditionEvidenceRelevance(previousSession?.condition, condition);
+    relevantKnowledge = applyEvidenceRelevance(
+      relevantKnowledge,
+      assignment.driverId,
+      setupRelevance,
+      conditionRelevance,
+    );
+    activeRevisionIdByDriver[assignment.driverId] = resolved.revision.id;
+    evidenceByDriver[assignment.driverId] = {
+      revisionId: resolved.revision.id,
+      previousRevisionId: resolved.created ? resolved.previous?.id : undefined,
+      setupRelevance,
+      conditionRelevance,
+    };
+  }
+
+  const rawResults = runPracticeSession(session, {
     raceId,
     track,
     seed: state.randomSeed,
     driversById,
     setupsById,
     carsByDriverId,
-    knowledge: wp.knowledge,
+    knowledge: relevantKnowledge,
     raceWet,
     engineerProfile,
     engineerChemistryByDriverId,
   });
+  const assignmentByDriver = Object.fromEntries(validAssignments.map((item) => [item.driverId, item]));
+  const results = rawResults.map((result) => {
+    const evidence = evidenceByDriver[result.driverId];
+    const assignment = assignmentByDriver[result.driverId];
+    const completion = assignment
+      ? Math.max(0, Math.min(1, result.lapsCompleted / Math.max(1, assignment.lapsPlanned)))
+      : 0;
+    const evidenceQuality = Math.round(
+      completion
+      * (result.incident ? 0.65 : 1)
+      * Math.min(evidence?.setupRelevance ?? 1, evidence?.conditionRelevance ?? 1)
+      * 100,
+    ) / 100;
+    return {
+      ...result,
+      setupRevisionId: evidence?.revisionId,
+      previousRevisionId: evidence?.previousRevisionId,
+      setupEvidenceRelevance: evidence?.setupRelevance,
+      conditionEvidenceRelevance: evidence?.conditionRelevance,
+      condition,
+      evidenceQuality,
+      evidenceConfidence: evidenceConfidence(evidenceQuality),
+    };
+  });
   session.results = results;
 
-  const knowledge = accumulateKnowledge(wp.knowledge, results);
+  const knowledge = accumulateKnowledge(relevantKnowledge, results);
 
   const gainById: Record<string, number> = {};
   for (const r of results) gainById[r.driverId] = (gainById[r.driverId] ?? 0) + r.confidenceGain;
@@ -548,7 +634,7 @@ function runPracticeSessionAction(
     practiceLapsByDriver[r.driverId] = (practiceLapsByDriver[r.driverId] ?? 0) + r.lapsCompleted;
   }
 
-  const sessions = [...wp.sessions.filter((s) => s.kind !== kind), session];
+  const sessions = [...wp.sessions, session];
   return {
     ...state,
     drivers,
@@ -560,6 +646,8 @@ function runPracticeSessionAction(
       practicedSetupByDriver,
       practicedSetupHistory,
       practiceLapsByDriver,
+      setupRevisionsByDriver,
+      activeRevisionIdByDriver,
     },
   };
 }

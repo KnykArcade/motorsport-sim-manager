@@ -10,10 +10,11 @@ import { generateSetupFeedback, objectiveSetupQuality } from '../sim/setupFitEng
 import { driverSetupComfort } from '../sim/driverComfortEngine';
 import { formatSetupRange, formatSetupScore, safeScore, sanitizeSetupProfile } from '../sim/setupSanitize';
 import type { DriverPracticeSummary } from '../sim/practiceProgramEngine';
+import type { PracticeSetupRevision } from '../types/practiceTypes';
+import { setupVerificationStatus } from '../sim/practiceEvidenceEngine';
 import type { StaffMember } from '../types/staffTypes';
 import { buildSetupEngineeringRecommendation } from '../sim/raceEngineerEngine';
 import {
-  canRevealComponentFit,
   componentFitEstimate,
   reliabilityWarningConfidence,
   setupQualityEstimate,
@@ -41,6 +42,7 @@ export type WorkshopPractice = {
   practicedSetupByDriver: Record<string, CarSetup>;
   practiceLapsByDriver: Record<string, number>;
   summaryByDriver: Record<string, DriverPracticeSummary>;
+  setupRevisionsByDriver: Record<string, PracticeSetupRevision[]>;
   raceWet: boolean;
 };
 
@@ -179,6 +181,11 @@ export function SetupWorkshop({
     [driver, practice],
   );
   const other = drivers.find((d) => d.id !== driver?.id);
+  const testedRevisions = driver ? practice?.setupRevisionsByDriver[driver.id] : undefined;
+  const latestTestedRevision = testedRevisions?.at(-1);
+  const verification = setup && driver
+    ? setupVerificationStatus(setup, testedRevisions)
+    : 'No evidence';
 
   const setupKnowledge = driver ? practice?.setupKnowledge[driver.id] ?? 0 : 0;
   const tyreKnowledge = driver ? practice?.tyreKnowledge[driver.id] ?? 0 : 0;
@@ -266,7 +273,6 @@ export function SetupWorkshop({
   const componentFit = (key: string) => quality.components.find((c) => c.component === key)?.fit ?? 0;
   const qualityEstimate = setupQualityEstimate(quality.quality, setupKnowledge);
   const qualityDisplay = qualityReadout(qualityEstimate, setupKnowledge);
-  const revealComponents = canRevealComponentFit(setupKnowledge);
   const revealEffects = setupKnowledge >= 0.33;
   const revealWarnings = setupKnowledge >= 0.2;
   const stint = stintWindowEstimate(24, tyreKnowledge);
@@ -275,14 +281,12 @@ export function SetupWorkshop({
   // shape is approximate rather than leaking exact fit per component.
   const radar = SETUP_COMPONENTS.map((c) => {
     const fit = componentFit(c.key);
-    if (revealComponents) return { label: c.name, value: fit };
     const est = componentFitEstimate(fit, setupKnowledge);
     return { label: c.name, value: (est.low + est.high) / 2 };
   });
   // Tab dots use the same gated value so they don't leak exact fit colour.
   const tabDotFit = (key: string): number => {
     const fit = componentFit(key);
-    if (revealComponents) return fit;
     const est = componentFitEstimate(fit, setupKnowledge);
     return (est.low + est.high) / 2;
   };
@@ -324,6 +328,14 @@ export function SetupWorkshop({
             <span className="text-neutral-600">|</span>
             <span className={practiced ? 'text-emerald-300' : 'text-neutral-500'}>
               {practiced ? 'Practised baseline available' : 'No practised baseline'}
+            </span>
+            <span className="text-neutral-600">|</span>
+            <span className={verification === 'Verified' ? 'text-emerald-300' : verification === 'Untested' ? 'text-amber-300' : 'text-neutral-500'}>
+              {verification === 'Verified'
+                ? `Revision R${latestTestedRevision?.sequence ?? 1} verified`
+                : verification === 'Untested'
+                  ? `Untested changes after R${latestTestedRevision?.sequence ?? 0}`
+                  : 'No tested revision'}
             </span>
             {setupLock?.active && (
               <>
@@ -426,9 +438,7 @@ export function SetupWorkshop({
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-bold text-neutral-100">{comp.name}</h2>
                 <span className="rounded bg-neutral-900 px-2 py-0.5 text-[10px] text-neutral-400">
-                  {revealComponents
-                    ? `${Math.round(componentFit(comp.key))}% fit`
-                    : fitReadout(componentFitEstimate(componentFit(comp.key), setupKnowledge), setupKnowledge)}
+                  {fitReadout(componentFitEstimate(componentFit(comp.key), setupKnowledge), setupKnowledge)}
                 </span>
               </div>
               <p className="mt-1 text-xs leading-5 text-neutral-400">{comp.description}</p>
