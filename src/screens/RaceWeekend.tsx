@@ -44,6 +44,7 @@ import { Button } from '../components/Button';
 import { TrackDemandBars } from '../components/TrackDemandBars';
 import { SetupWorkshop, type WorkshopPractice } from '../components/SetupWorkshop';
 import { setupLockPhase, setupLockStatus } from '../sim/setupLockEngine';
+import { setupChangeMagnitude, setupVerificationStatus } from '../sim/practiceEvidenceEngine';
 import {
   deriveRaceEngineerProfile,
   raceEngineerForRoster,
@@ -231,6 +232,7 @@ export function RaceWeekend() {
       practicedSetupByDriver: wp?.practicedSetupByDriver ?? {},
       practiceLapsByDriver: wp?.practiceLapsByDriver ?? {},
       summaryByDriver,
+      setupRevisionsByDriver: wp?.setupRevisionsByDriver ?? {},
       raceWet: forecast?.Race.wet ?? false,
     };
   }, [state, race, playerDrivers, forecast]);
@@ -284,7 +286,7 @@ export function RaceWeekend() {
   // panels scroll. Other phases flow normally inside the scroll wrapper.
   const fullHeightPhase = phase === 'practice' || phase === 'setup';
   const completedPracticeSessions = state.weekendPractice?.raceId === race.id
-    ? state.weekendPractice.sessions.filter((session) => session.completed).length
+    ? new Set(state.weekendPractice.sessions.filter((session) => session.completed).map((session) => session.kind)).size
     : 0;
   const totalPracticeSessions = isMinPackage ? 0 : weekendSessionKinds(state.seasonYear, state.series).length;
   const knowledgeGaps = teamKnowledgeGaps(
@@ -460,6 +462,10 @@ export function RaceWeekend() {
           dispatch={dispatch}
           track={track}
           forecast={forecast}
+          setups={Object.fromEntries(playerDrivers.map((driver) => [
+            driver.id,
+            sanitizeSetupProfile(state.carSetups?.[driver.id] ?? BALANCED_SETUP),
+          ]))}
           onBack={() => moveTo('briefing')}
           onNext={() => moveTo('setup')}
         />
@@ -966,6 +972,7 @@ function PracticePhase({
   dispatch,
   track,
   forecast,
+  setups,
   onBack,
   onNext,
 }: {
@@ -973,6 +980,7 @@ function PracticePhase({
   dispatch: ReturnType<typeof useGame>['dispatch'];
   track: Track;
   forecast?: WeekendForecast;
+  setups: Record<string, CarSetup>;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -1053,6 +1061,7 @@ function PracticePhase({
   const [recentKind, setRecentKind] = useState<PracticeSessionKind | null>(null);
 
   const runSession = (kind: PracticeSessionKind) => {
+    const wasCompleted = !!completedByKind[kind];
     const sel = assignments[kind] ?? {};
     const list: PracticeAssignment[] = players.map((d) => {
       const program = sel[d.id] ?? 'SetupExploration';
@@ -1060,8 +1069,10 @@ function PracticePhase({
     });
     dispatch({ type: 'RUN_PRACTICE_SESSION', raceId: race.id, kind, assignments: list });
     setRecentKind(kind);
-    const nextKind = kinds.slice(kinds.indexOf(kind) + 1).find((k) => !completedByKind[k]);
-    if (nextKind) setActiveKind(nextKind);
+    if (!wasCompleted) {
+      const nextKind = kinds.slice(kinds.indexOf(kind) + 1).find((item) => !completedByKind[item]);
+      if (nextKind) setActiveKind(nextKind);
+    }
   };
 
   const driverName = (id: string) => state.drivers.find((d) => d.id === id)?.name ?? id;
@@ -1090,6 +1101,16 @@ function PracticePhase({
   const setupKnowledgePct = averageKnowledge(k?.setupKnowledge);
   const tyreKnowledgePct = averageKnowledge(k?.tireKnowledge);
   const reliabilityKnowledgePct = averageKnowledge(k?.reliabilityKnowledge);
+  const [activeDriverId, setActiveDriverId] = useState(players[0]?.id ?? '');
+  const activeDriver = players.find((driver) => driver.id === activeDriverId) ?? players[0];
+  const activeRevisions = activeDriver ? wp?.setupRevisionsByDriver?.[activeDriver.id] : undefined;
+  const latestRevision = activeRevisions?.at(-1);
+  const verification = activeDriver
+    ? setupVerificationStatus(setups[activeDriver.id], activeRevisions)
+    : 'No evidence';
+  const draftMagnitude = activeDriver && latestRevision
+    ? setupChangeMagnitude(latestRevision.setup, setups[activeDriver.id])
+    : 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3" data-testid="practice-screen">
@@ -1160,8 +1181,11 @@ function PracticePhase({
         })}
       </div>
 
-      {/* Session tabs (P1/P2/Warmup) with status badges. */}
-      <div className="flex shrink-0 gap-1 rounded-lg border border-neutral-800 bg-neutral-900/40 p-1" role="tablist">
+      <div className="grid min-h-0 flex-1 gap-2 xl:grid-cols-[minmax(180px,0.62fr)_minmax(340px,1.35fr)_minmax(260px,0.9fr)]">
+      {/* Left: remaining sessions, time and completed runs. */}
+      <aside className="min-h-0 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-900/35 p-2">
+      <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-neutral-500">Weekend sessions</div>
+      <div className="space-y-1" role="tablist">
         {kinds.map((kind) => {
           const isActive = kind === active;
           const status = completedByKind[kind] ? 'Complete' : 'Not Run';
@@ -1171,7 +1195,7 @@ function PracticePhase({
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveKind(kind)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+              className={`flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold transition-colors ${
                 isActive
                   ? 'bg-amber-500/15 text-amber-300'
                   : 'text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100'
@@ -1191,9 +1215,20 @@ function PracticePhase({
           );
         })}
       </div>
+      <div className="mt-3 border-t border-neutral-800 pt-3 text-[10px] text-neutral-500">
+        {wp?.sessions.length ?? 0} stints completed · {lapsRemaining} laps remain
+      </div>
+      </aside>
 
-      {/* Active session — the only scrolling region. */}
-      <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-900/20 p-3" role="tabpanel">
+      {/* Center: active program and setup-verification loop. */}
+      <main className="min-h-0 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-900/20 p-3" role="tabpanel">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-2">
+          <div>
+            <div className="text-sm font-bold text-neutral-100">{SESSION_LABELS[active]}</div>
+            <div className="text-[10px] text-neutral-500">{weatherForKind(active)?.label ?? 'Conditions unknown'} · {activeCost} planned laps</div>
+          </div>
+          <Button variant="ghost" className="px-2 py-1 text-[10px]" onClick={onNext}>Adjust car setup</Button>
+        </div>
         {activeDone ? (
           <div className="space-y-2">
             {(activeDone.results ?? []).map((r) => (
@@ -1203,6 +1238,14 @@ function PracticePhase({
                 name={`#${driverNumber(r.driverId)} ${driverName(r.driverId)}`}
               />
             ))}
+            <div className="flex items-center justify-end gap-3 border-t border-neutral-800 pt-3">
+              <span className={`text-xs ${activeOverBudget ? 'text-red-400' : 'text-neutral-500'}`}>
+                Verify another revision · {activeCost} laps
+              </span>
+              <Button variant="primary" disabled={activeOverBudget} onClick={() => runSession(active)}>
+                Run another stint
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -1264,6 +1307,60 @@ function PracticePhase({
             </div>
           </div>
         )}
+      </main>
+
+      {/* Right: driver evidence and Race Engineer briefing. */}
+      <aside className="min-h-0 overflow-y-auto rounded-lg border border-sky-500/20 bg-neutral-950/55 p-3">
+        <div className="text-[10px] font-bold uppercase tracking-wide text-sky-300">Setup evidence</div>
+        <div className="mt-2 flex gap-1 rounded border border-neutral-800 bg-neutral-900/70 p-1">
+          {players.map((driver) => (
+            <button
+              key={driver.id}
+              type="button"
+              onClick={() => setActiveDriverId(driver.id)}
+              className={`flex-1 rounded px-2 py-1 text-[10px] font-semibold ${driver.id === activeDriver?.id ? 'bg-sky-500 text-neutral-950' : 'text-neutral-400'}`}
+            >
+              #{driver.number}
+            </button>
+          ))}
+        </div>
+        {activeDriver && (
+          <>
+            <div className="mt-3 rounded border border-neutral-800 bg-neutral-900/45 p-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <strong className="text-xs text-neutral-100">{activeDriver.name}</strong>
+                <span className={`text-[10px] font-bold ${verification === 'Verified' ? 'text-emerald-300' : verification === 'Untested' ? 'text-amber-300' : 'text-neutral-500'}`}>
+                  {verification}
+                </span>
+              </div>
+              <dl className="mt-2 space-y-1 text-[10px]">
+                <PlanFact label="Revision" value={latestRevision ? `R${latestRevision.sequence}` : 'None tested'} />
+                <PlanFact label="Change" value={verification === 'Untested' ? `${Math.round(draftMagnitude * 100)}% from R${latestRevision?.sequence ?? 0}` : 'Current setup tested'} />
+                <PlanFact label="Evidence" value={`${Math.round((k?.setupKnowledge[activeDriver.id] ?? 0) * 100)}% setup knowledge`} />
+              </dl>
+            </div>
+            {verification === 'Untested' && (
+              <p className="mt-2 rounded border border-amber-500/25 bg-amber-500/10 p-2 text-[10px] leading-4 text-amber-200">
+                These changes have not been verified on track. A large adjustment will make earlier evidence partially stale.
+              </p>
+            )}
+            <div className="mt-3">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Latest Race Engineer read</div>
+              <div className="mt-2 space-y-2">
+                {(activeDone?.results ?? [])
+                  .filter((result) => result.driverId === activeDriver.id)
+                  .flatMap((result) => result.feedback)
+                  .map((item) => (
+                    <p key={item.id} className={`text-[10px] leading-4 ${SENTIMENT_STYLE[item.sentiment]}`}>{item.message}</p>
+                  ))}
+                {!activeDone?.results?.some((result) => result.driverId === activeDriver.id) && (
+                  <p className="text-[10px] leading-4 text-neutral-500">Run this session to receive a condition-specific interpretation. Advice remains directional and can be wrong when evidence is weak.</p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </aside>
       </div>
 
       {/* Fixed action bar — always visible, no page scroll needed. */}
@@ -1287,9 +1384,21 @@ function PracticeResultCard({ r, name, compact = false }: { r: PracticeRunResult
         <span className="font-semibold text-neutral-100">{name}</span>
         <span className="text-xs text-neutral-400">
           {PROGRAM_LABELS[r.program]} · {r.lapsCompleted} laps
+          {r.setupRevisionId ? ` · ${r.setupRevisionId.split('-setup-')[1]?.toUpperCase() ?? 'revision'}` : ''}
           {r.incident ? <span className="text-red-400"> · incident</span> : ''}
         </span>
       </div>
+      {r.evidenceConfidence && (
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] text-neutral-500">
+          <span>{r.condition?.label ?? 'Unknown conditions'}</span>
+          <span>·</span>
+          <span className={r.evidenceConfidence === 'High' ? 'text-emerald-300' : r.evidenceConfidence === 'Medium' ? 'text-amber-300' : 'text-orange-300'}>
+            {r.evidenceConfidence} evidence confidence
+          </span>
+          {(r.setupEvidenceRelevance ?? 1) < 1 && <span>· earlier setup data partially stale</span>}
+          {(r.conditionEvidenceRelevance ?? 1) < 1 && <span>· conditions changed</span>}
+        </div>
+      )}
       <div className={`${compact ? 'mb-1 gap-1' : 'mb-2 gap-1.5'} grid grid-cols-4 text-center`}>
         <GainChip label="Setup" value={pct(r.setupKnowledgeGain)} on={r.setupKnowledgeGain > 0} />
         <GainChip label="Tyres" value={pct(r.tireKnowledgeGain)} on={r.tireKnowledgeGain > 0} />
