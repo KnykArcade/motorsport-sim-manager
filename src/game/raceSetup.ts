@@ -50,6 +50,7 @@ import {
   buildAIEngineeringWeekendPlan,
 } from '../sim/aiSetupEngineeringEngine';
 import { raceEngineerForRoster } from '../sim/raceEngineerEngine';
+import { rankSetupArchive } from '../sim/setupArchiveEngine';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. The
@@ -143,6 +144,15 @@ export function resolveAIEngineeringPlans(
       (entry) => entry.entityId === team.id,
     ) + 1;
     const aiState = state.aiTeamStates?.[team.id];
+    const archiveReference = rankSetupArchive({
+      archive: state.setupArchive,
+      teamId: team.id,
+      driver: drivers[0],
+      track,
+      car,
+      seasonYear: state.seasonYear,
+      wet: weekendForecast(track, `${state.randomSeed}-r${race.round}`).Race.wet,
+    })[0];
     plans[team.id] = buildAIEngineeringWeekendPlan({
       seed: state.randomSeed,
       raceId: race.id,
@@ -165,6 +175,8 @@ export function resolveAIEngineeringPlans(
       teamCount: state.teams.length,
       totalRounds: state.calendar.length,
       raceEngineer: raceEngineerForRoster(state.aiStaff?.[team.id]),
+      archivedBaseline: archiveReference?.entry.raceSetup,
+      archiveRelevance: archiveReference?.relevance,
     });
   }
   return plans;

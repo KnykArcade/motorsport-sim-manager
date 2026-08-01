@@ -10,8 +10,9 @@ import { generateSetupFeedback, objectiveSetupQuality } from '../sim/setupFitEng
 import { driverSetupComfort } from '../sim/driverComfortEngine';
 import { formatSetupRange, formatSetupScore, safeScore, sanitizeSetupProfile } from '../sim/setupSanitize';
 import type { DriverPracticeSummary } from '../sim/practiceProgramEngine';
-import type { PracticeSetupRevision } from '../types/practiceTypes';
+import type { PracticeSetupRevision, SetupArchiveEntry } from '../types/practiceTypes';
 import { setupVerificationStatus } from '../sim/practiceEvidenceEngine';
+import { rankSetupArchive } from '../sim/setupArchiveEngine';
 import type { StaffMember } from '../types/staffTypes';
 import { buildSetupEngineeringRecommendation } from '../sim/raceEngineerEngine';
 import {
@@ -61,6 +62,9 @@ type Props = {
     operations?: number;
     packagePreparation?: number;
   };
+  setupArchive?: SetupArchiveEntry[];
+  teamId?: string;
+  seasonYear?: number;
   onChangeParam: (driverId: string, key: SetupParamKey, value: number) => void;
   onApplySetup: (driverId: string, setup: CarSetup) => void;
   onCopy: (fromId: string, toId: string) => void;
@@ -145,6 +149,9 @@ export function SetupWorkshop({
   engineer,
   engineerChemistryByDriver,
   engineeringSupport,
+  setupArchive,
+  teamId,
+  seasonYear,
   onChangeParam,
   onApplySetup,
   onCopy,
@@ -267,6 +274,18 @@ export function SetupWorkshop({
     teammateDisagreement,
     setupLock,
   ]);
+  const archiveReferences = useMemo(() => {
+    if (!driver || !car || !teamId || seasonYear == null) return [];
+    return rankSetupArchive({
+      archive: setupArchive,
+      teamId,
+      driver,
+      track,
+      car,
+      seasonYear,
+      wet: practice?.raceWet ?? false,
+    }).slice(0, 3);
+  }, [setupArchive, teamId, driver, track, car, seasonYear, practice?.raceWet]);
 
   if (!driver || !setup || !baseline || !quality || !comfort || !feedback || !recommendation) return null;
 
@@ -424,6 +443,37 @@ export function SetupWorkshop({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="mt-3 border-t border-neutral-800 pt-3">
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-500">Setup archive</div>
+            {archiveReferences.length === 0 ? (
+              <p className="text-[11px] leading-4 text-neutral-500">No relevant team reference yet. This weekend will create the first circuit record.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {archiveReferences.map(({ entry, relevance, reasons }) => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    disabled={setupLock?.active}
+                    onClick={() => {
+                      onApplySetup(driver.id, { ...entry.raceSetup });
+                      setLastChange(undefined);
+                    }}
+                    className="w-full rounded border border-neutral-800 bg-neutral-900/55 px-2.5 py-2 text-left hover:border-sky-500/50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <span className="flex items-center justify-between gap-2 text-[11px] font-semibold text-neutral-200">
+                      <span>{entry.trackName} · {entry.seasonYear}</span>
+                      <span className={relevance >= 0.7 ? 'text-emerald-300' : relevance >= 0.4 ? 'text-amber-300' : 'text-neutral-400'}>
+                        {Math.round(relevance * 100)}% relevant
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[10px] leading-4 text-neutral-500">{reasons.join(' · ')}</span>
+                    <span className="mt-1 block text-[10px] font-semibold text-sky-300">Load unverified race baseline</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-3 border-t border-neutral-800 pt-3">

@@ -490,6 +490,9 @@ export function RaceWeekend() {
             operations: state.teamOrgRatings?.[state.selectedTeamId]?.operations,
             packagePreparation: state.raceWeekendPackage?.packageModifier,
           }}
+          setupArchive={state.setupArchive}
+          teamId={state.selectedTeamId}
+          seasonYear={state.seasonYear}
           setupLock={setupLock}
           stage={qualifyingResults ? 'PostQualifying' : 'Initial'}
           onChangeParam={(driverId, key, value) =>
