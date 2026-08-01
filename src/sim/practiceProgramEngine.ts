@@ -384,7 +384,7 @@ export function runPracticeSession(
     const setup = ctx.setupsById[a.driverId];
     if (!setup) continue;
     const rng = createSeededRandom(
-      deriveSeed(ctx.seed, 'practice', ctx.raceId, session.kind, a.driverId, a.program),
+      deriveSeed(ctx.seed, 'practice', ctx.raceId, session.id, a.driverId, a.program),
     );
     results.push(
       runDriverProgram(
