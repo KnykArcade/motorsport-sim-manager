@@ -44,6 +44,10 @@ export type SetupArchiveEntry = {
   qualifyingSetup: CarSetup;
   raceSetup: CarSetup;
   evidenceConfidence: number;
+  // Preseason references are useful starting information, but rank below
+  // configurations proven during a race weekend and must be re-verified.
+  evidenceOrigin?: 'RaceWeekend' | 'PreseasonTest';
+  requiresWeekendVerification?: boolean;
   // Added after the car has run in competition. The qualitative record helps
   // future engineers judge whether an old baseline behaved as predicted while
   // keeping the hidden physical setup score private.

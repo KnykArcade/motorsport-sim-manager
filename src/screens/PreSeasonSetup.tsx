@@ -40,8 +40,10 @@ import {
 } from '../types/expectationTypes';
 import { MANDATE_OPTIONS } from '../sim/boardroomEngine';
 import type { CarLaunchApproach, PreseasonTestingFocus } from '../types/phase18Types';
-import { PRESEASON_FLAW_FIX_COST, PRESEASON_TESTING_COST, preseasonProgramFor } from '../sim/phase18PreseasonEngine';
+import { PRESEASON_FLAW_FIX_COST, PRESEASON_SESSION_PROGRAMS, PRESEASON_TESTING_COST, preseasonProgramFor } from '../sim/phase18PreseasonEngine';
 import { PRIZE_MONEY_PER_POINT } from '../sim/financeEngine';
+import { SETUP_PARAMS } from '../data/setup/setupComponents';
+import type { SetupParamKey } from '../types/setupTypes';
 
 type PreseasonTab = 'teamOverview' | 'budget' | 'driverLineup' | 'carDevelopment' | 'sponsorsEngine' | 'seasonObjectives' | 'roundOnePreview';
 
@@ -166,6 +168,9 @@ export function PreSeasonSetup() {
   const preseasonProgram = preseasonProgramFor(state);
   const preseasonHub = state.phase18?.preseason;
   const canConfirmDevelopment = !!preseasonProgram?.launchCompleted && !!preseasonProgram.testingCompleted;
+  const testingRule = preseasonProgram?.ruleProfile;
+  const completedTestSessions = preseasonProgram?.sessions?.length ?? 0;
+  const totalTestSessions = testingRule ? testingRule.days * testingRule.sessionsPerDay : 0;
 
   const isCareer = state.gameMode === 'Career';
   const isSingleSeason = state.gameMode === 'SingleSeason';
@@ -228,7 +233,7 @@ export function PreSeasonSetup() {
       />
       <MetricStrip>
         <WorkspaceMetric label="First-week tasks" value={`${approvedCount}/${totalTabs}`} detail={checklistComplete ? 'Preseason decisions complete' : `${remainingMeaningfulTasks} decisions remaining`} />
-        <WorkspaceMetric label="Available budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : 'Testing programme not complete'} />
+        <WorkspaceMetric label="Available budget" value={team ? formatMoney(team.budget) : '—'} detail={preseasonProgram?.testingCompleted ? `${preseasonProgram.testingFocus} testing complete` : preseasonProgram?.testingStarted ? `${completedTestSessions}/${totalTestSessions} sessions complete` : 'Testing programme not started'} />
         <WorkspaceMetric label="Race line-up" value={`${activeDrivers.length}/${minDrivers}`} detail={hasValidLineup ? 'Required seats filled' : 'Driver signing required'} />
         <WorkspaceMetric label="Race 1 readiness" value={preseasonProgram?.testingCompleted ? `${preseasonProgram.readiness.overall}%` : 'Pending'} detail={race?.gpName ?? 'Opening event unavailable'} />
       </MetricStrip>
@@ -425,19 +430,39 @@ export function PreSeasonSetup() {
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-neutral-100">Testing programme</h3>
-                  <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.testingCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.testingCompleted ? preseasonProgram.testingFocus : preseasonProgram?.launchCompleted ? 'Choose focus' : 'Launch first'}</span>
+                  <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${preseasonProgram?.testingCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{preseasonProgram?.testingCompleted ? preseasonProgram.testingFocus : preseasonProgram?.testingStarted ? `${completedTestSessions}/${totalTestSessions} sessions` : preseasonProgram?.launchCompleted ? 'Choose approach' : 'Launch first'}</span>
                 </div>
-                {!preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                {!preseasonProgram?.testingStarted && !preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
                   {TESTING_OPTIONS.map((option) => {
                     const cost = isSingleSeason ? 0 : PRESEASON_TESTING_COST[option.id];
                     const insufficientBudget = (team?.budget ?? 0) < cost;
                     const blockedReason = !preseasonProgram?.launchCompleted ? 'Complete the car launch first' : insufficientBudget ? `Needs ${formatMoney(cost)}` : undefined;
-                    return <button key={option.id} type="button" disabled={!preseasonProgram?.launchCompleted || insufficientBudget} title={blockedReason} onClick={() => dispatch({ type: 'COMPLETE_PRESEASON_TESTING', focus: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left enabled:hover:border-amber-500/60 disabled:cursor-not-allowed disabled:opacity-40"><div className="text-xs font-semibold text-amber-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p><div className={`mt-2 text-[10px] ${insufficientBudget ? 'text-red-300' : 'text-neutral-500'}`}>{blockedReason ?? (cost ? formatMoney(cost) : 'Included')}</div></button>;
+                    return <button key={option.id} type="button" disabled={!preseasonProgram?.launchCompleted || insufficientBudget} title={blockedReason} onClick={() => dispatch({ type: 'START_PRESEASON_TESTING', focus: option.id })} className="rounded-lg border border-neutral-700 bg-neutral-900/50 p-3 text-left enabled:hover:border-amber-500/60 disabled:cursor-not-allowed disabled:opacity-40"><div className="text-xs font-semibold text-amber-300">{option.label}</div><p className="mt-1 text-[11px] text-neutral-400">{option.description}</p><div className={`mt-2 text-[10px] ${insufficientBudget ? 'text-red-300' : 'text-neutral-500'}`}>{blockedReason ?? (cost ? formatMoney(cost) : 'Included')}</div></button>;
                   })}
                 </div>}
-                {preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
-                  {preseasonProgram.testingReports.map((report) => <div key={report.day} className="rounded border border-neutral-800 bg-neutral-900/45 p-3"><div className="text-xs font-semibold text-neutral-100">{report.headline}</div><p className="mt-1 text-[11px] text-neutral-400">{report.summary}</p><div className="mt-2 flex justify-between text-[10px] text-neutral-500"><span>Pace {report.paceSignal}</span><span>Reliability {report.reliabilitySignal}</span><span>Confidence {report.confidence}%</span></div></div>)}
+                {preseasonProgram?.testingStarted && !preseasonProgram.testingCompleted && testingRule && <div className="mt-3 space-y-3">
+                  <div className="rounded border border-sky-500/25 bg-sky-500/5 p-3 text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-semibold text-sky-200">{testingRule.testType} test · {testingRule.days} day{testingRule.days === 1 ? '' : 's'} · {testingRule.maxCarsPerSession} car{testingRule.maxCarsPerSession === 1 ? '' : 's'} per session</span><a className="text-sky-300 hover:underline" href={testingRule.source.url} target="_blank" rel="noreferrer">{testingRule.source.title} ({testingRule.source.confidence})</a></div>
+                    <p className="mt-1 text-neutral-400">{testingRule.description} {testingRule.driverPolicy}</p>
+                    <div className="mt-2 flex flex-wrap gap-4 text-[10px] text-neutral-500"><span>Mileage: {Math.round(preseasonProgram.mileageUsedKm ?? 0)} / {testingRule.mileageLimitKm ?? 'unlimited'} km</span><span>Tyres: {preseasonProgram.tyreSetsUsed ?? 0} / {testingRule.tyreSets ?? 'event allocation'} sets</span><span>Repair time lost: {preseasonProgram.repairTimeLostMinutes ?? 0} min</span></div>
+                  </div>
+                  <div className="grid gap-3 xl:grid-cols-2">
+                    {Object.values(preseasonProgram.pendingAssignments ?? {}).map((assignment) => {
+                      const assignedDriver = drivers.find((driver) => driver.id === assignment.driverId);
+                      return <div key={assignment.driverId} className="rounded border border-neutral-800 bg-neutral-900/45 p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-xs font-semibold text-neutral-100">{assignedDriver?.name ?? assignment.driverId}</div><div className="text-[10px] text-neutral-500">Configuration revision {assignment.revision} · unverified</div></div><select aria-label={`Testing program for ${assignedDriver?.name ?? assignment.driverId}`} value={assignment.program} onChange={(event) => dispatch({ type: 'SET_PRESEASON_SESSION_PROGRAM', driverId: assignment.driverId, sessionProgram: event.target.value as typeof assignment.program })} className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-xs text-neutral-200">{PRESEASON_SESSION_PROGRAMS.map((programOption) => <option key={programOption.id} value={programOption.id}>{programOption.label}</option>)}</select></div>
+                        <div className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-3">
+                          {(Object.keys(assignment.setup) as SetupParamKey[]).map((parameter) => <div key={parameter} className="flex items-center justify-between gap-1 rounded bg-neutral-950/70 px-2 py-1 text-[10px]"><span className="truncate text-neutral-400" title={SETUP_PARAMS[parameter].label}>{SETUP_PARAMS[parameter].label}</span><span className="flex items-center gap-1"><button type="button" aria-label={`Decrease ${SETUP_PARAMS[parameter].label} for ${assignedDriver?.name ?? assignment.driverId}`} onClick={() => dispatch({ type: 'REVISE_PRESEASON_TEST_SETUP', driverId: assignment.driverId, parameter, value: assignment.setup[parameter] - 0.5 })} className="rounded px-1 text-neutral-300 hover:bg-neutral-800">−</button><span className="w-5 text-center text-neutral-100">{assignment.setup[parameter]}</span><button type="button" aria-label={`Increase ${SETUP_PARAMS[parameter].label} for ${assignedDriver?.name ?? assignment.driverId}`} onClick={() => dispatch({ type: 'REVISE_PRESEASON_TEST_SETUP', driverId: assignment.driverId, parameter, value: assignment.setup[parameter] + 0.5 })} className="rounded px-1 text-neutral-300 hover:bg-neutral-800">+</button></span></div>)}
+                        </div>
+                      </div>;
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between gap-3"><p className="text-[11px] text-neutral-500">Only the cars allowed by the rule profile run each session. Driver time rotates toward the least-used allocation.</p><Button variant="primary" onClick={() => dispatch({ type: 'RUN_PRESEASON_TEST_SESSION' })}>Run next test session</Button></div>
                 </div>}
+                {preseasonProgram?.testingCompleted && <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  {preseasonProgram.testingReports.map((report) => <div key={report.sessionId ?? report.day} className="rounded border border-neutral-800 bg-neutral-900/45 p-3"><div className="text-xs font-semibold text-neutral-100">{report.headline}</div><p className="mt-1 text-[11px] text-neutral-400">{report.summary}</p><div className="mt-2 text-[10px] text-neutral-500">Evidence confidence {report.confidence}%</div></div>)}
+                </div>}
+                {preseasonProgram?.testingCompleted && preseasonProgram.correlation && <div className="mt-3 rounded border border-neutral-800 bg-neutral-900/45 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-semibold text-neutral-100">Correlation report</span><span className="text-[10px] font-semibold uppercase text-amber-300">{preseasonProgram.correlation.status} · {preseasonProgram.correlation.confidence}% confidence</span></div><p className="mt-1 text-[11px] text-neutral-400">Model tendency: {preseasonProgram.correlation.discrepancy}. Tested programmes: {preseasonProgram.correlation.investigatedPrograms.join(', ') || 'none'}.</p><p className="mt-1 text-[10px] text-neutral-500">Race 1 practice must verify every baseline. Testing has not increased the car's physical performance.</p></div>}
               </div>
               {preseasonProgram?.testingCompleted && <div>
                 <h3 className="text-sm font-semibold text-neutral-100">Race 1 readiness</h3>

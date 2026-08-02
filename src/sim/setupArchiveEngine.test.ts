@@ -64,6 +64,18 @@ describe('setup archive and circuit learning', () => {
     expect(stale.reasons).toContain('Recorded for another driver');
   });
 
+  it('ranks preseason evidence below a race-weekend record and requires verification', () => {
+    const ranked = rankSetupArchive({
+      archive: [
+        record({ id: 'race-record', seasonYear: 1995, evidenceOrigin: 'RaceWeekend' }),
+        record({ id: 'preseason-record', seasonYear: 1995, evidenceOrigin: 'PreseasonTest', requiresWeekendVerification: true }),
+      ],
+      teamId: driver.teamId, driver, track, car, seasonYear: 1995, wet: false,
+    });
+    expect(ranked[0].entry.id).toBe('race-record');
+    expect(ranked[1].reasons).toContain('Preseason evidence requires Race 1 verification');
+  });
+
   it('archives tested team setups and bounds long-term save growth', () => {
     const archive = Array.from({ length: 250 }, (_, index) => record({ id: `old-${index}`, raceId: `old-${index}` }));
     const result = archiveCompletedWeekend({

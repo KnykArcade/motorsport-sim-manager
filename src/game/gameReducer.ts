@@ -132,7 +132,7 @@ import {
   leadershipGameplayModifiers,
 } from '../sim/phase18IdentityCultureEngine';
 import type { TeamOrderDecision, PromiseType } from '../types/relationshipTypes';
-import type { CarLaunchApproach, CollectiveStakeholderAction, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonTestingFocus, RivalAction } from '../types/phase18Types';
+import type { CarLaunchApproach, CollectiveStakeholderAction, ContractBreachResponse, ContractClauseType, FailureInvestigationLevel, FailureResponse, IntelligenceAction, PreseasonSessionProgram, PreseasonTestingFocus, RivalAction } from '../types/phase18Types';
 import {
   applyNegotiatedDriverClause,
   ensureContractClauses,
@@ -142,7 +142,7 @@ import {
   syncClausePromiseResolution,
 } from '../sim/phase18ContractClauseEngine';
 import { generatePaddockIntelligence, resolveIntelligenceAction } from '../sim/phase18IntelligenceEngine';
-import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw } from '../sim/phase18PreseasonEngine';
+import { applyPreseasonCarModifier, completeCarLaunch, completePreseasonTesting, ensurePreseasonHubState, resolvePreseasonFlaw, revisePreseasonTestSetup, runPreseasonTestSession, setPreseasonSessionProgram, startPreseasonTesting } from '../sim/phase18PreseasonEngine';
 import { applyFailureRiskModifier, investigateFailure, recordFailureInvestigations, respondToFailure } from '../sim/phase18FailureInvestigationEngine';
 import { evolveRivalRelationshipsAfterRace, recordRegulationVoteRelationships, recordStaffPoach, takeRivalAction } from '../sim/phase18RivalRelationshipEngine';
 import { takeCollectiveStakeholderAction } from '../sim/collectiveStakeholderActionEngine';
@@ -199,7 +199,7 @@ import type {
   RacePrepFocusEffect,
   ScoreBreakdown,
 } from '../types/simTypes';
-import type { CarSetup } from '../types/setupTypes';
+import type { CarSetup, SetupParamKey } from '../types/setupTypes';
 import type {
   PracticeCondition,
   PracticeAssignment,
@@ -475,6 +475,10 @@ export type GameAction =
   | { type: 'RESOLVE_INTELLIGENCE_ACTION'; reportId: string; action: IntelligenceAction }
   | { type: 'COMPLETE_CAR_LAUNCH'; approach: CarLaunchApproach }
   | { type: 'COMPLETE_PRESEASON_TESTING'; focus: PreseasonTestingFocus }
+  | { type: 'START_PRESEASON_TESTING'; focus: PreseasonTestingFocus }
+  | { type: 'SET_PRESEASON_SESSION_PROGRAM'; driverId: string; sessionProgram: PreseasonSessionProgram }
+  | { type: 'REVISE_PRESEASON_TEST_SETUP'; driverId: string; parameter: SetupParamKey; value: number }
+  | { type: 'RUN_PRESEASON_TEST_SESSION' }
   | { type: 'RESOLVE_PRESEASON_FLAW'; flawId: string }
   | { type: 'INVESTIGATE_FAILURE'; caseId: string; level: FailureInvestigationLevel }
   | { type: 'RESPOND_TO_FAILURE'; caseId: string; response: FailureResponse }
@@ -1813,6 +1817,26 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'COMPLETE_PRESEASON_TESTING': {
       if (!state) return state;
       return completePreseasonTesting(state, action.focus);
+    }
+
+    case 'START_PRESEASON_TESTING': {
+      if (!state) return state;
+      return startPreseasonTesting(state, action.focus);
+    }
+
+    case 'SET_PRESEASON_SESSION_PROGRAM': {
+      if (!state) return state;
+      return setPreseasonSessionProgram(state, action.driverId, action.sessionProgram);
+    }
+
+    case 'REVISE_PRESEASON_TEST_SETUP': {
+      if (!state) return state;
+      return revisePreseasonTestSetup(state, action.driverId, action.parameter, action.value);
+    }
+
+    case 'RUN_PRESEASON_TEST_SESSION': {
+      if (!state) return state;
+      return runPreseasonTestSession(state);
     }
 
     case 'RESOLVE_PRESEASON_FLAW': {
