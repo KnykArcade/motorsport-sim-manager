@@ -4,6 +4,8 @@
 // engines that evolve identity, culture, advice, intelligence, clauses,
 // rivalries, legacy, and narratives are delivered in later reviewable phases.
 
+import type { CarSetup, SetupParamKey } from './setupTypes';
+
 export const PHASE_18_FOUNDATION_VERSION = 1;
 
 export type PrincipalIdentity =
@@ -187,7 +189,38 @@ export type IntelligenceAction = 'Investigate' | 'AskAdvisor' | 'Monitor' | 'Ign
 
 export type CarLaunchApproach = 'Measured' | 'CommercialShowcase' | 'PerformanceStatement';
 export type PreseasonTestingFocus = 'Balanced' | 'Performance' | 'Reliability' | 'RaceOperations' | 'Experimental';
+export type PreseasonSessionProgram =
+  | 'Correlation'
+  | 'SetupExploration'
+  | 'QualifyingSimulation'
+  | 'LongRun'
+  | 'TyreEvaluation'
+  | 'ReliabilityWork';
+export type PreseasonTestType = 'Private' | 'Collective' | 'Open' | 'Organizational';
+export type PreseasonRuleConfidence = 'Official' | 'High' | 'Medium' | 'GameplayFallback';
 export type PreseasonFlawArea = 'PowerUnit' | 'Aerodynamics' | 'Mechanical' | 'Reliability' | 'Operations';
+
+export type PreseasonTestingRuleProfile = {
+  id: string;
+  series: string;
+  startYear: number;
+  endYear: number;
+  testType: PreseasonTestType;
+  days: number;
+  sessionsPerDay: number;
+  maxCarsPerSession: number;
+  mileageLimitKm: number | null;
+  tyreSets: number | null;
+  driverPolicy: string;
+  description: string;
+  source: {
+    title: string;
+    url: string;
+    section?: string;
+    confidence: PreseasonRuleConfidence;
+    note?: string;
+  };
+};
 
 export type PreseasonHiddenFlaw = {
   id: string;
@@ -200,11 +233,62 @@ export type PreseasonHiddenFlaw = {
 
 export type PreseasonTestingReport = {
   day: number;
+  sessionId?: string;
   headline: string;
   summary: string;
   paceSignal: number;
   reliabilitySignal: number;
   confidence: number;
+};
+
+export type PreseasonSessionAssignment = {
+  driverId: string;
+  carId: string;
+  program: PreseasonSessionProgram;
+  setup: CarSetup;
+  revision: number;
+};
+
+export type PreseasonDriverRunResult = {
+  driverId: string;
+  program: PreseasonSessionProgram;
+  lapsPlanned: number;
+  lapsCompleted: number;
+  mileageKm: number;
+  setup: CarSetup;
+  correlationSignal: 'Aligned' | 'Questionable' | 'Divergent';
+  evidenceConfidence: number;
+  feedback: string[];
+  engineerRecommendation: string;
+  interrupted: boolean;
+};
+
+export type PreseasonTestSession = {
+  id: string;
+  day: number;
+  session: 'Morning' | 'Afternoon';
+  condition: 'Dry' | 'Wet' | 'Mixed';
+  assignments: PreseasonSessionAssignment[];
+  results: PreseasonDriverRunResult[];
+  mileageKm: number;
+  tyreSetsUsed: number;
+  lostMinutes: number;
+};
+
+export type PreseasonDriverBaseline = {
+  driverId: string;
+  setup: CarSetup;
+  evidenceConfidence: number;
+  mileageKm: number;
+  sessions: number;
+  requiresRaceWeekendVerification: true;
+};
+
+export type PreseasonCorrelationState = {
+  confidence: number;
+  status: 'Unverified' | 'Weak' | 'Mixed' | 'Strong';
+  discrepancy: 'Unknown' | 'OverPredicting' | 'UnderPredicting' | 'Aligned';
+  investigatedPrograms: PreseasonSessionProgram[];
 };
 
 export type PreseasonProgramState = {
@@ -213,11 +297,26 @@ export type PreseasonProgramState = {
   launchApproach?: CarLaunchApproach;
   launchCompleted: boolean;
   testingFocus?: PreseasonTestingFocus;
+  testingStarted?: boolean;
   testingCompleted: boolean;
+  ruleProfile?: PreseasonTestingRuleProfile;
+  sessions?: PreseasonTestSession[];
+  pendingAssignments?: Record<string, PreseasonSessionAssignment>;
+  baselineByDriver?: Record<string, PreseasonDriverBaseline>;
+  correlation?: PreseasonCorrelationState;
+  mileageUsedKm?: number;
+  tyreSetsUsed?: number;
+  repairTimeLostMinutes?: number;
   testingReports: PreseasonTestingReport[];
   hiddenFlaws: PreseasonHiddenFlaw[];
   readiness: { pace: number; reliability: number; operations: number; knowledge: number; overall: number };
   aiDecisionReason?: string;
+};
+
+export type PreseasonSetupRevision = {
+  driverId: string;
+  parameter: SetupParamKey;
+  value: number;
 };
 
 export type PreseasonRivalReport = {

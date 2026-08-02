@@ -52,6 +52,10 @@ export function rankSetupArchive(input: {
         relevance *= 0.82;
         reasons.push('Recorded for another driver');
       }
+      if (entry.evidenceOrigin === 'PreseasonTest') {
+        relevance *= 0.62;
+        reasons.push('Preseason evidence requires Race 1 verification');
+      }
       relevance *= 0.55 + clamp01(entry.evidenceConfidence) * 0.45;
       return { entry, relevance: clamp01(relevance), reasons, verifiedThisWeekend: false as const };
     })
@@ -98,6 +102,8 @@ export function archiveCompletedWeekend(input: {
       qualifyingSetup: { ...setup },
       raceSetup: { ...setup },
       evidenceConfidence: clamp01(knowledge * 0.8 + Math.min(1, laps / 24) * 0.2),
+      evidenceOrigin: 'RaceWeekend',
+      requiresWeekendVerification: false,
     } satisfies SetupArchiveEntry];
   });
   const replacedIds = new Set(additions.map((entry) => entry.id));
