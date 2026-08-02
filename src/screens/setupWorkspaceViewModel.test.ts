@@ -32,5 +32,6 @@ describe('setup workspace view model', () => {
     expect(setupDraftStatus({ changedCount: 0, postQualifying: false, locked: false })).toBe('No draft changes');
     expect(setupDraftStatus({ changedCount: 0, postQualifying: true, locked: false })).toBe('Qualifying setup retained');
     expect(setupDraftStatus({ changedCount: 2, postQualifying: true, locked: true })).toBe('2 permitted post-qualifying changes');
+    expect(setupDraftStatus({ changedCount: 2, postQualifying: true, locked: true, restrictedCount: 1 })).toBe('1 restricted change needs a decision');
   });
 });

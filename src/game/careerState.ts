@@ -52,6 +52,7 @@ import type {
   GarageAddressRecord,
 } from '../types/weekendLeadershipTypes';
 import type { AIEngineeringWeekendPlans } from '../types/aiSetupTypes';
+import type { SetupRestrictionState } from '../types/setupRestrictionTypes';
 
 export type RaceDriverAbsence = {
   driverId: string;
@@ -111,6 +112,10 @@ export type GameState = {
   // Player-tuned engineering setup per driver (Car Setup Workshop). Optional so
   // older saves load cleanly; reducers/UI fall back to a balanced default.
   carSetups?: Record<string, CarSetup>;
+  // Per-event qualifying configuration, lock lifecycle and sporting penalties.
+  // Optional so pre-Phase-9 saves enter the next weekend with deterministic
+  // open-practice defaults.
+  setupRestrictions?: SetupRestrictionState;
 
   // Driver market & academy (Phase C). All optional for save compatibility:
   //  - academy: youth prospects signed to the team, progressing each offseason.

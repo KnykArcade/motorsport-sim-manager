@@ -33,6 +33,7 @@ import { DEFAULT_DAMAGE_SETTINGS } from './damageComponents';
 import { getCircuitSegmentsForRace } from '../data/circuits/circuitLookup';
 import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
 import { createInitialCarPositionState, DEFAULT_FIXED_STEP_SECONDS } from './segmentRaceEngine';
+import { setupPenaltyDelaySeconds } from './setupRestrictionEngine';
 import { initialRaceControlState } from './raceControlEngine';
 import { resolveSetupSimulationProfile } from './setupSimulationProfile';
 
@@ -50,6 +51,7 @@ export type LiveRaceOptions = {
   year: number;
   // Series (e.g. 'F1', 'IndyCar') — drives series-specific DNF calibration.
   series: Series;
+  setupEventOverride?: import('../types/raceRulesTypes').SetupEventFormatOverride;
   // Per-team default pit intensity, set pre-race and applied to live pit stops
   // unless the player overrides it in the pit box.
   pitIntensityByTeam?: Record<string, PitIntensity>;
@@ -90,7 +92,12 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
   const { track } = context;
   const totalLaps = options.totalLaps;
   const circuit = getCircuitSegmentsForRace({ track, year: options.year, series: options.series, totalLaps });
-  const ruleProfile = selectRaceRuleProfile(options.series, options.year, track);
+  const ruleProfile = selectRaceRuleProfile(
+    options.series,
+    options.year,
+    track,
+    options.setupEventOverride,
+  );
   const weather = initialWeather(track, context.seed);
   const damageSettings = options.damageSettings ?? DEFAULT_DAMAGE_SETTINGS;
 
@@ -218,7 +225,10 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
 
     const compound: TireCompound = weather.wet ? 'Wet' : 'Dry';
 
-    const initialTotalTime = grid * 0.3;
+    const setupPenaltySeconds = setupPenaltyDelaySeconds(
+      context.preRaceSetupPenaltiesByDriver?.[e.driver.id],
+    );
+    const initialTotalTime = grid * 0.3 + setupPenaltySeconds;
 
     return {
       driverId: e.driver.id,
@@ -235,7 +245,11 @@ export function createLiveRace(context: RaceContext, options: LiveRaceOptions): 
       running: true,
       status: 'Finished',
       retiredOnLap: null,
-      lastIncident: qIncident === 'Crash' ? 'Carrying qualifying crash damage' : undefined,
+      lastIncident: setupPenaltySeconds > 0
+        ? `Drive-through setup penalty (+${setupPenaltySeconds}s)`
+        : qIncident === 'Crash'
+          ? 'Carrying qualifying crash damage'
+          : undefined,
       positionState: createInitialCarPositionState({ raceTimeSeconds: initialTotalTime }),
       paceRating: score,
       baseRacePace,

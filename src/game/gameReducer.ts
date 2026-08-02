@@ -235,7 +235,14 @@ import {
   resolvePracticeRevision,
 } from '../sim/practiceEvidenceEngine';
 import { weekendForecast } from '../sim/weatherEngine';
-import { setupLockPhase, validateSetupChange } from '../sim/setupLockEngine';
+import { changedSetupParams, setupLockPhase, validateSetupChange } from '../sim/setupLockEngine';
+import type { SetupRestrictionDecision } from '../types/setupRestrictionTypes';
+import {
+  beginSetupRestrictionWeekend,
+  applySetupPenaltiesToGrid,
+  finalizeSetupRestrictionWeekend,
+  recordSetupPenalty,
+} from '../sim/setupRestrictionEngine';
 import type { RaceWeekendPackageType, RaceWeekendPackageSelection, RaceWeekendPackageEffects, FinancialDistressMap } from '../types/raceWeekendPackageTypes';
 import type { AIPackageContext } from '../types/raceWeekendPackageTypes';
 import {
@@ -372,7 +379,15 @@ export type GameAction =
   | { type: 'MARK_INBOX_READ'; messageIds: string[] }
   | { type: 'DISMISS_INBOX_MESSAGES'; messageIds: string[] }
   | { type: 'RETIRE_PART'; partId: string }
-  | { type: 'SET_CAR_SETUP'; driverId: string; setup: CarSetup }
+  | {
+      type: 'SET_CAR_SETUP';
+      driverId: string;
+      setup: CarSetup;
+      restrictionDecision?: SetupRestrictionDecision;
+      authorizationAvailable?: boolean;
+      weatherChanged?: boolean;
+    }
+  | { type: 'FINALIZE_RACE_SETUP'; raceId: string }
   | {
       type: 'RUN_PRACTICE_SESSION';
       raceId: string;
@@ -1106,18 +1121,98 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
       const race = currentRace(state);
       const track = race ? getTrackById(race.trackId) : undefined;
       if (race && track) {
-        const profile = selectRaceRuleProfile(state.series, state.seasonYear, track);
+        const profile = selectRaceRuleProfile(
+          state.series,
+          state.seasonYear,
+          track,
+          race.setupEventFormatOverride,
+        );
+        const existingWeekend = state.setupRestrictions?.[race.id];
+        const phase = existingWeekend?.phase
+          ?? setupLockPhase(!!state.qualifyingResults[race.id], profile);
+        const submittedSetup = existingWeekend?.qualifyingConfigurationByDriver[action.driverId]
+          ?? state.carSetups?.[action.driverId];
         const validation = validateSetupChange(
           profile,
-          setupLockPhase(!!state.qualifyingResults[race.id]),
-          state.carSetups?.[action.driverId],
+          phase,
+          submittedSetup,
           action.setup,
+          {
+            decision: action.restrictionDecision,
+            authorizationAvailable: action.authorizationAvailable,
+            weatherChanged: action.weatherChanged,
+          },
         );
-        if (!validation.allowed) return state;
+        if (!validation.allowed && action.restrictionDecision !== 'ContinueWithLegalConfiguration') {
+          return state;
+        }
+        const appliedSetup = validation.allowed
+          ? action.setup
+          : validation.legalSetup ?? submittedSetup;
+        if (!appliedSetup) return state;
+
+        let setupRestrictions = state.setupRestrictions;
+        if (state.qualifyingResults[race.id]) {
+          const qualifyingConfigurationByDriver: Record<string, CarSetup> = {};
+          const fallbackCar = carForTeam(state, state.selectedTeamId);
+          for (const driver of activeDriversForTeam(state, state.selectedTeamId)) {
+            qualifyingConfigurationByDriver[driver.id] = state.carSetups?.[driver.id]
+              ?? initialBaselineSetup(track, fallbackCar);
+          }
+          let weekend = existingWeekend ?? beginSetupRestrictionWeekend({
+            raceId: race.id,
+            profile,
+            qualifyingConfigurationByDriver,
+          });
+          if (validation.allowed && validation.consequence) {
+            weekend = recordSetupPenalty(weekend, {
+              driverId: action.driverId,
+              consequence: validation.consequence,
+              changedParams: validation.blockedParams,
+              authorized: validation.authorized ?? false,
+              reason: validation.reason ?? profile.setupLock.description,
+              profile,
+            });
+          }
+          setupRestrictions = { ...(state.setupRestrictions ?? {}), [race.id]: weekend };
+        }
+        return {
+          ...state,
+          setupRestrictions,
+          carSetups: { ...(state.carSetups ?? {}), [action.driverId]: appliedSetup },
+        };
       }
       return {
         ...state,
         carSetups: { ...(state.carSetups ?? {}), [action.driverId]: action.setup },
+      };
+    }
+
+    case 'FINALIZE_RACE_SETUP': {
+      if (!state || getCareerPhase(state) !== 'race_weekend') return state;
+      const race = currentRace(state);
+      if (!race || race.id !== action.raceId) return state;
+      const weekend = state.setupRestrictions?.[race.id];
+      if (!weekend) return state;
+      const finalRaceConfigurationByDriver: Record<string, CarSetup> = {};
+      for (const driver of activeDriversForTeam(state, state.selectedTeamId)) {
+        const setup = state.carSetups?.[driver.id] ?? weekend.qualifyingConfigurationByDriver[driver.id];
+        if (setup) finalRaceConfigurationByDriver[driver.id] = setup;
+      }
+      const finalized = finalizeSetupRestrictionWeekend(weekend, finalRaceConfigurationByDriver);
+      return {
+        ...state,
+        qualifyingResults: {
+          ...state.qualifyingResults,
+          [race.id]: applySetupPenaltiesToGrid(
+            state.qualifyingResults[race.id] ?? [],
+            finalized.penaltiesByDriver,
+          ),
+        },
+        setupRestrictions: {
+          ...(state.setupRestrictions ?? {}),
+          [race.id]: finalized,
+        },
       };
     }
 
@@ -2652,10 +2747,47 @@ function runQualifying(state: GameState, playerDecisions: QualifyingDecision[]):
   const qualNews = generateCareerQualifyingNews(qualCtx, results, driverNames, teamNames);
   const dedupedQualNews = deduplicateNews(state.news, qualNews);
 
+  const profile = selectRaceRuleProfile(
+    state.series,
+    state.seasonYear,
+    track,
+    race.setupEventFormatOverride,
+  );
+  const qualifyingConfigurationByDriver: Record<string, CarSetup> = {};
+  for (const entrant of entrants) {
+    qualifyingConfigurationByDriver[entrant.driver.id] = entrant.driver.teamId === state.selectedTeamId
+      ? state.carSetups?.[entrant.driver.id] ?? initialBaselineSetup(track, entrant.car)
+      : aiEngineeringPlans[entrant.driver.teamId]?.drivers[entrant.driver.id]?.qualifyingSetup
+        ?? initialBaselineSetup(track, entrant.car);
+  }
+  let setupRestrictionWeekend = beginSetupRestrictionWeekend({
+    raceId: race.id,
+    profile,
+    qualifyingConfigurationByDriver,
+    existing: state.setupRestrictions?.[race.id],
+  });
+  for (const plan of Object.values(aiEngineeringPlans)) {
+    for (const driverPlan of Object.values(plan.drivers)) {
+      if (!driverPlan.setupPenalty || driverPlan.setupPenalty === 'None' || driverPlan.setupPenalty === 'Blocked') continue;
+      setupRestrictionWeekend = recordSetupPenalty(setupRestrictionWeekend, {
+        driverId: driverPlan.driverId,
+        consequence: driverPlan.setupPenalty,
+        changedParams: changedSetupParams(driverPlan.qualifyingSetup, driverPlan.raceSetup),
+        authorized: false,
+        reason: 'The rival team deliberately accepted a setup-rule penalty for its preferred race configuration.',
+        profile,
+      });
+    }
+  }
+
   const qualifiedState: GameState = {
     ...state,
     cars,
     aiEngineeringPlans,
+    setupRestrictions: {
+      ...(state.setupRestrictions ?? {}),
+      [race.id]: setupRestrictionWeekend,
+    },
     qualifyingResults: { ...state.qualifyingResults, [race.id]: results },
     news: [...dedupedQualNews, ...state.news].slice(0, 80),
   };

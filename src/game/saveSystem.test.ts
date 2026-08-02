@@ -60,6 +60,7 @@ describe('save model', () => {
     // begins evolving identity, culture, advice, intelligence, or rivalries.
     expect(s.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
     expect(s.phase18).toBeDefined();
+    expect(s.setupRestrictions).toEqual({});
     expect(Object.keys(s.phase18?.teamCultures ?? {})).toHaveLength(s.teams.length);
   });
 
@@ -98,6 +99,7 @@ describe('save model', () => {
     delete legacy.saveSchemaVersion;
     delete legacy.phase18;
     delete legacy.personnelCareerHistory;
+    delete legacy.setupRestrictions;
     const migrated = migrateGameState(legacy);
 
     expect(migrated.saveSchemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
@@ -105,6 +107,7 @@ describe('save model', () => {
     expect(Object.keys(migrated.phase18?.departmentMoods ?? {})).toHaveLength(current.teams.length);
     expect(migrated.teamTechnical).toEqual(current.teamTechnical);
     expect(migrated.teamParts).toEqual(current.teamParts);
+    expect(migrated.setupRestrictions).toEqual({});
     expect(migrated.personnelCareerHistory?.some((tenure) => tenure.personId === current.principal?.id)).toBe(true);
   });
 

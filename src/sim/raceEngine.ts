@@ -29,6 +29,7 @@ import {
   resolveSetupSimulationProfile,
   simulationSetupPaceDelta,
 } from './setupSimulationProfile';
+import { setupPenaltyDelaySeconds } from './setupRestrictionEngine';
 
 // Pace is a weighted blend of four components, each on a ~1-100 scale:
 //   50% car, 25% driver, 15% team, 10% form/morale/setup/strategy.
@@ -297,6 +298,12 @@ export function computeRaceOutcome(context: RaceContext): RaceOutcome {
       + setupEnvelope.consistencyLoss * 0.12
       + setupEnvelope.balanceMigration * 0.08;
     let finalScore = score + gridBonus + form + driverSwing + packagePaceBonus + prepPaceBonus - longRunPenalty;
+    const setupPenalty = context.preRaceSetupPenaltiesByDriver?.[e.driver.id];
+    const setupPenaltySeconds = setupPenaltyDelaySeconds(setupPenalty);
+    if (setupPenaltySeconds > 0) {
+      finalScore -= setupPenaltySeconds / 2.4;
+      incidents.push(`Served a ${setupPenaltySeconds}-second drive-through consequence for an unauthorized post-qualifying setup change.`);
+    }
 
     // Total retirement probability, then the *cause* is drawn from the era
     // profile (nudged by car/driver/track), so the season-wide DNF cause split

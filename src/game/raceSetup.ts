@@ -51,6 +51,9 @@ import {
 } from '../sim/aiSetupEngineeringEngine';
 import { raceEngineerForRoster } from '../sim/raceEngineerEngine';
 import { rankSetupArchive } from '../sim/setupArchiveEngine';
+import { selectRaceRuleProfile } from '../data/rules/raceRuleProfiles';
+import { applySetupPenaltiesToGrid } from '../sim/setupRestrictionEngine';
+import type { SetupPenaltyRecord } from '../types/setupRestrictionTypes';
 
 // Build the derived session setups for the player's tuned car setups, plus a
 // lookup from driverId to the setup id to use for the given session trim. The
@@ -177,6 +180,7 @@ export function resolveAIEngineeringPlans(
       raceEngineer: raceEngineerForRoster(state.aiStaff?.[team.id]),
       archivedBaseline: archiveReference?.entry.raceSetup,
       archiveRelevance: archiveReference?.relevance,
+      setupEventOverride: race.setupEventFormatOverride,
     });
   }
   return plans;
@@ -263,8 +267,35 @@ export function buildRaceContext(
   if (!race) return null;
   const track = getTrackById(race.trackId);
   if (!track) return null;
-  const qualifying = state.qualifyingResults[race.id];
-  if (!qualifying) return null;
+  const rawQualifying = state.qualifyingResults[race.id];
+  if (!rawQualifying) return null;
+
+  const ruleProfile = selectRaceRuleProfile(
+    state.series,
+    state.seasonYear,
+    track,
+    race.setupEventFormatOverride,
+  );
+  const penaltyRecords: Record<string, SetupPenaltyRecord | undefined> = {
+    ...(state.setupRestrictions?.[race.id]?.penaltiesByDriver ?? {}),
+  };
+  for (const plan of Object.values(state.aiEngineeringPlans ?? {})) {
+    if (plan.raceId !== race.id) continue;
+    for (const driverPlan of Object.values(plan.drivers)) {
+      const consequence = driverPlan.setupPenalty;
+      if (!consequence || consequence === 'None' || consequence === 'Blocked') continue;
+      penaltyRecords[driverPlan.driverId] = {
+        raceId: race.id,
+        driverId: driverPlan.driverId,
+        consequence,
+        changedParams: [],
+        authorized: false,
+        reason: 'The rival team deliberately changed a restricted configuration and accepted the sporting consequence.',
+        source: ruleProfile.setupLock.source,
+      };
+    }
+  }
+  const qualifying = applySetupPenaltiesToGrid(rawQualifying, penaltyRecords);
 
   // Cars flagged DNQ in qualifying do not start the race.
   const didNotQualify = new Set(qualifying.filter((q) => q.dnq).map((q) => q.driverId));
@@ -344,6 +375,11 @@ export function buildRaceContext(
     },
     confidenceModifierByDriver,
     driverRelationships,
+    preRaceSetupPenaltiesByDriver: Object.fromEntries(
+      Object.entries(penaltyRecords)
+        .filter((entry): entry is [string, SetupPenaltyRecord] => entry[1] != null)
+        .map(([driverId, penalty]) => [driverId, penalty.consequence]),
+    ),
     garageAddressEffectsByDriver: garageAddressRaceEffects(state, race.id),
   };
 
@@ -374,6 +410,7 @@ export function buildLiveRaceOptions(
     teamRaceOps,
     year: state.seasonYear,
     series: state.series,
+    setupEventOverride: currentRace(state)?.setupEventFormatOverride,
     damageSettings: liveRaceOptions?.damageSettings,
     teamOrgRatings: liveRaceOptions?.teamOrgRatings ?? state.teamOrgRatings,
   };

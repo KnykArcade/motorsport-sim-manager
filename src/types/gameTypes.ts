@@ -75,6 +75,8 @@ export type Race = {
   distanceKm?: number;
   pointsMultiplier?: number;
   completed: boolean;
+  // Optional event bulletin override for setup impound/work-window procedure.
+  setupEventFormatOverride?: import('./raceRulesTypes').SetupEventFormatOverride;
 };
 
 export type Season = {

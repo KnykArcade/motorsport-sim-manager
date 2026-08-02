@@ -53,6 +53,7 @@ function migrateRelationships(rels: Record<string, DriverRelationship>): Record<
 
 export function migrateGameState(state: GameState): GameState {
   const patched: Partial<GameState> = { ...state };
+  patched.setupRestrictions ??= {};
   if (patched.staff) {
     patched.staff = patched.staff.map((member) => ({
       ...member,

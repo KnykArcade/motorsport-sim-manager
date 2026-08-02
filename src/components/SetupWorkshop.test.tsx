@@ -58,7 +58,7 @@ describe('SetupWorkshop', () => {
       <SetupWorkshop
         track={tracks1995[0]}
         drivers={[driver]}
-        setups={{ [driver.id]: BALANCED_SETUP }}
+        setups={{ [driver.id]: { ...BALANCED_SETUP, frontWing: 6 } }}
         baselineSetups={{ [driver.id]: BALANCED_SETUP }}
         engineer={raceEngineer}
         stage="PostQualifying"
@@ -66,11 +66,17 @@ describe('SetupWorkshop', () => {
           active: true,
           label: 'Parc fermé active',
           description: 'Only permitted adjustments remain available.',
-          allowedParams: ['frontWing'],
+          allowedParams: [],
+          approvalRequiredParams: ['frontWing'],
+          violationConsequence: 'PitLaneStart',
+          sourceLabel: 'FIA sporting regulations',
+          sourceUrl: 'https://www.fia.com/',
+          sourceConfidence: 'Official',
         }}
         onChangeParam={() => undefined}
         onApplySetup={() => undefined}
         onCopy={() => undefined}
+        onConfirm={() => undefined}
       />,
     );
 
@@ -78,5 +84,10 @@ describe('SetupWorkshop', () => {
     expect(html).toContain('Parc fermé active');
     expect(html).toContain('Only permitted adjustments remain available.');
     expect(html).toContain('Increase Front Wing');
+    expect(html).toContain('Approval required');
+    expect(html).toContain('Keep legal configuration');
+    expect(html).toContain('Request safety approval');
+    expect(html).toContain('Accept pit-lane start');
+    expect(html).toContain('FIA sporting regulations');
   });
 });

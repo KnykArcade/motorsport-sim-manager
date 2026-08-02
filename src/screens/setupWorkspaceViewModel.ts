@@ -50,8 +50,12 @@ export function setupDraftStatus(input: {
   changedCount: number;
   postQualifying: boolean;
   locked: boolean;
+  restrictedCount?: number;
 }): string {
   if (input.locked) {
+    if ((input.restrictedCount ?? 0) > 0) {
+      return `${input.restrictedCount} restricted change${input.restrictedCount === 1 ? ' needs' : 's need'} a decision`;
+    }
     return input.changedCount > 0
       ? `${input.changedCount} permitted post-qualifying change${input.changedCount === 1 ? '' : 's'}`
       : 'Parc fermé restrictions active';

@@ -32,6 +32,8 @@ import {
   setupDraftStatus,
   setupParameterChange,
 } from '../screens/setupWorkspaceViewModel';
+import type { SetupRestrictionDecision } from '../types/setupRestrictionTypes';
+import type { SetupPenaltyConsequence, SetupWeekendLockState } from '../types/raceRulesTypes';
 
 // Per-driver practice context the workshop needs to compute comfort and gate
 // certainty. All optional — before practice the workshop shows wide ranges and
@@ -72,14 +74,22 @@ type Props = {
   onResetDriver?: (driverId: string) => void;
   setupLock?: {
     active: boolean;
+    phase?: SetupWeekendLockState;
     label: string;
     description: string;
     allowedParams: readonly SetupParamKey[];
+    approvalRequiredParams?: readonly SetupParamKey[];
+    violationConsequence?: SetupPenaltyConsequence;
+    sourceLabel?: string;
+    sourceUrl?: string;
+    sourceConfidence?: string;
+    triggerLabel?: string;
   };
+  authorizationAvailable?: boolean;
   // Fixed-action-bar navigation (rendered inside the workshop so the buttons are
   // always visible without page scroll).
   onBack?: () => void;
-  onConfirm?: () => void;
+  onConfirm?: (restrictionDecision?: SetupRestrictionDecision) => void;
   stage?: 'Initial' | 'PostQualifying';
 };
 
@@ -157,6 +167,7 @@ export function SetupWorkshop({
   onCopy,
   onResetDriver,
   setupLock,
+  authorizationAvailable = false,
   onBack,
   onConfirm,
   stage = 'Initial',
@@ -309,29 +320,43 @@ export function SetupWorkshop({
     const est = componentFitEstimate(fit, setupKnowledge);
     return (est.low + est.high) / 2;
   };
-  const lockedParam = (key: SetupParamKey): boolean =>
-    !!setupLock?.active && !setupLock.allowedParams.includes(key);
+  const parameterRule = (key: SetupParamKey): 'Legal' | 'Approval required' | 'Penalty required' => {
+    if (!setupLock?.active || setupLock.allowedParams.includes(key)) return 'Legal';
+    if (setupLock.approvalRequiredParams?.includes(key)) return 'Approval required';
+    return 'Penalty required';
+  };
   const changedParams = changedSetupParameters(baseline, setup);
+  const restrictedChangedParams = changedParams.filter((key) => parameterRule(key) !== 'Legal');
   const baselineQuality = objectiveSetupQuality(baseline, track, car);
   const draftStatus = setupDraftStatus({
     changedCount: changedParams.length,
     postQualifying: stage === 'PostQualifying',
     locked: !!setupLock?.active,
+    restrictedCount: restrictedChangedParams.length,
   });
   const changeParam = (key: SetupParamKey, value: number) => {
     const current = setup[key];
     const next = Math.max(1, Math.min(10, Number(value.toFixed(1))));
-    if (next === current || lockedParam(key)) return;
+    if (next === current) return;
     setLastChange({ driverId: driver.id, key, previous: current, current: next });
     onChangeParam(driver.id, key, next);
   };
   const revertComponent = (component: SetupComponentKey) => {
     const metadata = SETUP_COMPONENTS.find((item) => item.key === component);
     metadata?.params.forEach((key) => {
-      if (!lockedParam(key)) onChangeParam(driver.id, key, baseline[key]);
+      onChangeParam(driver.id, key, baseline[key]);
     });
     setLastChange(undefined);
   };
+  const approvalOnly = restrictedChangedParams.length > 0
+    && restrictedChangedParams.every((key) => parameterRule(key) === 'Approval required');
+  const consequenceLabel = setupLock?.violationConsequence === 'PitLaneStart'
+    ? 'pit-lane start'
+    : setupLock?.violationConsequence === 'RearOfField'
+      ? 'rear-of-field start'
+      : setupLock?.violationConsequence === 'RearOfFieldAndDriveThrough'
+        ? 'rear-of-field start plus drive-through'
+        : 'stated sporting penalty';
 
   return (
     <div className="ui-setup-workspace flex h-full min-h-0 flex-col gap-2" data-testid="setup-workshop">
@@ -512,7 +537,8 @@ export function SetupWorkshop({
             <div className="space-y-3">
               {comp.params.map((key) => {
                 const meta = SETUP_PARAMS[key];
-                const disabled = lockedParam(key);
+                const ruleStatus = parameterRule(key);
+                const disabled = false;
                 const change = setupParameterChange(baseline, setup, key);
                 const justChanged = lastChange?.driverId === driver.id && lastChange.key === key;
                 return (
@@ -531,9 +557,15 @@ export function SetupWorkshop({
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-semibold text-neutral-100">{meta.label}</h3>
-                          {disabled && (
-                            <span className="rounded bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-orange-300">
-                              Locked
+                          {setupLock?.active && (
+                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                              ruleStatus === 'Legal'
+                                ? 'bg-emerald-500/15 text-emerald-300'
+                                : ruleStatus === 'Approval required'
+                                  ? 'bg-amber-500/15 text-amber-300'
+                                  : 'bg-red-500/15 text-red-300'
+                            }`}>
+                              {ruleStatus}
                             </span>
                           )}
                           {justChanged && (
@@ -587,8 +619,12 @@ export function SetupWorkshop({
                       <span>{meta.lowLabel}</span>
                       <span>{meta.highLabel}</span>
                     </div>
-                    {disabled && setupLock && (
-                      <p className="mt-2 text-[10px] text-orange-200/75">{setupLock.description}</p>
+                    {setupLock?.active && ruleStatus !== 'Legal' && (
+                      <p className="mt-2 text-[10px] text-orange-200/75">
+                        {ruleStatus === 'Approval required'
+                          ? 'This change needs an eligible safety or damaged-part authorization.'
+                          : `This change requires accepting a ${consequenceLabel}.`}
+                      </p>
                     )}
                   </section>
                 );
@@ -724,11 +760,19 @@ export function SetupWorkshop({
       </div>
 
       <footer className="ui-setup-actions flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-neutral-800 pt-2">
-        <div>
+        <div className="min-w-0">
           {onBack && (
             <Button variant="ghost" onClick={onBack}>
               {stage === 'PostQualifying' ? 'Back to qualifying review' : 'Back to practice'}
             </Button>
+          )}
+          {setupLock?.active && (
+            <div className="mt-1 text-[10px] text-neutral-500">
+              {setupLock.triggerLabel ? `Lock begins: ${setupLock.triggerLabel}. ` : ''}{setupLock.description}
+              {setupLock.sourceLabel && (
+                <> · <a className="text-sky-300 hover:underline" href={setupLock.sourceUrl} target="_blank" rel="noreferrer">{setupLock.sourceLabel}</a>{setupLock.sourceConfidence ? ` (${setupLock.sourceConfidence})` : ''}</>
+              )}
+            </div>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -759,7 +803,26 @@ export function SetupWorkshop({
               Copy to {other.name}
             </Button>
           )}
-          {onConfirm && <Button variant="primary" onClick={onConfirm}>Confirm setup</Button>}
+          {onConfirm && restrictedChangedParams.length === 0 && (
+            <Button variant="primary" onClick={() => onConfirm()}>Confirm setup</Button>
+          )}
+          {onConfirm && restrictedChangedParams.length > 0 && (
+            <>
+              <Button variant="ghost" onClick={() => onConfirm('ContinueWithLegalConfiguration')}>
+                Keep legal configuration
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={!authorizationAvailable || !approvalOnly}
+                onClick={() => onConfirm('RequestAuthorizedChange')}
+              >
+                Request safety approval
+              </Button>
+              <Button variant="primary" onClick={() => onConfirm('AcceptPenalty')}>
+                Accept {consequenceLabel}
+              </Button>
+            </>
+          )}
         </div>
       </footer>
     </div>
