@@ -205,10 +205,17 @@ import type {
   PracticeAssignment,
   PracticeSession,
   PracticeSessionKind,
+  SetupDebriefDecision,
   WeekendPractice,
 } from '../types/practiceTypes';
 import { initialBaselineSetup } from '../sim/setupFitEngine';
 import { archiveCompletedWeekend } from '../sim/setupArchiveEngine';
+import {
+  applyAutomaticSetupRelationshipLearning,
+  applyDebriefToSetupArchive,
+  buildSetupWeekendDebrief,
+  resolveSetupDebriefDecision,
+} from '../sim/setupDebriefEngine';
 import {
   deriveRaceEngineerProfile,
   improveRaceEngineerProfile,
@@ -353,6 +360,7 @@ export type GameAction =
   | { type: 'CONFIRM_WEEKEND_PLAN'; plan: ConfirmedWeekendPlan }
   | { type: 'DELIVER_GARAGE_ADDRESS'; raceId: string; tone: GarageAddressTone; delegated?: boolean }
   | { type: 'ADD_GARAGE_FOLLOW_UP'; raceId: string; driverId: string; followUp: GarageFollowUpType }
+  | { type: 'RESOLVE_SETUP_DEBRIEF'; raceId: string; decision: SetupDebriefDecision }
   | { type: 'START_RD_PROJECT'; request: RDProjectStartRequest }
   | { type: 'START_PART_MANUFACTURING'; partType: PartType; quantity?: number }
   | { type: 'FIT_PART'; partId: string; driverId: string }
@@ -988,6 +996,18 @@ export function gameReducer(state: GameState | null, action: GameAction): GameSt
     case 'ADD_GARAGE_FOLLOW_UP': {
       if (!state || getCareerPhase(state) !== 'race_weekend') return state;
       return addGarageFollowUp(state, action.raceId, action.driverId, action.followUp);
+    }
+
+    case 'RESOLVE_SETUP_DEBRIEF': {
+      if (!state || getCareerPhase(state) !== 'post_race_review') return state;
+      const current = state.setupDebriefs?.[action.raceId];
+      if (!current || current.teamId !== state.selectedTeamId || current.decision) return state;
+      const resolved = resolveSetupDebriefDecision(current, action.decision, state.driverRelationships);
+      return {
+        ...state,
+        driverRelationships: resolved.relationships,
+        setupDebriefs: { ...(state.setupDebriefs ?? {}), [action.raceId]: resolved.debrief },
+      };
     }
 
     case 'START_RD_PROJECT': {
@@ -3257,7 +3277,68 @@ function applyRaceResults(
         evidenceConfidenceByDriver: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, item.setupKnowledge])),
         wet: weekendForecast(completedTrack, `${state.randomSeed}-r${race.round}`).Race.wet,
       });
+      const aiEngineer = raceEngineerForRoster(state.aiStaff?.[team.id]);
+      const aiEngineerRating = aiEngineer
+        ? (aiEngineer.rating <= 10 ? aiEngineer.rating * 10 : aiEngineer.rating)
+        : team.raceOperations;
+      const aiDebrief = buildSetupWeekendDebrief({
+        seed: state.randomSeed,
+        raceId: race.id,
+        round: race.round,
+        teamId: team.id,
+        drivers: teamDrivers,
+        car: teamCar,
+        allCars: state.cars,
+        track: completedTrack,
+        setups: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, item.raceSetup])),
+        results,
+        qualifyingResults: qualifying,
+        breakdowns,
+        raceWet: weekendForecast(completedTrack, `${state.randomSeed}-r${race.round}`).Race.wet,
+        engineerId: aiEngineer?.id,
+        engineerName: aiEngineer?.name,
+        engineerSkill: (aiEngineerRating + team.raceOperations) / 2,
+        knowledgeByDriver: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, item.setupKnowledge])),
+        verifiedByDriver: Object.fromEntries(Object.values(plan.drivers).map((item) => [item.driverId, true])),
+      });
+      setupArchive = applyDebriefToSetupArchive(
+        setupArchive,
+        aiDebrief,
+        (aiEngineerRating + team.raceOperations) / 2,
+      );
     }
+  }
+
+  let setupDebriefs = state.setupDebriefs;
+  if (completedTrack && playerCar && archiveDrivers.length > 0) {
+    const playerEngineer = raceEngineerForRoster(state.staff);
+    const playerTeam = state.teams.find((team) => team.id === state.selectedTeamId);
+    const engineerRating = playerEngineer
+      ? (playerEngineer.rating <= 10 ? playerEngineer.rating * 10 : playerEngineer.rating)
+      : playerTeam?.raceOperations ?? 50;
+    const engineeringSkill = (engineerRating + (playerTeam?.raceOperations ?? engineerRating)) / 2;
+    const playerDebrief = buildSetupWeekendDebrief({
+      seed: state.randomSeed,
+      raceId: race.id,
+      round: race.round,
+      teamId: state.selectedTeamId,
+      drivers: archiveDrivers,
+      car: playerCar,
+      allCars: state.cars,
+      track: completedTrack,
+      setups: state.carSetups ?? {},
+      results,
+      qualifyingResults: qualifying,
+      breakdowns,
+      practice: state.weekendPractice?.raceId === race.id ? state.weekendPractice : undefined,
+      raceWet: weekendForecast(completedTrack, `${state.randomSeed}-r${race.round}`).Race.wet,
+      engineerId: playerEngineer?.id,
+      engineerName: playerEngineer?.name,
+      engineerSkill: engineeringSkill,
+    });
+    setupArchive = applyDebriefToSetupArchive(setupArchive, playerDebrief, engineeringSkill);
+    driverRelationships = applyAutomaticSetupRelationshipLearning(driverRelationships, playerDebrief);
+    setupDebriefs = { ...(state.setupDebriefs ?? {}), [race.id]: playerDebrief };
   }
 
   // Advance the calendar.
@@ -3281,6 +3362,7 @@ function applyRaceResults(
     raceArchive,
     performanceAnalytics,
     setupArchive,
+    setupDebriefs,
     commercial,
     driverRelationships,
     driverPromises,

@@ -44,6 +44,54 @@ export type SetupArchiveEntry = {
   qualifyingSetup: CarSetup;
   raceSetup: CarSetup;
   evidenceConfidence: number;
+  // Added after the car has run in competition. The qualitative record helps
+  // future engineers judge whether an old baseline behaved as predicted while
+  // keeping the hidden physical setup score private.
+  postRaceOutcome?: SetupArchiveOutcome;
+};
+
+export type SetupDebriefConfidence = 'Low' | 'Medium' | 'High';
+export type SetupVerdictGrade = 'Excellent' | 'Strong' | 'Workable' | 'Compromised' | 'Poor' | 'Inconclusive';
+export type SetupPredictionVerdict = 'Accurate' | 'Mixed' | 'Misleading' | 'Inconclusive';
+
+export type SetupArchiveOutcome = {
+  grade: SetupVerdictGrade;
+  predictionVerdict: SetupPredictionVerdict;
+  confidence: SetupDebriefConfidence;
+  summary: string;
+  qualifyingAssessment: string;
+  raceAssessment: string;
+  tyreAssessment: string;
+  learnedAtRound: number;
+};
+
+export type SetupDriverDebrief = SetupArchiveOutcome & {
+  driverId: string;
+  driverName: string;
+  expectedHandling: string[];
+  observedHandling: string[];
+  attribution: string[];
+  compromiseAssessment: string;
+  archiveLesson: string;
+  relationshipRisk?: string;
+};
+
+export type SetupDebriefDecision =
+  | 'AcceptEngineerExplanation'
+  | 'SupportDriverInterpretation'
+  | 'RequestInvestigation'
+  | 'TakeResponsibility'
+  | 'AvoidDefinitiveBlame';
+
+export type SetupWeekendDebrief = {
+  raceId: string;
+  teamId: string;
+  engineerId?: string;
+  engineerName: string;
+  generatedAtRound: number;
+  drivers: SetupDriverDebrief[];
+  decision?: SetupDebriefDecision;
+  decisionSummary?: string;
 };
 
 // The kinds of practice sessions a weekend can contain. The exact set depends on

@@ -22,7 +22,7 @@ import type { AcademyDecision, AcademyMember, SeatSigning } from '../types/marke
 import type { FinanceTransaction } from '../types/financeTypes';
 import type { StaffMember, StaffResponsibilityPolicies } from '../types/staffTypes';
 import type { RaceArchiveEntry } from '../types/historyTypes';
-import type { SetupArchiveEntry, WeekendPractice } from '../types/practiceTypes';
+import type { SetupArchiveEntry, SetupWeekendDebrief, WeekendPractice } from '../types/practiceTypes';
 import type { CommercialState } from '../types/sponsorTypes';
 import type { EngineState } from '../types/engineTypes';
 import type { TeamReputation, TeamExpectation, ExpectationReview, BoardroomState } from '../types/expectationTypes';
@@ -181,6 +181,9 @@ export type GameState = {
   // Team-owned engineering references retained between events. Historical
   // records guide the next baseline but are never treated as current evidence.
   setupArchive?: SetupArchiveEntry[];
+  // Driver-by-driver engineering verdicts retained for historical post-race
+  // review. Optional so careers saved before the debrief loop load unchanged.
+  setupDebriefs?: Record<string, SetupWeekendDebrief>;
   // 2. Sponsor & commercial system (player team).
   commercial?: CommercialState;
   // 3. Engine supplier / manufacturer deal (player team).

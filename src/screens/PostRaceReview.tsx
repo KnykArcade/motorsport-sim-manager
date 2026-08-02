@@ -37,6 +37,7 @@ import { weekendForecast } from '../sim/weatherEngine';
 import { RACE_WEEKEND_PACKAGES } from '../sim/raceWeekendPackageEngine';
 import { buildPostRaceCausalDebrief } from './postRaceDebriefViewModel';
 import { garageAddressForRace } from '../sim/garageLeadershipEngine';
+import type { SetupDebriefDecision, SetupWeekendDebrief } from '../types/practiceTypes';
 
 export function PostRaceReview() {
   const { raceId } = useParams();
@@ -90,13 +91,18 @@ export function PostRaceReview() {
   const historicalPoints = isActiveReview ? null : playerResults.reduce((sum, r) => sum + r.points, 0);
   const failureCases = failureCasesForRace(state, raceId);
   const technicalRisk = postRaceReviewRisk(failureCases, state.selectedTeamId);
+  const setupDebrief = state.setupDebriefs?.[raceId];
   const tabs = POST_RACE_REVIEW_TABS.map((item) => item.id === 'investigation' && technicalRisk.unresolvedCount > 0
     ? { ...item, label: `${item.label} · ${technicalRisk.unresolvedCount}` }
+    : item.id === 'engineering' && setupDebrief && !setupDebrief.decision && isActiveReview
+      ? { ...item, label: `${item.label} · Decision` }
     : item);
   const workspaceItems = tabs.map((item) => ({
     ...item,
     description: item.id === 'overview'
       ? 'Result causes, leadership accountability, driver performance, and technical findings'
+      : item.id === 'engineering'
+        ? 'Driver setup verdicts, expected versus observed behavior, archive learning, and leadership response'
       : item.id === 'classification'
         ? 'Complete stored race result and team classification'
         : item.id === 'incidents'
@@ -106,6 +112,8 @@ export function PostRaceReview() {
             : 'Driver and constructor championship impact',
     status: item.id === 'overview'
       ? bestFinish !== null ? `Best finish P${bestFinish}` : 'No finish'
+      : item.id === 'engineering'
+        ? setupDebrief?.decision ? 'Decision recorded' : setupDebrief ? 'Response required' : 'Unavailable'
       : item.id === 'classification'
         ? `${results.length} entries`
         : item.id === 'incidents'
@@ -113,7 +121,8 @@ export function PostRaceReview() {
           : item.id === 'investigation'
             ? technicalRisk.unresolvedCount > 0 ? `${technicalRisk.unresolvedCount} unresolved` : 'Clear'
             : `${isActiveReview ? summary?.pointsGained ?? 0 : historicalPoints ?? 0} team points`,
-    urgent: item.id === 'investigation' && technicalRisk.unresolvedCount > 0,
+    urgent: (item.id === 'investigation' && technicalRisk.unresolvedCount > 0)
+      || (item.id === 'engineering' && Boolean(setupDebrief && !setupDebrief.decision && isActiveReview)),
   }));
   const inboxActions = actionableInboxCount(state);
   const weekendPractice = state.weekendPractice?.raceId === raceId ? state.weekendPractice : undefined;
@@ -231,7 +240,15 @@ export function PostRaceReview() {
         <FailureInvestigationPanel state={state} raceId={raceId} isActiveReview={isActiveReview} dispatch={dispatch} />
       )}
 
-      {activeTab !== 'investigation' && <div className={`ui-post-race-grid ${activeTab === 'overview' ? 'is-overview' : ''}`}>
+      {activeTab === 'engineering' && (
+        <SetupEngineeringDebriefPanel
+          debrief={setupDebrief}
+          isActiveReview={isActiveReview}
+          onDecision={(decision) => dispatch({ type: 'RESOLVE_SETUP_DEBRIEF', raceId, decision })}
+        />
+      )}
+
+      {activeTab !== 'investigation' && activeTab !== 'engineering' && <div className={`ui-post-race-grid ${activeTab === 'overview' ? 'is-overview' : ''}`}>
         <div className="ui-post-race-primary">
           {activeTab === 'classification' && <Panel title="Race Classification">
             <RaceResultTable
@@ -443,6 +460,108 @@ export function PostRaceReview() {
       </WorkspaceBody>
     </WorkspaceScreen>
   );
+}
+
+const SETUP_DEBRIEF_DECISIONS: ReadonlyArray<{
+  id: SetupDebriefDecision;
+  label: string;
+  detail: string;
+}> = [
+  { id: 'AcceptEngineerExplanation', label: 'Accept engineering explanation', detail: 'Back the Race Engineer’s reading of the weekend.' },
+  { id: 'SupportDriverInterpretation', label: 'Support the drivers', detail: 'Ask engineering to reconsider where driver feedback and the model disagree.' },
+  { id: 'RequestInvestigation', label: 'Request more investigation', detail: 'Keep the finding open and review the data before assigning responsibility.' },
+  { id: 'TakeResponsibility', label: 'Take responsibility', detail: 'Own the final qualifying and race compromise as Team Principal.' },
+  { id: 'AvoidDefinitiveBlame', label: 'Avoid definitive blame', detail: 'Use when incidents or changing conditions make the evidence inconclusive.' },
+];
+
+function SetupEngineeringDebriefPanel({
+  debrief,
+  isActiveReview,
+  onDecision,
+}: {
+  debrief?: SetupWeekendDebrief;
+  isActiveReview: boolean;
+  onDecision: (decision: SetupDebriefDecision) => void;
+}) {
+  if (!debrief) {
+    return <Panel title="Setup Engineering Debrief">
+      <p className="text-sm text-neutral-500">No setup debrief was stored for this race. Results created before Phase 8 remain unchanged.</p>
+    </Panel>;
+  }
+
+  return <div className="space-y-4" data-testid="setup-engineering-debrief">
+    <Panel title="Engineering Verdict">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-neutral-100">{debrief.engineerName}</div>
+          <p className="mt-1 text-xs text-neutral-500">The verdict separates setup behavior from car potential, strategy, traffic, weather, incidents, and mechanical failures. Hidden setup targets remain private.</p>
+        </div>
+        <span className="rounded border border-sky-500/25 bg-sky-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-sky-200">
+          Archive updated
+        </span>
+      </div>
+    </Panel>
+
+    <div className="grid gap-4 xl:grid-cols-2">
+      {debrief.drivers.map((verdict) => (
+        <Panel key={verdict.driverId} title={verdict.driverName}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className={`text-lg font-black ${verdict.grade === 'Excellent' || verdict.grade === 'Strong' ? 'text-emerald-300' : verdict.grade === 'Poor' || verdict.grade === 'Compromised' ? 'text-orange-300' : 'text-neutral-200'}`}>{verdict.grade}</span>
+            <span className="text-xs text-neutral-400">{verdict.confidence} confidence · Prediction {verdict.predictionVerdict.toLowerCase()}</span>
+          </div>
+          <p className="mt-2 text-sm text-neutral-300">{verdict.summary}</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <DebriefList title="Expected behavior" items={verdict.expectedHandling} />
+            <DebriefList title="Observed behavior" items={verdict.observedHandling} />
+          </div>
+          <div className="mt-3 rounded border border-neutral-800 bg-neutral-950/35 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Qualifying / race compromise</div>
+            <p className="mt-1 text-xs text-neutral-300">{verdict.compromiseAssessment}</p>
+          </div>
+          <div className="mt-3 rounded border border-sky-500/20 bg-sky-500/5 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-sky-300">Setup Archive lesson</div>
+            <p className="mt-1 text-xs text-neutral-300">{verdict.archiveLesson}</p>
+          </div>
+          <DebriefList title="Attribution boundaries" items={verdict.attribution} className="mt-3" />
+          {verdict.relationshipRisk && <p className="mt-3 text-xs text-amber-200">Relationship risk: {verdict.relationshipRisk}</p>}
+        </Panel>
+      ))}
+    </div>
+
+    <Panel title="Team Principal Response">
+      {debrief.decision ? (
+        <div className="rounded border border-emerald-500/25 bg-emerald-500/5 p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-emerald-300">Decision recorded</div>
+          <p className="mt-1 text-sm text-neutral-200">{debrief.decisionSummary}</p>
+        </div>
+      ) : isActiveReview ? (
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+          {SETUP_DEBRIEF_DECISIONS.map((decision) => (
+            <button
+              key={decision.id}
+              type="button"
+              onClick={() => onDecision(decision.id)}
+              className="rounded border border-neutral-700 bg-neutral-900/45 p-3 text-left hover:border-sky-500/50 hover:bg-sky-500/5"
+            >
+              <div className="text-sm font-semibold text-neutral-100">{decision.label}</div>
+              <p className="mt-1 text-xs text-neutral-500">{decision.detail}</p>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-neutral-500">This historical debrief is read-only.</p>
+      )}
+    </Panel>
+  </div>;
+}
+
+function DebriefList({ title, items, className = '' }: { title: string; items: string[]; className?: string }) {
+  return <div className={className}>
+    <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{title}</div>
+    <ul className="mt-1 space-y-1 text-xs text-neutral-400">
+      {items.map((item) => <li key={item}>{item}</li>)}
+    </ul>
+  </div>;
 }
 
 function FailureInvestigationPanel({ state, raceId, isActiveReview, dispatch }: { state: GameState; raceId: string; isActiveReview: boolean; dispatch: (action: GameAction) => void }) {

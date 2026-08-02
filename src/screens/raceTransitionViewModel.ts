@@ -1,5 +1,5 @@
 export type PreRaceBriefingTab = 'overview' | 'preparation' | 'team' | 'paddock';
-export type PostRaceReviewTab = 'overview' | 'classification' | 'incidents' | 'investigation' | 'championships';
+export type PostRaceReviewTab = 'overview' | 'engineering' | 'classification' | 'incidents' | 'investigation' | 'championships';
 export type RaceResultsTab = 'summary' | 'classification' | 'story' | 'championships';
 export type SeasonReviewTab = 'honours' | 'drivers' | 'constructors' | 'next';
 export type RaceWeekendPhase =
@@ -25,6 +25,7 @@ export const PRE_RACE_BRIEFING_TABS: ReadonlyArray<{ id: PreRaceBriefingTab; lab
 
 export const POST_RACE_REVIEW_TABS: ReadonlyArray<{ id: PostRaceReviewTab; label: string }> = [
   { id: 'overview', label: 'Overview' },
+  { id: 'engineering', label: 'Setup Debrief' },
   { id: 'classification', label: 'Classification' },
   { id: 'incidents', label: 'Race Story' },
   { id: 'investigation', label: 'Technical Review' },
