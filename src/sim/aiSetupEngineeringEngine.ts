@@ -28,7 +28,7 @@ import type { CarSetup, SetupParamKey } from '../types/setupTypes';
 import { driverSetupComfort } from './driverComfortEngine';
 import { effectiveCarRatings } from './trackFitEngine';
 import { initialBaselineSetup, idealSetup, objectiveSetupQuality } from './setupFitEngine';
-import { setupLockStatus, validateSetupChange } from './setupLockEngine';
+import { setupLockPhase, setupLockStatus, validateSetupChange } from './setupLockEngine';
 import { buildTunedSetupSimulationProfile } from './setupSimulationProfile';
 import { createSeededRandom, deriveSeed, type Rng } from './random';
 import { practiceLapBudgetPerCar, weekendSessionKinds } from './practiceProgramEngine';
@@ -61,6 +61,7 @@ export type AIEngineeringPlanInput = {
   raceEngineer?: StaffMember;
   archivedBaseline?: CarSetup;
   archiveRelevance?: number;
+  setupEventOverride?: import('../types/raceRulesTypes').SetupEventFormatOverride;
 };
 
 export type AIEngineeringRuntime = {
@@ -390,8 +391,9 @@ function constrainRaceSetup(
   requestedRace: CarSetup,
   input: AIEngineeringPlanInput,
 ): CarSetup {
-  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track);
-  const status = setupLockStatus(rules, 'AfterQualifying');
+  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track, input.setupEventOverride);
+  const phase = setupLockPhase(true, rules);
+  const status = setupLockStatus(rules, phase);
   if (!status.active) return requestedRace;
 
   const allowed = new Set(status.allowedParams);
@@ -408,7 +410,7 @@ function constrainRaceSetup(
     }
   }
   const sanitized = sanitize(constrained);
-  return validateSetupChange(rules, 'AfterQualifying', qualifying, sanitized).allowed
+  return validateSetupChange(rules, phase, qualifying, sanitized).allowed
     ? sanitized
     : qualifying;
 }
@@ -417,15 +419,37 @@ function lockedWeekendCompromise(
   qualifying: CarSetup,
   race: CarSetup,
   input: AIEngineeringPlanInput,
-): { qualifying: CarSetup; race: CarSetup } {
-  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track);
-  if (!setupLockStatus(rules, 'AfterQualifying').active) return { qualifying, race };
+  preparationScore: number,
+  philosophy: AIEngineeringPhilosophy,
+): {
+  qualifying: CarSetup;
+  race: CarSetup;
+  decision: AIEngineeringDriverPlan['setupRestrictionDecision'];
+  penalty: AIEngineeringDriverPlan['setupPenalty'];
+} {
+  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track, input.setupEventOverride);
+  const phase = setupLockPhase(true, rules);
+  if (!setupLockStatus(rules, phase).active) {
+    return { qualifying, race, decision: 'ContinueWithLegalConfiguration', penalty: 'None' };
+  }
   const compromise = {} as CarSetup;
   for (const key of PARAMS) compromise[key] = qualifying[key] * 0.44 + race[key] * 0.56;
   const lockedQualifying = sanitize(compromise);
+  const legalRace = constrainRaceSetup(lockedQualifying, race, input);
+  const legalQuality = objectiveSetupQuality(legalRace, input.track, input.car).quality;
+  const requestedQuality = objectiveSetupQuality(race, input.track, input.car).quality;
+  const performanceGain = requestedQuality - legalQuality;
+  const deliberateRisk = archetypeRisk(input.archetype)
+    + (philosophy === 'QualifyingAttack' ? 0.12 : 0)
+    + (input.philosophyTraits?.includes('Maverick') ? 0.1 : 0);
+  const acceptsPenalty = performanceGain >= 13
+    && deliberateRisk >= 0.72
+    && preparationScore >= 58;
   return {
     qualifying: lockedQualifying,
-    race: constrainRaceSetup(lockedQualifying, race, input),
+    race: acceptsPenalty ? race : legalRace,
+    decision: acceptsPenalty ? 'AcceptPenalty' : 'ContinueWithLegalConfiguration',
+    penalty: acceptsPenalty ? rules.setupLock.violationConsequence : 'None',
   };
 }
 
@@ -486,7 +510,13 @@ export function buildAIEngineeringWeekendPlan(input: AIEngineeringPlanInput): AI
     const driverBase = driverSpecificEstimate(sharedEstimate, driver, uncertainty, driverRng, engineerProfile);
     const requestedQualifying = applyPhilosophy(driverBase, philosophy, 'qualifying', driverRng);
     const requestedRace = applyPhilosophy(driverBase, philosophy, 'race', driverRng);
-    const finalSetups = lockedWeekendCompromise(requestedQualifying, requestedRace, input);
+    const finalSetups = lockedWeekendCompromise(
+      requestedQualifying,
+      requestedRace,
+      input,
+      preparationScore,
+      philosophy,
+    );
     const technical = rating01(driver.ratings.technical);
     const incidentLoss = driverRng.chance(clamp(0.13 - preparationScore / 1000, 0.025, 0.12))
       ? driverRng.range(0.12, 0.35)
@@ -503,10 +533,12 @@ export function buildAIEngineeringWeekendPlan(input: AIEngineeringPlanInput): AI
       ranQualifyingSimulation: practicePrograms.includes('QualifyingSimulation'),
       ranRacePace: practicePrograms.includes('RacePaceRun') || practicePrograms.includes('FuelLoadTest'),
       ranWetPreparation: practicePrograms.includes('WetWeatherPreparation'),
+      setupRestrictionDecision: finalSetups.decision,
+      setupPenalty: finalSetups.penalty,
     };
   }
 
-  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track);
+  const rules = selectRaceRuleProfile(input.series, input.seasonYear, input.track, input.setupEventOverride);
   return {
     raceId: input.raceId,
     teamId: input.team.id,

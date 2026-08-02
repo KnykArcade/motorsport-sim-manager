@@ -43,14 +43,53 @@ export type RaceControlRuleProfile = {
 
 export type SetupLockMode = 'Unrestricted' | 'PostQualifyingLimited' | 'ParcFerme' | 'Impound';
 
+export type SetupWeekendLockState =
+  | 'OpenPractice'
+  | 'QualifyingConfigurationSubmitted'
+  | 'QualifyingImpoundActive'
+  | 'AuthorizedWorkWindow'
+  | 'PreRaceGridRestrictions'
+  | 'RaceConfigurationFinalized';
+
+export type SetupRuleConfidence = 'Official' | 'High' | 'Medium' | 'GameplayFallback';
+export type SetupEventFormatOverride =
+  | 'Default'
+  | 'OpenSetup'
+  | 'IndyCarRoadWorkWindow'
+  | 'IndyCarRoadNoWork';
+
+export type SetupPenaltyConsequence =
+  | 'None'
+  | 'Blocked'
+  | 'PitLaneStart'
+  | 'RearOfField'
+  | 'RearOfFieldAndDriveThrough';
+
+export type SetupRuleSource = {
+  title: string;
+  url: string;
+  section?: string;
+  confidence: SetupRuleConfidence;
+  note?: string;
+};
+
 export type SetupLockRuleProfile = {
   mode: SetupLockMode;
-  trigger: 'None' | 'AfterQualifying';
+  trigger: 'None' | 'FirstQualifyingRun' | 'QualifyingTechnicalInspection' | 'AfterQualifying';
   allowedPostQualifyingChanges: readonly SetupParamKey[];
+  allowedPreRaceGridChanges: readonly SetupParamKey[];
+  approvalRequiredChanges: readonly SetupParamKey[];
+  weatherExceptionChanges: readonly SetupParamKey[];
   maxPostQualifyingDelta: number | null;
-  violationConsequence: 'Blocked' | 'PitLaneStart' | 'RearOfField';
+  violationConsequence: SetupPenaltyConsequence;
+  authorizedChangeConsequence: SetupPenaltyConsequence;
+  authorizedWorkWindow: 'None' | 'Limited' | 'FullSetup';
+  qualifiesOnRaceSetup: boolean;
+  retainsQualifyingTyres: boolean;
+  eventSpecific: boolean;
   label: string;
   description: string;
+  source: SetupRuleSource;
 };
 
 export type RaceRuleProfile = {

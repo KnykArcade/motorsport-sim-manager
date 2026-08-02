@@ -103,8 +103,13 @@ export function buildWeekendPlanBoard(input: {
     };
   }
 
-  const profile = selectRaceRuleProfile(state.series, state.seasonYear, trackData);
-  const lock = setupLockStatus(profile, setupLockPhase(qualifyingResults.length > 0));
+  const profile = selectRaceRuleProfile(
+    state.series,
+    state.seasonYear,
+    trackData,
+    race.setupEventFormatOverride,
+  );
+  const lock = setupLockStatus(profile, setupLockPhase(qualifyingResults.length > 0, profile));
   const practice = state.weekendPractice?.raceId === race.id ? state.weekendPractice : undefined;
   const driverIds = activeDrivers.map((driver) => driver.id);
   const setupKnowledge = averageKnowledge(driverIds, practice?.knowledge.setupKnowledge);

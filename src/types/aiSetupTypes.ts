@@ -1,6 +1,7 @@
 import type { CarSetup } from './setupTypes';
 import type { PracticeProgram } from './practiceTypes';
-import type { SetupLockMode } from './raceRulesTypes';
+import type { SetupLockMode, SetupPenaltyConsequence } from './raceRulesTypes';
+import type { SetupRestrictionDecision } from './setupRestrictionTypes';
 
 export type AIEngineeringPhilosophy =
   | 'QualifyingAttack'
@@ -22,6 +23,8 @@ export type AIEngineeringDriverPlan = {
   ranQualifyingSimulation: boolean;
   ranRacePace: boolean;
   ranWetPreparation: boolean;
+  setupRestrictionDecision?: SetupRestrictionDecision;
+  setupPenalty?: SetupPenaltyConsequence;
 };
 
 // A bounded, active-weekend record. It stores only the AI's engineering

@@ -18,6 +18,7 @@ import { autoSetupOptionsForTrack } from './autoSetup';
 import { aiQualifyingDecision, aiRaceDecision } from '../game/ai';
 import { simulateQualifying } from './qualifyingEngine';
 import { createLiveRace, finalizeResults, type LiveRaceMeta } from './liveRaceEngine';
+import { simulateRace } from './raceEngine';
 import {
   stepLiveRace,
   stepLiveRaceToEnd,
@@ -108,6 +109,25 @@ function createRace(context: RaceContext, playerTeamId: string) {
     series: 'F1',
   });
 }
+
+describe('setup-rule penalty parity', () => {
+  it('applies the same drive-through consequence to quick and live race paths', () => {
+    const base = buildContext('setup-penalty-parity');
+    const driverId = base.entrants[0].driver.id;
+    const context: RaceContext = {
+      ...base,
+      preRaceSetupPenaltiesByDriver: { [driverId]: 'RearOfFieldAndDriveThrough' },
+    };
+    const live = createRace(context, base.entrants[0].driver.teamId);
+    const liveCar = live.cars.find((car) => car.driverId === driverId)!;
+    const quick = simulateRace(context);
+    const quickResult = quick.results.find((result) => result.driverId === driverId)!;
+
+    expect(liveCar.totalTime).toBeCloseTo(liveCar.grid * 0.3 + 24, 5);
+    expect(liveCar.lastIncident).toContain('Drive-through setup penalty');
+    expect(quickResult.incidents.some((incident) => incident.includes('drive-through consequence'))).toBe(true);
+  });
+});
 
 describe('live race engine', () => {
   it('initialises a formation grid with every entrant', () => {

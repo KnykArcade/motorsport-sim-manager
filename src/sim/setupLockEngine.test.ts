@@ -41,6 +41,45 @@ describe('setupLockEngine', () => {
     expect(illegalMajorWing.blockedParams).toContain('frontWing');
   });
 
+  it('tracks the expanded weekend phase and official rule source', () => {
+    const profile = selectRaceRuleProfile('F1', 2026);
+    const before = setupLockStatus(profile, setupLockPhase(false, profile));
+    const after = setupLockStatus(profile, setupLockPhase(true, profile));
+
+    expect(before.phase).toBe('OpenPractice');
+    expect(after.phase).toBe('QualifyingImpoundActive');
+    expect(after.active).toBe(true);
+    expect(after.sourceConfidence).toBe('Official');
+    expect(after.sourceUrl).toContain('fia_2026');
+  });
+
+  it('offers a legal subset, authorized repair path, or deliberate penalty instead of silently discarding a request', () => {
+    const profile = selectRaceRuleProfile('F1', 2026);
+    const requested = {
+      ...BALANCED_SETUP,
+      frontWing: 5.5,
+      suspensionStiffness: 6,
+    };
+    const undecided = validateSetupChange(profile, 'QualifyingImpoundActive', BALANCED_SETUP, requested);
+    const authorized = validateSetupChange(profile, 'QualifyingImpoundActive', BALANCED_SETUP, requested, {
+      decision: 'RequestAuthorizedChange',
+      authorizationAvailable: true,
+    });
+    const deliberate = validateSetupChange(profile, 'QualifyingImpoundActive', BALANCED_SETUP, requested, {
+      decision: 'AcceptPenalty',
+    });
+
+    expect(undecided.allowed).toBe(false);
+    expect(undecided.legalSetup?.frontWing).toBe(5.5);
+    expect(undecided.legalSetup?.suspensionStiffness).toBe(5);
+    expect(authorized.allowed).toBe(true);
+    expect(authorized.authorized).toBe(true);
+    expect(authorized.consequence).toBe('PitLaneStart');
+    expect(deliberate.allowed).toBe(true);
+    expect(deliberate.authorized).toBe(false);
+    expect(deliberate.consequence).toBe('PitLaneStart');
+  });
+
   it('keeps flexible series unrestricted after qualifying', () => {
     const profile = selectRaceRuleProfile('IndyCar', 2026);
     const validation = validateSetupChange(profile, 'AfterQualifying', BALANCED_SETUP, {

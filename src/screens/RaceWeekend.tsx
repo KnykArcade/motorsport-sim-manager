@@ -78,6 +78,7 @@ import type { WeatherState } from '../types/liveTypes';
 import type { CarSetup } from '../types/setupTypes';
 import type { QualifyingDecision, QualifyingFormat, RaceDecision } from '../types/simTypes';
 import type { AdvisorRecommendation } from '../types/phase18Types';
+import type { SetupRestrictionDecision } from '../types/setupRestrictionTypes';
 import type {
   GarageAddressRecord,
   GarageAddressTone,
@@ -160,10 +161,17 @@ export function RaceWeekend() {
     return progressPhase;
   });
   const setupLock = useMemo(() => {
-    if (!state || !track) return undefined;
-    const profile = selectRaceRuleProfile(state.series, state.seasonYear, track);
-    return setupLockStatus(profile, setupLockPhase(!!qualifyingResults));
-  }, [state, track, qualifyingResults]);
+    if (!state || !track || !race) return undefined;
+    const profile = selectRaceRuleProfile(
+      state.series,
+      state.seasonYear,
+      track,
+      race.setupEventFormatOverride,
+    );
+    const phase = state.setupRestrictions?.[race.id]?.phase
+      ?? setupLockPhase(!!qualifyingResults, profile);
+    return setupLockStatus(profile, phase);
+  }, [state, track, race, qualifyingResults]);
 
   const autoSetups = useMemo(
     () => (track ? autoSetupsForTrack(track) : undefined),
@@ -208,10 +216,20 @@ export function RaceWeekend() {
     return m;
   }, [playerDrivers, setupDraft, state]);
 
-  const commitSetups = () => {
+  const commitSetups = (restrictionDecision?: SetupRestrictionDecision) => {
+    const weatherChanged = !!forecast && forecast.Qualifying.wet !== forecast.Race.wet;
     for (const d of playerDrivers) {
-      dispatch({ type: 'SET_CAR_SETUP', driverId: d.id, setup: resolvedSetups[d.id] });
+      const qualifying = qualifyingResults?.find((result) => result.driverId === d.id);
+      dispatch({
+        type: 'SET_CAR_SETUP',
+        driverId: d.id,
+        setup: resolvedSetups[d.id],
+        restrictionDecision,
+        authorizationAvailable: qualifying?.incident?.type === 'Crash' || weatherChanged,
+        weatherChanged,
+      });
     }
+    if (race && qualifyingResults) dispatch({ type: 'FINALIZE_RACE_SETUP', raceId: race.id });
   };
 
   // Per-driver practice context for the setup workshop: knowledge (gates
@@ -494,6 +512,9 @@ export function RaceWeekend() {
           teamId={state.selectedTeamId}
           seasonYear={state.seasonYear}
           setupLock={setupLock}
+          authorizationAvailable={playerDrivers.some((driver) =>
+            qualifyingResults?.find((result) => result.driverId === driver.id)?.incident?.type === 'Crash',
+          ) || forecast.Qualifying.wet !== forecast.Race.wet}
           stage={qualifyingResults ? 'PostQualifying' : 'Initial'}
           onChangeParam={(driverId, key, value) =>
             setSetupDraft((p) => ({
@@ -511,8 +532,14 @@ export function RaceWeekend() {
             const practiced = workshopPractice?.practicedSetupByDriver?.[driverId];
             if (practiced) setSetupDraft((p) => ({ ...p, [driverId]: sanitizeSetupProfile(practiced) }));
           }}
-          onBack={() => { commitSetups(); moveTo(qualifyingResults ? 'quali-review' : 'practice'); }}
-          onConfirm={() => { commitSetups(); moveTo(qualifyingResults ? 'race-strategy' : 'quali-run'); }}
+          onBack={() => {
+            if (!qualifyingResults) commitSetups();
+            moveTo(qualifyingResults ? 'quali-review' : 'practice');
+          }}
+          onConfirm={(restrictionDecision) => {
+            commitSetups(restrictionDecision);
+            moveTo(qualifyingResults ? 'race-strategy' : 'quali-run');
+          }}
         />
       )}
 

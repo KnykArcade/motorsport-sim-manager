@@ -13,7 +13,7 @@ import {
   getPreseasonApprovals,
   approvePreseasonTab,
 } from './careerPhaseEngine';
-import { carForTeam, driversForTeam, activeDriversForTeam } from './careerState';
+import { carForTeam, driversForTeam, activeDriversForTeam, currentRace } from './careerState';
 import { syncDriverRelationshipsForTeam } from '../sim/relationshipEngine';
 import { fromUnifiedTechnical, withUnifiedTechnical } from '../sim/technicalAdapters';
 import { BALANCED_SETUP } from '../data/setup/setupComponents';
@@ -1271,6 +1271,32 @@ describe('careerPhaseEngine', () => {
         setup: { ...lockedSetup, frontWing: lockedSetup.frontWing + 0.5 },
       });
       expect(state.carSetups![driver.id].frontWing).toBe(lockedSetup.frontWing + 0.5);
+    });
+
+    it('records an intentional parc ferme breach and applies the pit-lane-start grid consequence', () => {
+      let state = { ...newCareerState(), seasonYear: 2003 };
+      const driver = activeDriversForTeam(state, state.selectedTeamId)[0];
+      state = completeChecklist(state);
+      state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+      state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+      state = dispatch(state, { type: 'SET_CAR_SETUP', driverId: driver.id, setup: { ...BALANCED_SETUP } });
+      state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+      const raceId = currentRace(state)!.id;
+      const lockedSetup = state.carSetups![driver.id];
+
+      state = dispatch(state, {
+        type: 'SET_CAR_SETUP',
+        driverId: driver.id,
+        setup: { ...lockedSetup, suspensionStiffness: lockedSetup.suspensionStiffness + 1 },
+        restrictionDecision: 'AcceptPenalty',
+      });
+      state = dispatch(state, { type: 'FINALIZE_RACE_SETUP', raceId });
+
+      expect(state.carSetups![driver.id].suspensionStiffness).toBe(lockedSetup.suspensionStiffness + 1);
+      expect(state.setupRestrictions?.[raceId].penaltiesByDriver[driver.id].consequence).toBe('PitLaneStart');
+      expect(state.setupRestrictions?.[raceId].phase).toBe('RaceConfigurationFinalized');
+      const starters = state.qualifyingResults[raceId].filter((result) => !result.dnq);
+      expect(starters.find((result) => result.driverId === driver.id)?.position).toBe(starters.length);
     });
 
     it('SELECT_RACE_WEEKEND_PACKAGE does not mutate before preseason or paddock package selection windows', () => {
