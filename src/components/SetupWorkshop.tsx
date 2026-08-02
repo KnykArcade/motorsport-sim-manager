@@ -469,6 +469,11 @@ export function SetupWorkshop({
                       </span>
                     </span>
                     <span className="mt-1 block text-[10px] leading-4 text-neutral-500">{reasons.join(' · ')}</span>
+                    {entry.postRaceOutcome && (
+                      <span className="mt-1 block text-[10px] leading-4 text-neutral-400">
+                        Race verdict: {entry.postRaceOutcome.grade} · prediction {entry.postRaceOutcome.predictionVerdict.toLowerCase()} · {entry.postRaceOutcome.confidence.toLowerCase()} confidence
+                      </span>
+                    )}
                     <span className="mt-1 block text-[10px] font-semibold text-sky-300">Load unverified race baseline</span>
                   </button>
                 ))}

@@ -108,6 +108,27 @@ describe('careerPhaseEngine', () => {
     state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
     state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
     expect(getCareerPhase(state)).toBe('post_race_review');
+    const completedRaceId = getOrCreatePhaseState(state).lastCompletedRaceId!;
+    const debrief = state.setupDebriefs?.[completedRaceId];
+    expect(debrief?.teamId).toBe(state.selectedTeamId);
+    expect(debrief?.drivers).toHaveLength(activeDriversForTeam(state, state.selectedTeamId).length);
+    expect(state.setupArchive?.filter((entry) => entry.raceId === completedRaceId).every((entry) => entry.postRaceOutcome)).toBe(true);
+  });
+
+  it('records a setup debrief response once during the active post-race review', () => {
+    let state = newCareerState();
+    state = completeChecklist(state);
+    state = dispatch(state, { type: 'COMPLETE_PRESEASON_SETUP' });
+    state = dispatch(state, { type: 'ADVANCE_TO_RACE_WEEKEND' });
+    state = dispatch(state, { type: 'RUN_QUALIFYING', decisions: [] });
+    state = dispatch(state, { type: 'RUN_RACE', decisions: [] });
+    const raceId = getOrCreatePhaseState(state).lastCompletedRaceId!;
+    state = dispatch(state, { type: 'RESOLVE_SETUP_DEBRIEF', raceId, decision: 'TakeResponsibility' });
+    expect(state.setupDebriefs?.[raceId].decision).toBe('TakeResponsibility');
+    const relationships = state.driverRelationships;
+    state = dispatch(state, { type: 'RESOLVE_SETUP_DEBRIEF', raceId, decision: 'SupportDriverInterpretation' });
+    expect(state.setupDebriefs?.[raceId].decision).toBe('TakeResponsibility');
+    expect(state.driverRelationships).toEqual(relationships);
   });
 
   it('post-race review moves to paddock_week', () => {

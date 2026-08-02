@@ -23,7 +23,7 @@ import {
 describe('race transition view model', () => {
   it('exposes bounded tab groups for each transition screen', () => {
     expect(PRE_RACE_BRIEFING_TABS.map((tab) => tab.id)).toEqual(['overview', 'preparation', 'team', 'paddock']);
-    expect(POST_RACE_REVIEW_TABS.map((tab) => tab.id)).toEqual(['overview', 'classification', 'incidents', 'investigation', 'championships']);
+    expect(POST_RACE_REVIEW_TABS.map((tab) => tab.id)).toEqual(['overview', 'engineering', 'classification', 'incidents', 'investigation', 'championships']);
     expect(RACE_RESULTS_TABS.map((tab) => tab.id)).toEqual(['summary', 'classification', 'story', 'championships']);
     expect(SEASON_REVIEW_TABS.map((tab) => tab.id)).toEqual(['honours', 'drivers', 'constructors', 'next']);
   });
